@@ -122,6 +122,8 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 2. O sistema SHALL usar esses artefatos curados como camada operacional primaria durante a execucao do runtime.
 3. O sistema SHALL registrar quando um artefato foi derivado majoritariamente de fonte do usuario e quando foi preenchido por fallback padrao do Hardless.
 4. O sistema SHALL evitar gerar textos genericos quando nao houver regra suficiente; nesse caso, o artefato SHALL declarar lacuna ou fallback aplicado.
+5. O bootstrap SHALL ativar automaticamente os artefatos derivados apenas quando a confianca agregada do pacote curado atingir o limiar minimo definido pelo runtime do alpha.
+6. Quando a confianca agregada ficar abaixo do limiar minimo, o sistema SHALL exigir confirmacao explicita do operador antes de promover os artefatos a camada primaria de runtime.
 
 ### Requirement 6: Workflow Triage Before Code Work
 
@@ -144,6 +146,8 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 2. O `fast mode` SHALL carregar apenas o pacote minimo de regras e artefatos relevantes para a tarefa.
 3. O `fast mode` SHALL produzir ao menos um plano curto, a execucao e uma validacao minima antes de concluir.
 4. O runtime SHALL ser capaz de promover uma tarefa inicialmente enquadrada em `fast mode` para `spec flow` quando surgir complexidade adicional durante a execucao.
+5. O `fast mode` SHALL recomendar explicitamente o proximo passo operacional com base no contexto minimo carregado.
+6. O `fast mode` SHALL entregar um plano curto antes de qualquer escrita, mesmo quando a tarefa parecer trivial.
 
 ### Requirement 8: Spec Flow For Larger Or Riskier Changes
 
@@ -177,17 +181,19 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 2. O runtime SHALL impedir conclusao de tarefa sem ao menos uma etapa de validacao declarada.
 3. O runtime SHALL distinguir acoes seguras de acoes que exigem aprovacao adicional do operador.
 4. O alpha SHALL permitir pausar ou desativar o Hardless MCP para que o usuario possa codar fora do ritual quando desejar.
+5. Quando houver incerteza relevante sobre classificacao, contexto, impacto, contradicao ou validacao, o runtime SHALL bloquear ou escalar o fluxo em vez de prosseguir por heuristica permissiva.
+6. O runtime SHALL explicitar o motivo do bloqueio ou da escalacao conservadora e o criterio objetivo para destravar o fluxo.
 
-### Requirement 11: Monorepo Integration Strategy
+### Requirement 11: Dedicated Repository And Internal Package Strategy
 
-**User Story:** Como mantenedor do produto, eu quero desenvolver o Hardless MCP dentro do mesmo monorepo atual, para maximizar reaproveitamento de nucleo e reduzir dispersao de arquitetura.
+**User Story:** Como mantenedor do produto, eu quero evoluir o Hardless MCP em um repositorio proprio com um pacote principal dedicado, para reduzir confusao de escopo e manter a arquitetura do alpha coesa.
 
 #### Acceptance Criteria
 
-1. A implementacao do alpha SHALL residir neste mesmo monorepo do Hardless.
-2. O projeto SHALL prever um novo pacote em `packages/` para o servidor MCP e seu runtime especifico.
-3. O pacote do MCP SHALL ser desenhado para reutilizar, sempre que fizer sentido, capacidades de `harness-core`, `repo-sensor`, `agent-runtime` e `shared`.
-4. O alpha SHALL evitar criar um repositorio separado enquanto a iniciativa ainda estiver validando o proprio recorte de produto.
+1. A implementacao do alpha SHALL residir em um repositorio proprio do `Hardless MCP`.
+2. O repositorio SHALL prever um pacote principal em `packages/hardless-mcp` para o servidor MCP e seu runtime especifico.
+3. O desenho interno SHALL permitir extracao futura de pacotes auxiliares sem exigir reestruturacao do workspace desde o alpha.
+4. O alpha SHALL evitar depender do repositorio do app desktop como base de implementacao ou runtime.
 
 ## Edge Cases
 
@@ -200,28 +206,25 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 - o operador quer ignorar o Hardless temporariamente para uma alteracao rapida;
 - o cliente MCP nao respeita integralmente o workflow sugerido pelo runtime.
 
-## Open Questions
-
-- Quais clientes MCP do alpha serao tratados como alvo principal de validacao pratica?
-- O alpha deve gerar manifestos operacionais em `YAML`, `JSON` ou um formato hibrido por tipo de artefato?
-- O primeiro bootstrap deve pedir revisao explicita do operador antes de ativar os artefatos derivados como fonte primaria do runtime?
-
 ## Assumptions
 
 - o alpha sera usado primeiro em projetos reais do proprio fundador ou de devs tecnicos proximos;
 - o Hardless MCP funcionara inicialmente como superficie complementar ao app desktop, nao como pivô do produto;
 - o workspace alvo podera conter arquivos de regra, specs e docs heterogeneos;
 - a LLM sera usada como sintetizadora controlada, nao como fonte primaria de estrutura ou proveniencia;
-- o monorepo atual e a melhor base inicial para implementar e validar essa iniciativa.
+- um repositorio proprio reduz confusao de escopo, contexto e arquivos-alvo do agente durante a validacao do alpha.
+- o alpha usara um SDK MCP pragmatico por baixo de um adapter interno para evitar acoplamento estrutural precoce.
+- os contratos operacionais legiveis por maquina ficarao em `JSON`, enquanto relatorios humanos ficarao em `Markdown`.
+- o `Cursor` sera o cliente MCP principal de validacao pratica do alpha, por refletir o uso real prioritario do produto neste momento.
 
 ## Review Gate
 
-- Status: `PENDING_USER_REVIEW`
-- Feedback incorporado: `consolidado da discussao sobre workflow, bootstrap hibrido e MCP-first`
-- Perguntas pendentes: `3`
-- Pode seguir para `design.md`? `aguardando aprovacao`
+- Status: `APPROVED_FOR_EXECUTION_PLANNING`
+- Feedback incorporado: `direcao workflow-first, bootstrap hibrido, separacao para repositorio proprio e contratos de confianca/fast_mode`
+- Perguntas pendentes: `0 bloqueantes`
+- Pode seguir para `design.md`? `sim`
 
 ## Notes
 
-- Este documento deriva da conversa atual, da visao existente do Hardless e das decisoes ja consolidadas sobre workspace unico e spec-driven workflow.
-- O proximo passo recomendado, apos sua revisao, e fechar as open questions relevantes e entao escrever `design.md`.
+- Este documento deriva da conversa atual, da visao existente do Hardless e das decisoes ja consolidadas sobre workspace unico, bootstrap hibrido e spec-driven workflow.
+- `design.md` e `tasks.md` ja foram produzidos a partir deste requisito; novas mudancas de contrato devem sincronizar os tres artefatos.
