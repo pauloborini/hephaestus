@@ -2,11 +2,11 @@
 
 ## Overview
 
-O alpha do `Hardless MCP` sera desenhado como um servidor MCP local workflow-first com bootstrap repo-native e runtime orientado por artefatos curados em `.hardless/`. O sistema nao tratara arquivos como `AGENTS.md` ou `.cursorrules` como contrato direto de runtime; eles entram como fontes de ingestao para uma pipeline controlada, com snapshots, fragmentacao, sintese assistida e manifestos de proveniencia, confianca e drift.
+O alpha do `Hardless MCP` sera desenhado como um servidor MCP local workflow-first com bootstrap repo-native, runtime orientado por artefatos curados em `.hardless/` e uma camada de instalacao gerenciada para dar precedencia ao Hardless em superficies de memoria suportadas. O sistema nao tratara arquivos como `AGENTS.md` ou `.cursorrules` como contrato direto de runtime; eles entram como fontes de ingestao para uma pipeline controlada, com snapshots, fragmentacao, sintese assistida e manifestos de proveniencia, confianca e drift.
 
 A abordagem escolhida privilegia um bootstrap hibrido e auditavel antes de qualquer roteamento de tarefa. Isso atende melhor aos requisitos porque reduz improviso operacional, impede dependencia excessiva de contexto cru e permite que `discussion`, `fast_mode`, `spec_flow` e `blocked` nascam de um contrato estavel do Hardless, nao de leitura ad hoc do workspace a cada solicitacao.
 
-Este design cobre o alpha do pacote `packages/hardless-mcp`, a estrutura inicial de `.hardless/`, a pipeline ponta a ponta de bootstrap e refresh, os principais schemas/manifests operacionais, as tools MCP iniciais e a arquitetura interna do pacote. Ele nao detalha UI propria, sync cloud, multiworkspace ou enforcement forte por integracao com clientes especificos.
+Este design cobre o alpha do pacote `packages/hardless-mcp`, a estrutura inicial de `.hardless/`, a pipeline ponta a ponta de bootstrap e refresh, os principais schemas/manifests operacionais, as tools MCP iniciais, a instalacao gerenciada em superficies suportadas e a arquitetura interna do pacote. Ele nao detalha UI propria, sync cloud, multiworkspace ou enforcement absoluto sobre clientes nao suportados.
 
 ## Goals
 
@@ -71,6 +71,17 @@ graph TD
 9. O `manifest writer` grava manifestos operacionais, indices, bundles e relatorios.
 10. Se a confianca agregada atingir o limiar do alpha, o runtime marca o workspace como `ready`.
 11. Se a confianca agregada ficar abaixo do limiar, o runtime marca o pacote como `pending_activation` e exige confirmacao explicita do operador.
+
+### 1.5 Instalacao gerenciada
+
+1. O operador chama `hardless.install` apos bootstrap valido.
+2. O sistema detecta `AGENTS.md` e `.cursorrules`.
+3. O sistema cria backup das superficies existentes em `.hardless/backups/`.
+4. O sistema injeta um bloco Hardless gerenciado no topo de cada superficie suportada.
+5. O conteudo original do usuario permanece abaixo do bloco gerenciado.
+6. O sistema grava `installation.json` com versao do template, backups e estado das superficies.
+7. `hardless.uninstall` restaura as superficies originais.
+8. `hardless.repair` recompõe o bloco gerenciado sem apagar o conteudo do usuario abaixo dele.
 
 ### 2. Triage de solicitacao
 
@@ -171,7 +182,7 @@ graph TD
 - Entradas: requests do cliente MCP.
 - Saidas: respostas estruturadas para bootstrap, triagem, contexto e status.
 - Dependencias: SDK MCP escolhido no alpha.
-- Restricoes: tools devem refletir workflow e guardrails, nao apenas acesso a arquivo; detalhes do SDK nao podem vazar para `application` nem `runtime`; o primeiro ciclo de validacao deve priorizar comportamento correto no `Cursor`.
+- Restricoes: tools devem refletir workflow e guardrails, nao apenas acesso a arquivo; detalhes do SDK nao podem vazar para `application` nem `runtime`; o primeiro ciclo de validacao deve priorizar comportamento correto no `Cursor`; `content.text` precisa continuar observavel mesmo quando o cliente MCP nao expuser `structuredContent`.
 
 ## Interfaces And Contracts
 
@@ -206,6 +217,9 @@ graph TD
   reports/
     drift.json
     bootstrap-summary.md
+  backups/
+    AGENTS.md.original
+    .cursorrules.original
 ```
 
 ### Motivacao da estrutura
@@ -218,6 +232,7 @@ graph TD
 - `routing/` centraliza politica operacional do alpha.
 - `memory/` guarda memoria curta do workspace, separada das fontes do usuario.
 - `reports/` expõe saude operacional e drift.
+- `backups/` preserva as superficies originais tocadas pela instalacao gerenciada.
 - Manifestos, bundles e indexes usados pelo runtime devem ficar em `JSON`; relatorios voltados a leitura humana podem ficar em `Markdown`.
 
 ### Schema conceitual de `workspace.json`

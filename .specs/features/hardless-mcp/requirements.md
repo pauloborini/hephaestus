@@ -4,7 +4,7 @@
 
 Esta especificacao define o alpha do `Hardless MCP`, uma superficie de produto complementar ao app desktop do Hardless. O objetivo do alpha nao e substituir o produto principal, e sim validar mais cedo o valor central do harness: workflow canônico, bootstrap repo-native, triagem operacional e contexto curado por workspace.
 
-O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando artefatos proprios e passando a mediar como o agente acessa regras, escolhe fluxo e decide quando deve usar fast mode ou spec flow. O ponto central aqui nao e "dar mais contexto para a LLM", e sim reduzir improviso operacional.
+O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando artefatos proprios e passando a mediar como o agente acessa regras, escolhe fluxo e decide quando deve usar fast mode ou spec flow. No v1, isso tambem inclui uma instalacao gerenciada e reversivel para dar precedencia ao Hardless em superficies de memoria suportadas, sem destruir o conteudo original do usuario. O ponto central aqui nao e "dar mais contexto para a LLM", e sim reduzir improviso operacional.
 
 ## User Intent Summary
 
@@ -32,12 +32,14 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 - runtime de triagem e roteamento `discussion` / `fast mode` / `spec flow`;
 - artefatos operacionais do Hardless para regras, indexes, routing e memoria;
 - deteccao de drift basica das fontes ingeridas;
+- instalacao gerenciada em `AGENTS.md` e `.cursorrules`, com backup e rollback;
 - operacao em um workspace ativo por vez.
 
 ### Out of Scope
 
 - UI desktop dedicada nesta iniciativa;
 - enforcement absoluto sobre qualquer cliente/editor;
+- takeover estrito irreversivel das instrucoes originais do usuario;
 - substituicao das tools nativas de codigo do cliente;
 - suporte profundo a colaboracao multiusuario;
 - sync cloud-first;
@@ -195,6 +197,22 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 3. O desenho interno SHALL permitir extracao futura de pacotes auxiliares sem exigir reestruturacao do workspace desde o alpha.
 4. O alpha SHALL evitar depender do repositorio do app desktop como base de implementacao ou runtime.
 
+### Requirement 12: Managed Installation And Automatic Precedence
+
+**User Story:** Como operador, eu quero instalar o Hardless de forma gerenciada no projeto, para que o agente passe automaticamente pelo workflow do Hardless sem apagar minhas instrucoes originais.
+
+#### Acceptance Criteria
+
+1. O sistema SHALL oferecer `install`, `uninstall` e `repair` como operacoes explicitas no MCP.
+2. O sistema SHALL suportar `AGENTS.md` e `.cursorrules` como superficies iniciais de instalacao gerenciada.
+3. O sistema SHALL criar backup antes de sobrescrever uma superficie existente.
+4. O sistema SHALL injetar um bloco Hardless gerenciado com precedencia no topo da superficie suportada.
+5. O sistema SHALL preservar o conteudo original do usuario abaixo do bloco gerenciado.
+6. O sistema SHALL registrar o estado de instalacao em `.hardless/manifests/installation.json`.
+7. O sistema SHALL ser idempotente em reinstalacoes, sem duplicar o bloco gerenciado.
+8. O sistema SHALL restaurar a superficie original quando `uninstall` for executado com backup valido.
+9. O sistema SHALL permitir `repair` para recompor a instalacao quando a superficie suportada sofrer drift manual.
+
 ## Edge Cases
 
 - o workspace nao contem nenhum arquivo de regra explicito;
@@ -202,6 +220,7 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 - fontes diferentes do usuario se contradizem;
 - um fragmento relevante nao consegue ser classificado com confianca suficiente;
 - o usuario altera manualmente os arquivos em `.hardless/`;
+- o usuario altera manualmente `AGENTS.md` ou `.cursorrules` depois da instalacao gerenciada;
 - o projeto ja possui `.specs/`, mas com convencoes diferentes do fluxo padrao do Hardless;
 - o operador quer ignorar o Hardless temporariamente para uma alteracao rapida;
 - o cliente MCP nao respeita integralmente o workflow sugerido pelo runtime.
@@ -209,7 +228,7 @@ O Hardless MCP deve funcionar dentro de um projeto real do usuario, criando arte
 ## Assumptions
 
 - o alpha sera usado primeiro em projetos reais do proprio fundador ou de devs tecnicos proximos;
-- o Hardless MCP funcionara inicialmente como superficie complementar ao app desktop, nao como pivô do produto;
+- o Hardless MCP sera um produto local instalavel de verdade, mesmo antes de qualquer camada cloud ou distribuicao publica completa;
 - o workspace alvo podera conter arquivos de regra, specs e docs heterogeneos;
 - a LLM sera usada como sintetizadora controlada, nao como fonte primaria de estrutura ou proveniencia;
 - um repositorio proprio reduz confusao de escopo, contexto e arquivos-alvo do agente durante a validacao do alpha.

@@ -6,6 +6,7 @@ export const HARDLESS_SCHEMA_VERSIONS = {
   fragments: '1',
   routing: '1',
   provenance: '1',
+  installation: '1',
 } as const;
 
 export const HARDLESS_DIRECTORY_NAMES = {
@@ -27,6 +28,7 @@ export const HARDLESS_DIRECTORY_NAMES = {
   routing: 'routing',
   memory: 'memory',
   reports: 'reports',
+  backups: 'backups',
 } as const;
 
 export const HARDLESS_DEFAULTS = {
@@ -65,6 +67,7 @@ export function buildHardlessPaths(workspaceRoot: string): HardlessPaths {
     routingDir: joinPath(hardlessRoot, HARDLESS_DIRECTORY_NAMES.routing),
     memoryDir: joinPath(hardlessRoot, HARDLESS_DIRECTORY_NAMES.memory),
     reportsDir: joinPath(hardlessRoot, HARDLESS_DIRECTORY_NAMES.reports),
+    backupsDir: joinPath(hardlessRoot, HARDLESS_DIRECTORY_NAMES.backups),
   };
 }
 
@@ -88,5 +91,6 @@ export function listHardlessDirectories(paths: HardlessPaths): string[] {
     paths.routingDir,
     paths.memoryDir,
     paths.reportsDir,
+    paths.backupsDir,
   ];
 }

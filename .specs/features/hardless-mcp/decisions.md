@@ -290,3 +290,31 @@ O primeiro ciclo de validacao pratica do Hardless MCP sera otimizado para `Curso
 - a validacao manual principal do alpha deve acontecer no `Cursor`;
 - o adapter MCP continua desacoplado para preservar opcao de expansao futura;
 - compatibilidade ampla entre clientes deixa de ser meta imediata e passa a ser evolucao posterior.
+
+---
+
+## D-013 - O Hardless tera instalacao gerenciada e reversivel nas superficies suportadas
+
+- Status: `accepted`
+- Data: `2026-04-20`
+
+### Contexto
+
+Se o Hardless permanecer apenas como conjunto de tools opcionais, o agente continua dependendo demais da boa vontade do usuario ou do cliente MCP para passar pelo workflow correto. Por outro lado, takeover estrito e irreversivel de `AGENTS.md` ou `.cursorrules` destruiria confianca e tornaria rollback fraco demais para um produto instalavel.
+
+### Decisao
+
+O v1 tera instalacao gerenciada e reversivel em `AGENTS.md` e `.cursorrules`.
+
+- o Hardless injeta um bloco gerenciado com precedencia;
+- o conteudo original do usuario continua preservado abaixo do bloco;
+- backups vao para `.hardless/backups/`;
+- `hardless.install`, `hardless.uninstall` e `hardless.repair` controlam o ciclo de vida dessa instalacao;
+- takeover estrito fica fora do v1.
+
+### Consequencias
+
+- o agente passa a ser direcionado automaticamente para o Hardless em clientes suportados;
+- rollback e auditabilidade continuam fortes;
+- o runtime curado em `.hardless/` segue como fonte operacional primaria, sem transformar `AGENTS.md` cru em contrato de runtime;
+- o produto ganha onboarding e observabilidade melhores no `Cursor`, mas ainda nao promete enforcement absoluto em clientes nao suportados.
