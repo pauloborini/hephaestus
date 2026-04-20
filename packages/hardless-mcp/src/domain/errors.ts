@@ -7,6 +7,11 @@ export const WORKSPACE_ERROR_CODES = [
   'workspace_not_bootstrapped',
   'runtime_state_corrupted',
   'runtime_state_unreadable',
+  'installation_not_found',
+  'installation_state_corrupted',
+  'installation_surface_unreadable',
+  'installation_surface_write_failed',
+  'installation_conflict_detected',
 ] as const;
 
 export type WorkspaceErrorCode = (typeof WORKSPACE_ERROR_CODES)[number];

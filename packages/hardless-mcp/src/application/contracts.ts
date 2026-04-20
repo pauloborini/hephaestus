@@ -3,6 +3,8 @@ import type {
   DiscoveredSource,
   DriftReport,
   FragmentsManifest,
+  InstallationManifest,
+  InstallationSurfaceManifestEntry,
   ProvenanceManifest,
   RoutingManifest,
   RuleBundle,
@@ -66,4 +68,27 @@ export interface WorkspaceStatusResult {
   statusReason?: WorkspaceStatusReason;
   workspaceManifest?: WorkspaceManifest;
   driftReport?: DriftReport;
+}
+
+export interface InstallWorkspaceResult {
+  workspace: WorkspaceContext;
+  installationManifest: InstallationManifest;
+  managedSurfaces: InstallationSurfaceManifestEntry[];
+  manifestPath: string;
+  recommendedNextStep: string;
+}
+
+export interface UninstallWorkspaceResult {
+  workspace: WorkspaceContext;
+  restoredSurfaces: InstallationSurfaceManifestEntry[];
+  removedManifestPath?: string;
+  recommendedNextStep: string;
+}
+
+export interface RepairWorkspaceResult {
+  workspace: WorkspaceContext;
+  installationManifest: InstallationManifest;
+  repairedSurfaces: InstallationSurfaceManifestEntry[];
+  manifestPath: string;
+  recommendedNextStep: string;
 }

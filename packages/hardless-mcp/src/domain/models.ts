@@ -34,7 +34,22 @@ export interface HardlessPaths {
   routingDir: string;
   memoryDir: string;
   reportsDir: string;
+  backupsDir: string;
 }
+
+export type ManagedSurfaceType = 'agents_md' | 'cursor_rules';
+
+export type ManagedInstallationMode = 'managed_safe';
+
+export type InstallationSurfaceStatus =
+  | 'installed'
+  | 'updated_managed'
+  | 'created_managed'
+  | 'repaired_managed'
+  | 'restored_from_backup'
+  | 'removed_managed'
+  | 'already_managed'
+  | 'already_removed';
 
 export interface WorkspaceContext {
   workspaceId: string;
@@ -143,6 +158,26 @@ export interface WorkspaceManifest {
   confidenceScore: number;
   activationThreshold: number;
   activeRuntimeMode: HardlessRuntimeMode;
+}
+
+export interface InstallationSurfaceManifestEntry {
+  surfaceType: ManagedSurfaceType;
+  targetPath: string;
+  status: InstallationSurfaceStatus;
+  backupPath?: string;
+  originalHash?: string;
+  managedBlockId: string;
+  existedBefore: boolean;
+}
+
+export interface InstallationManifest {
+  schemaVersion: string;
+  workspaceRoot: string;
+  installedAt: string;
+  lastRepairedAt?: string;
+  mode: ManagedInstallationMode;
+  templateVersion: string;
+  surfaces: InstallationSurfaceManifestEntry[];
 }
 
 export interface RoutingManifest {

@@ -218,6 +218,32 @@ Os principais riscos estao em tres pontos: criar uma estrutura de artefatos gran
     - Evidencia de conclusao: status consultavel sem side effects.
     - _Requirements: 9, 10_
 
+- [x] 12.0 Adicionar instalacao gerenciada e reversivel do Hardless
+  - Tornar o Hardless automaticamente prioritario nas superficies suportadas sem destruir as instrucoes originais do usuario.
+  - Dependencia: etapas 6, 7 e 10 concluidas.
+  - Validacao esperada: install/uninstall/repair funcionam com backup, rollback e observabilidade no `Cursor`.
+  - _Requirements: 5, 10, 12_
+
+  - [x] 12.1 Implementar manifest e backups de instalacao
+    - Criar `.hardless/manifests/installation.json` e `.hardless/backups/` para registrar e preservar as superficies gerenciadas.
+    - Evidencia de conclusao: install grava manifest, backup e metadados por superficie.
+    - _Requirements: 12_
+
+  - [x] 12.2 Implementar tools `hardless.install`, `hardless.uninstall` e `hardless.repair`
+    - Expor o ciclo de vida da instalacao gerenciada via MCP com JSON observavel em `content.text`.
+    - Evidencia de conclusao: cliente MCP consegue instalar, desfazer e reparar a integracao automatica.
+    - _Requirements: 10, 12_
+
+  - [x] 12.3 Injetar bloco gerenciado em `AGENTS.md` e `.cursorrules`
+    - Dar precedencia ao Hardless sem apagar o conteudo original do usuario.
+    - Evidencia de conclusao: superficies suportadas mostram o bloco Hardless no topo e preservam o conteudo original abaixo.
+    - _Requirements: 5, 12_
+
+  - [x] 12.4 Reescrever onboarding e documentacao de uso
+    - Atualizar README e spec para refletir o produto local instalavel do v1.
+    - Evidencia de conclusao: um usuario novo consegue buildar, configurar no Cursor e executar o fluxo principal.
+    - _Requirements: 10, 12_
+
 - [x] 11. Validacao final e sync de artefatos
   - Consolidar confianca no alpha e impedir que a documentacao fique stale depois da implementacao inicial.
   - Dependencia: etapas anteriores concluidas.

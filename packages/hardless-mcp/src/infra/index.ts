@@ -11,6 +11,20 @@ export type { ExtractFragmentsOptions } from './fragment-extractor.js';
 export { writeFragmentArtifacts } from './fragment-manifest.js';
 export { readFragmentsManifest, readProvenanceManifest } from './fragment-manifest.js';
 export type { WriteFragmentArtifactsOptions } from './fragment-manifest.js';
+export {
+  installManagedRuntime,
+  MANAGED_INSTALLATION_MODE,
+  MANAGED_INSTALLATION_TEMPLATE_VERSION,
+  readInstallationManifest,
+  readOptionalInstallationManifest,
+  repairManagedRuntime,
+  uninstallManagedRuntime,
+} from './managed-installation.js';
+export type {
+  InstallManagedRuntimeOptions,
+  RepairManagedRuntimeOptions,
+  UninstallManagedRuntimeOptions,
+} from './managed-installation.js';
 export { NodeFileSystem } from './node-filesystem.js';
 export { writeRoutingArtifacts } from './routing-manifest.js';
 export type { WriteRoutingArtifactsOptions } from './routing-manifest.js';
