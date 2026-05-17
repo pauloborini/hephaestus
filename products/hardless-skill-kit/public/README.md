@@ -22,6 +22,8 @@ Em vez de tratar essas fontes como contrato cru de runtime, o kit orienta a LLM 
 4. sintetizar uma estrutura canônica;
 5. validar a saída antes de concluir.
 
+Ele também deve permitir retomada confiável quando a execução for interrompida no meio do processo.
+
 ## O Que Tem Aqui
 
 - [SKILL.md](SKILL.md)
@@ -36,6 +38,10 @@ Em vez de tratar essas fontes como contrato cru de runtime, o kit orienta a LLM 
   - contratos mínimos para fragmentos e artefatos
 - `manifests/`
   - política de nomenclatura e metadados do kit
+- `.hardless/manifests/run-state.json`
+  - checkpoint da execução por fase no projeto gerado
+- `.hardless/manifests/external-references-report.json`
+  - inventário das dependências externas citadas por `project-context/`
 
 ## Para Quem É
 
@@ -107,6 +113,7 @@ Para o uso atual do kit, prefira deixá-lo dentro do projeto alvo em vez de inst
 3. Apontar a LLM para [SKILL.md](SKILL.md).
 4. Fornecer as fontes cruas do projeto alvo.
 5. Revisar o resultado quando a validação terminar em `degraded` ou quando o fechamento indicar `needs-followup`.
+6. Se a execução for interrompida, pedir retomada a partir do último checkpoint validado.
 
 ## O Que A LLM Deve Fazer
 
@@ -115,6 +122,7 @@ Para o uso atual do kit, prefira deixá-lo dentro do projeto alvo em vez de inst
 3. Ler apenas os prompts, templates, references e schemas necessários para a fase atual.
 4. Gerar uma saída canônica, pequena e neutra.
 5. Bloquear a conclusão quando o contrato mínimo falhar.
+6. Manter `.hardless/manifests/run-state.json` atualizado a cada fase.
 
 ## Prompt Pronto Para Colar
 
@@ -132,7 +140,17 @@ Não improvise a árvore final.
 Use os prompts, templates, references, schemas e manifests do kit apenas quando necessários para a fase atual.
 
 O `AGENTS.md` final deve ser apenas o centralizador do workflow, da precedência e do roteamento.
-Não coloque regras de domínio, arquitetura, UI, contrato, segurança ou operação diretamente no `AGENTS.md`; coloque essas regras nos arquivos adequados em `agents/rules/*`.
+Não coloque regras de domínio, arquitetura, UI, contrato, segurança ou operação diretamente no `AGENTS.md`; coloque essas regras nos arquivos adequados em `project-context/rules/*`.
+
+Se algum arquivo dentro de `project-context/` precisar citar material fora dessa pasta, isso pode permanecer quando for parte real do contrato operacional do projeto. Nesse caso, a LLM deve registrar essas dependências em `.hardless/manifests/external-references-report.json` e avisar o usuário no fechamento.
+
+Além disso, a LLM deve manter `.hardless/manifests/run-state.json` para marcar:
+
+- fases `not_started`;
+- fases `in_progress`;
+- fases `produced`;
+- fases `validated`;
+- fases `failed`.
 
 Antes de sintetizar os arquivos finais, produza um mapa de cobertura simples relacionando:
 - fragmento ou regra de origem;
@@ -141,7 +159,9 @@ Antes de sintetizar os arquivos finais, produza um mapa de cobertura simples rel
 - pendência, conflito ou baixa confiança, se houver.
 
 Se houver ambiguidade relevante, conflito entre fontes ou falta de material suficiente, explicite isso em vez de forçar uma estrutura artificial.
-Ao terminar, faça uma revisão final das pendências, recomende a melhor decisão para cada uma e confirme se `AGENTS.md` e a pasta `agents/` ficaram realmente utilizáveis.
+Ao terminar, faça uma revisão final das pendências, recomende a melhor decisão para cada uma e confirme se `AGENTS.md` e a pasta `project-context/` ficaram realmente utilizáveis.
+Se existirem referências externas dentro de `project-context/`, quero um aviso explícito com relatório e recomendação do que deveria ser internalizado no futuro.
+Se a execução cair no meio, quero poder retomar a partir da última fase `validated`, sem confiar em fase apenas `in_progress` ou só `produced`.
 ```
 
 Se a pasta estiver em outro caminho dentro do projeto, ajuste apenas o path no prompt.
@@ -160,9 +180,10 @@ Agora faça o fechamento do Hardless Skill Kit sobre o que você acabou de gerar
 3. Para cada uma, me diga qual decisão você recomenda e por quê.
 4. Revise os artefatos gerados e confirme se:
    - `AGENTS.md` está completo, centralizador e apontando para o novo método;
-   - `AGENTS.md` não contém regras que deveriam estar em `agents/rules/*`;
-   - as regras necessárias já estão distribuídas na pasta `agents/`;
-   - os índices em `agents/index/*` apontam apenas para regras e referências existentes;
+   - `AGENTS.md` não contém regras que deveriam estar em `project-context/rules/*`;
+   - as regras necessárias já estão distribuídas na pasta `project-context/`;
+   - os índices em `project-context/index/*` apontam apenas para regras e referências existentes;
+   - dependências externas citadas por arquivos em `project-context/` foram registradas em `.hardless/manifests/external-references-report.json`;
    - o mapa de cobertura mostra destino para as regras relevantes das fontes originais;
    - não ficaram categorias vazias, artificiais ou redundantes;
    - há algum ponto em que a estrutura ainda esteja fraca, degradada ou dependente de inferência.
@@ -179,7 +200,7 @@ O kit orienta a geração de algo próximo disso:
 
 ```text
 AGENTS.md
-agents/
+project-context/
   index/
   rules/
   reference/
@@ -204,7 +225,7 @@ Também é esperado que, no fim, a LLM:
 
 - explicite pendências restantes, se houver;
 - recomende uma decisão para cada pendência relevante;
-- faça uma revisão final do `AGENTS.md` e da pasta `agents/`;
+- faça uma revisão final do `AGENTS.md` e da pasta `project-context/`;
 - confirme se o método novo ficou realmente operacional.
 
 ## Fluxo Recomendado de Uso
