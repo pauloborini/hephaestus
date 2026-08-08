@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO_SLUG="${HARDLESS_SKILL_KIT_PUBLIC_REPO:-pauloborini/hardless-skill-kit}"
 BRANCH="${HARDLESS_SKILL_KIT_PUBLIC_BRANCH:-main}"
-SOURCE_DIR="${HARDLESS_SKILL_KIT_PUBLIC_DIR:?HARDLESS_SKILL_KIT_PUBLIC_DIR is required}"
+SOURCE_DIR="${HARDLESS_SKILL_KIT_PUBLIC_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 TMP_DIR="${HARDLESS_SKILL_KIT_PUBLISH_TMP:-/tmp/hardless-skill-kit-publish}"
 COMMIT_MESSAGE="${HARDLESS_SKILL_KIT_COMMIT_MESSAGE:-chore: publish hardless skill kit update}"
 
@@ -28,7 +28,13 @@ else
   gh repo clone "${REPO_SLUG}" "${TMP_DIR}"
 fi
 
-rsync -a --delete --exclude '.git' --exclude '.gitkeep' "${SOURCE_DIR}/" "${TMP_DIR}/"
+rsync -a --delete \
+  --exclude '.git' \
+  --exclude '.gitkeep' \
+  --exclude '.gitignore' \
+  --exclude '.DS_Store' \
+  --exclude 'scripts/publish-hardless-skill-kit.sh' \
+  "${SOURCE_DIR}/" "${TMP_DIR}/"
 
 node "${TMP_DIR}/scripts/validate-skill-kit.mjs" "${TMP_DIR}"
 

@@ -1,0 +1,14 @@
+# INDEX: SECURITY
+
+## Obrigatórias
+
+1. `project-rules/rules/security_rules.md`
+2. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `auth_rules.md`: auth, sessão, role, permissão ou redirect.
+- `domain_rules.md`: dado sensível que atravessa DTO/Entity.
+- `error_handling_rules.md`: vazamento de detalhe interno em erro.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.

@@ -1,0 +1,16 @@
+# INDEX: REFACTORING
+
+## Obrigatórias
+
+1. `project-rules/rules/architecture_rules.md`
+2. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `ui_rules.md`: a reorganização toca apresentação.
+- `domain_rules.md`: a reorganização toca contrato/mapeamento.
+- `error_handling_rules.md`: a reorganização toca fluxo de erro.
+- `auth_rules.md`: a reorganização toca acesso/permissão.
+- `security_rules.md`: a reorganização toca dado sensível.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.

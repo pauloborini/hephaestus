@@ -1,0 +1,20 @@
+# RULES: ARCHITECTURE
+
+## Papel
+
+Definir a estrutura de camadas, boundaries e dependências do projeto.
+
+## O que preencher na síntese
+
+- camadas e packages reconhecidos e seus papéis;
+- regras de dependência entre camadas (quem pode depender de quem);
+- padrão de injeção de dependência e criação de objetos;
+- regras de estado e acesso a dados;
+- proibições estruturais (ex.: camada de apresentação acessando infraestrutura diretamente);
+- invariantes verificáveis por validador, quando existirem.
+
+## Gatilhos típicos
+
+- criação ou alteração de service/store/DI;
+- nova integração ou boundary;
+- refatoração com impacto estrutural.

@@ -1,0 +1,18 @@
+# RULES: UI
+
+## Papel
+
+Definir normas de interface, componentes e interação.
+
+## O que preencher na síntese
+
+- componentes padrão do design system do projeto;
+- tipografia, espaçamento e cores (proibições de valores crus, quando houver);
+- textos visíveis (i18n/hardcoded);
+- diálogos/overlays padrão;
+- estados de loading/vazio/erro/permissão;
+- acessibilidade e comportamento de entrada.
+
+## Gatilhos típicos
+
+- qualquer alteração em tela, componente, layout ou interação.

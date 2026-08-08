@@ -1,0 +1,22 @@
+# INDEX: FEATURE
+
+## Obrigatórias
+
+1. `project-rules/rules/architecture_rules.md`
+2. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `domain_rules.md`: DTO/Entity/Mapper/VO/enum/API.
+- `ui_rules.md`: qualquer boundary de apresentação.
+- `error_handling_rules.md`: operação com resultado de erro ou fluxo de erro.
+- `auth_rules.md`: auth, sessão, role, permissão, guard ou redirect.
+- `security_rules.md`: segredo, PII, storage sensível ou logs.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `domain_examples.md`: mapeamento/copyWith não trivial.
+- `api_contract_reference.md`: endpoint, payload, paginação ou código de backend.
+- `project-rules/contracts/*.openapi.json`: integração REST — somente consulta; não mutar.

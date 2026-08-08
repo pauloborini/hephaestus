@@ -1,0 +1,44 @@
+# RULES: OPERATIONAL
+
+## Gates por boundary
+
+Preencher na síntese com os comandos reais do framework e das ferramentas do projeto. Cada gate define: ID, comando, gatilho e resultado esperado.
+
+| ID | Comando | Gatilho | Resultado esperado |
+|---|---|---|---|
+| `analyze` | <análise estática do framework, ex.: analyzer, linter, typecheck> | qualquer diff de código | zero issue nova/in-scope |
+| `validate` | <validador estrutural do projeto, quando existir> | diff em regras/estrutura | índice/grafo íntegros |
+| `diff-check` | `git diff HEAD --check` | diff tracked | zero erro de whitespace/patch |
+
+- Os placeholders acima devem ser substituídos na síntese pelos comandos reais do repositório (ex.: `flutter analyze`, `tsc`, `eslint`, `melos run ...`).
+- Gates estruturais não substituem a análise estática.
+- Diff somente documental/config sem código não aciona gates de análise.
+
+## Autocontenção
+
+- Norma de engenharia deve estar em `AGENTS.md` ou `project-rules/`.
+- Regra/referência/contrato estrutural não referencia arquivo externo para completar decisão; spec/PRD pode ser consultada como requisito de produto, nunca como dependência normativa.
+- Toda regra, referência e contrato precisa ser alcançável por ao menos um índice.
+
+## Testes
+
+- Teste unit/integração/e2e só é criado/executado quando o usuário pedir explicitamente.
+- Analyzer e validadores estruturais são gates, não testes para essa restrição.
+- Teste que apenas cristaliza implementação ruim (design frágil, acoplamento indevido, workaround) é anti-padrão; preferir invariante estrutural na origem.
+
+## Falhas e baseline
+
+- Corrigir falha introduzida ou dentro do boundary.
+- Falha preexistente externa não autoriza refactor adjacente: registrar comando/evidência, separar baseline e classificar o resultado.
+- Não declarar gate verde quando o comando falhou, mesmo que a causa seja baseline.
+
+## Planos/handoffs
+
+- Quando o usuário pedir plano/handoff, propagar os gates aplicáveis no artefato.
+- Não copiar gates sem gatilho; cada item informa comando, boundary e critério de aceite.
+
+## Fechamento
+
+- Informar regras aplicadas, comandos executados, resultado e pendências.
+- Classificação: `pronto`, `degradado mas utilizável` ou `precisa de follow-up`.
+- Commit/push somente por pedido explícito.
