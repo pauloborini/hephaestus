@@ -1,0 +1,19 @@
+# INDEX: TESTING
+
+## Obrigatórias
+
+1. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `architecture_rules.md`: o teste exige reestruturação ou revela acoplamento.
+- `domain_rules.md`: o teste cobre contrato/mapeamento.
+- `error_handling_rules.md`: o teste cobre fluxo de erro.
+- `auth_rules.md`: o teste cobre acesso/permissão.
+- `ui_rules.md`: o teste cobre apresentação/interação.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `domain_examples.md`: cenário ou fixture não trivial.

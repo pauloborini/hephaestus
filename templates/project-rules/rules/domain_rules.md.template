@@ -1,0 +1,19 @@
+# RULES: DOMAIN
+
+## Papel
+
+Definir normas de contrato de dados: DTO, Entity, Mapper, VO, enum e serialização.
+
+## O que preencher na síntese
+
+- fonte de verdade do contrato (ex.: OpenAPI) e regra de consulta;
+- regras de mapeamento DTO ↔ Entity;
+- nomenclatura e IDs (sem campos genéricos);
+- validações centralizadas;
+- serialização e campos sensíveis;
+- allowlists de exceção, quando existirem (ex.: allowlist de IDs legados).
+
+## Gatilhos típicos
+
+- qualquer alteração em DTO, Entity, Mapper, VO, enum ou schema;
+- integração REST ou mudança de contrato externo.

@@ -1,0 +1,10 @@
+# REFERENCE: DOMAIN EXAMPLES
+
+Exemplos de contrato de domínio para consulta sob gatilho.
+
+## O que preencher na síntese
+
+- exemplos reais de DTO ↔ Entity e mapeamento não trivial;
+- padrões de VO/enum válidos no projeto;
+- snippets de copyWith/factory/construção aceitos;
+- contra-exemplos do que não deve ser feito, quando existirem.

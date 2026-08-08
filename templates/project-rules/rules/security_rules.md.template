@@ -1,0 +1,17 @@
+# RULES: SECURITY
+
+## Papel
+
+Definir normas de segredos, PII e ambientes.
+
+## O que preencher na síntese
+
+- proibições de exposição (segredo, token, URL privada, PII);
+- regras de `.env` e configuração por ambiente;
+- logs e telemetria sem payload sensível;
+- storage sensível e dados em trânsito.
+
+## Gatilhos típicos
+
+- segredo, PII, permissão, ambiente ou dado sensível;
+- logs, telemetria ou serialização de payload.

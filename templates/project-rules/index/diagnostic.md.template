@@ -1,0 +1,21 @@
+# INDEX: DIAGNOSTIC
+
+## Obrigatórias
+
+1. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `architecture_rules.md`: o sintoma indica violação estrutural ou de camada.
+- `domain_rules.md`: o sintoma está em contrato, mapeamento ou serialização.
+- `error_handling_rules.md`: o sintoma está em fluxo de erro.
+- `auth_rules.md`: o sintoma está em acesso, sessão ou permissão.
+- `security_rules.md`: o sintoma envolve segredo, PII ou ambiente.
+- `ui_rules.md`: o sintoma está em apresentação ou interação.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `api_contract_reference.md`: suspeita de divergência com contrato externo.
+- `project-rules/contracts/*.openapi.json`: divergência com contrato REST — somente consulta.

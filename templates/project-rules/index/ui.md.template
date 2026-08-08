@@ -1,0 +1,19 @@
+# INDEX: UI
+
+## Obrigatórias
+
+1. `project-rules/rules/ui_rules.md`
+2. `project-rules/rules/operational_rules.md`
+
+## Sob gatilho
+
+- `architecture_rules.md`: componente novo, boundary novo ou decisão estrutural.
+- `error_handling_rules.md`: estados de erro, retry ou feedback de falha.
+- `auth_rules.md`: tela/rota restrita, sessão ou permissão.
+- `security_rules.md`: dado sensível ou PII em exibição/entrada.
+
+Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `domain_examples.md`: exibição ou mapeamento de entidade não trivial.
