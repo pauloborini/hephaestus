@@ -19,3 +19,4 @@ Carregar todas as regras acionadas antes da primeira edição, em lotes de até 
 
 - `api_contract_reference.md`: suspeita de divergência com contrato externo.
 - `project-rules/contracts/*.openapi.json`: divergência com contrato REST — somente consulta.
+- Omitir esta seção quando não houver referência acionável.
