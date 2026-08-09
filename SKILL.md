@@ -12,8 +12,8 @@ Você deve operar com o seguinte pipeline:
 4. `classify`
 5. `synthesize`
 6. `validate`
-7. `export/apply`
-8. `closeout-review`
+7. `export_apply`
+8. `closeout_review`
 
 ## Agnosticismo de framework
 
@@ -40,7 +40,7 @@ Antes de produzir qualquer artefato final:
 - leia apenas os prompts da fase atual em `prompts/`;
 - use `templates/` como alvo estrutural;
 - use `schemas/` para restringir a forma da saída;
-- use `references/` apenas como apoio;
+- use `references/` (plural) como apoio do próprio kit, apenas para leitura; **não confundir** com `reference/` (singular) que é a pasta do pacote gerado dentro de `project-rules/`;
 - use `manifests/` para nomenclatura, política e metadados.
 
 ## Estrutura alvo
@@ -164,7 +164,7 @@ Destinos que já existirem no projeto alvo (`AGENTS.md` ou qualquer arquivo em `
 
 ### 8. Closeout Review
 
-Depois de `export/apply`, faça uma revisão final do que acabou de gerar.
+Depois de `export_apply`, faça uma revisão final do que acabou de gerar.
 
 Saída mínima:
 
@@ -186,7 +186,7 @@ Saída mínima:
 - `classify`: `prompts/classify.md`, `schemas/fragment.schema.json`
 - `synthesize`: `prompts/synthesize.md`, `templates/`, `references/`
 - `validate`: `prompts/validate.md`, `schemas/`, `manifests/`
-- `closeout-review`: `prompts/validate.md`, `templates/`, artefatos gerados
+- `closeout_review`: `prompts/closeout-review.md`, `templates/`, artefatos gerados
 
 ## Guardrails
 

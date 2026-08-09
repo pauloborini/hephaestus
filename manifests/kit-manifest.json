@@ -12,6 +12,7 @@
     "prompts/classify.md",
     "prompts/synthesize.md",
     "prompts/validate.md",
+    "prompts/closeout-review.md",
     "templates/AGENTS.md.template",
     "templates/project-rules/index/feature.md.template",
     "templates/project-rules/index/ui.md.template",
