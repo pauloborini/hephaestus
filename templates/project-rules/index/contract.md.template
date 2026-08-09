@@ -17,3 +17,4 @@ Carregar todas as regras acionadas antes da primeira edição, em lotes de até 
 
 - `api_contract_reference.md`: formato, exemplo ou contrato longo.
 - `project-rules/contracts/*.openapi.json`: contrato REST — somente consulta; não mutar.
+- Omitir esta seção quando não houver referência acionável.

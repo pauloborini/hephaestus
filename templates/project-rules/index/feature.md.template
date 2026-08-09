@@ -20,3 +20,4 @@ Carregar todas as regras acionadas antes da primeira edição, em lotes de até 
 - `domain_examples.md`: mapeamento/copyWith não trivial.
 - `api_contract_reference.md`: endpoint, payload, paginação ou código de backend.
 - `project-rules/contracts/*.openapi.json`: integração REST — somente consulta; não mutar.
+- Omitir esta seção quando não houver referência acionável.

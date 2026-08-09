@@ -16,3 +16,4 @@ Carregar todas as regras acionadas antes da primeira edição, em lotes de até 
 ## Referências
 
 - `domain_examples.md`: padrão de VO/enum ou modelo compartilhado.
+- Omitir esta seção quando não houver referência acionável.

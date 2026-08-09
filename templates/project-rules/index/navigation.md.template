@@ -12,3 +12,9 @@
 - `error_handling_rules.md`: falha de navegação ou fluxo de erro.
 
 Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `api_contract_reference.md`: rota, guard ou fluxo de navegação versus endpoint/contrato.
+- `project-rules/contracts/*.openapi.json`: divergência de rota/guard com contrato REST — somente consulta.
+- Omitir esta seção quando não houver referência acionável.

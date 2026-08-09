@@ -14,3 +14,8 @@
 - `security_rules.md`: a reorganização toca dado sensível.
 
 Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+
+## Referências
+
+- `domain_examples.md`: padrão de mapeamento/copyWith ao reorganizar contrato ou modelo compartilhado.
+- Omitir esta seção quando não houver referência acionável.
