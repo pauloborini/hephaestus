@@ -37,9 +37,7 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - não perder checklists, proibições, precedências ou exceções presentes nas fontes;
 - quando houver material suficiente, criar regra específica em `project-rules/rules/*` em vez de esconder no índice;
 - não prometer que `project-rules/` está totalmente autocontido quando ainda houver dependências externas reais;
-- ao iniciar a fase, marcar `synthesize` como `in_progress` em `.hardless/manifests/run-state.json`;
-- ao terminar, registrar artefatos gerados e marcar a fase como `produced`;
-- marcar `synthesize` como `validated` quando a árvore gerada tiver cobertura suficiente e os artefatos mínimos existirem.
+- ao iniciar a fase, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hardless/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `synthesize` como `in_progress`; ao terminar, registrar artefatos gerados e marcar a fase como `produced`; marcar `synthesize` como `validated` quando a árvore gerada tiver cobertura suficiente e os artefatos mínimos existirem; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme a `## Regra De Retomada` deste prompt).
 
 ## Cobertura Obrigatória
 
@@ -70,11 +68,14 @@ O relatório deve ser compatível com `schemas/external-references-report.schema
 
 ## Regra De Retomada
 
-Se a execução for interrompida:
+Se a execução anterior for interrompida antes de concluir, ao retomar:
 
-- reler `.hardless/manifests/run-state.json`;
-- retomar da última fase marcada como `validated`;
-- reexecutar integralmente a fase que estiver em `in_progress`, `failed` ou apenas `produced`.
+1. detectar a execução anterior lendo `.hardless/manifests/run-state.json`;
+2. gravar `status: interrupted` em `.hardless/manifests/run-state.json` (e atualizar `lastUpdatedAt`) antes de qualquer leitura subsequente ou continuação;
+3. reler `.hardless/manifests/run-state.json` após essa marcação;
+4. retomar da última fase marcada como `validated`;
+5. reexecutar integralmente a fase que estiver em `in_progress`, `failed` ou apenas `produced` (a fase `in_progress` nunca é tratada como concluída após interrupção);
+6. quando o impedimento exigir intervenção humana (fase ou run sem caminho seguro de retomada automática), marcar o run como `blocked` e parar até decisão explícita; o run `blocked` não é retomado sozinho, e a fase que originou o bloqueio é reexecutada integralmente na próxima retomada autorizada.
 
 ## Índices Recomendados
 

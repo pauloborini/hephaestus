@@ -119,9 +119,6 @@
         "validationStatus": {
           "type": "string",
           "enum": ["valid", "degraded", "blocked", "unknown"]
-        },
-        "fingerprint": {
-          "type": "string"
         }
       }
     }

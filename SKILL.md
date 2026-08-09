@@ -160,6 +160,8 @@ O pacote final deve conter:
 
 `SKILL.md` não entra no pacote gerado para o projeto do usuário.
 
+Destinos que já existirem no projeto alvo (`AGENTS.md` ou qualquer arquivo em `project-rules/`) são preservados em `.hardless/backup/<YYYYMMDDTHHMMSS>/` antes da sobrescrita, e cada backup é registrado em `artifactsWritten` do run-state; um diretório por execução, sem rotação. Veja `prompts/validate.md` para o contrato completo de backup.
+
 ### 8. Closeout Review
 
 Depois de `export/apply`, faça uma revisão final do que acabou de gerar.
