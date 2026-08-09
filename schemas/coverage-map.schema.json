@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hardless Skill Kit Coverage Map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["coverageEntries", "lastUpdatedAt"],
+  "properties": {
+    "coverageEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/coverageEntry" }
+    },
+    "lastUpdatedAt": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "coverageEntry": {
+      "allOf": [
+        { "$ref": "./artifact.schema.json" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fragmentId"],
+          "properties": { "fragmentId": { "type": "string", "minLength": 1 } }
+        }
+      ]
+    }
+  }
+}
