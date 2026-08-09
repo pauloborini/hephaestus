@@ -22,9 +22,7 @@ Descobrir as fontes cruas do usuário antes de qualquer reorganização.
 - detectar monólitos, contradições e material redundante;
 - detectar referências a arquivos externos que possam virar dependências de `project-rules/`;
 - inicializar `.hardless/manifests/run-state.json` com objeto completo e válido pelo schema;
-- ao iniciar, marcar `discover` como `in_progress`;
-- ao concluir o inventário inicial, marcar `discover` como `produced`;
-- marcar `discover` como `validated` quando fontes encontradas, ausentes e riscos iniciais estiverem coerentes.
+- aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hardless/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `discover` como `in_progress`; ao concluir o inventário inicial, marcar `discover` como `produced`; marcar `discover` como `validated` quando fontes encontradas, ausentes e riscos iniciais estiverem coerentes; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/synthesize.md`).
 
 ## Saída mínima
 

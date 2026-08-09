@@ -28,9 +28,7 @@ Classifique pelo papel que o fragmento deve cumprir no runtime do agente, não p
 - se um fragmento mistura regra e exemplo, separar em fragmentos menores antes de concluir;
 - quando um fragmento puder afetar comportamento futuro do agente, preferir `rules` a `reference`, salvo quando for apenas exemplo;
 - preferências persistentes do usuário não têm papel na estrutura canônica: pertencem ao sistema de memória do cliente, não ao pacote gerado;
-- ao iniciar, marcar `classify` como `in_progress` em `.hardless/manifests/run-state.json`;
-- ao concluir a classificação, marcar `classify` como `produced`;
-- marcar `classify` como `validated` quando todos os fragmentos relevantes tiverem papel, confiança e destino recomendados.
+- ao iniciar, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hardless/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `classify` como `in_progress`; ao concluir a classificação, marcar `classify` como `produced`; marcar `classify` como `validated` quando todos os fragmentos relevantes tiverem papel, confiança e destino recomendados; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/synthesize.md`).
 
 ## Heurística De Decisão
 
