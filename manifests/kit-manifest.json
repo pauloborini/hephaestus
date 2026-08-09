@@ -6,6 +6,7 @@
     "README.md",
     "SKILL.md",
     "scripts/validate-skill-kit.mjs",
+    "scripts/validate-package.mjs",
     "prompts/discover.md",
     "prompts/snapshot.md",
     "prompts/fragment.md",
