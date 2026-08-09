@@ -143,7 +143,9 @@ const templateFiles = collectedFiles.filter((filePath) => {
 for (const filePath of templateFiles) {
   const contents = fs.readFileSync(filePath, "utf8");
   const linkedPaths = [
-    ...contents.matchAll(/`(project-rules\/(?:rules|reference)\/[^`]+\.md)`/g),
+    ...contents.matchAll(
+      /`(project-rules\/(?:rules|reference|contracts)\/[^`]+\.(?:md|json|yaml))`/g,
+    ),
   ].map((match) => match[1]);
 
   for (const linkedPath of linkedPaths) {

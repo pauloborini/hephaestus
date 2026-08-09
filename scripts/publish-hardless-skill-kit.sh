@@ -34,6 +34,7 @@ rsync -a --delete \
   --exclude '.gitignore' \
   --exclude '.DS_Store' \
   --exclude 'scripts/publish-hardless-skill-kit.sh' \
+  --exclude '.app-work' \
   "${SOURCE_DIR}/" "${TMP_DIR}/"
 
 node "${TMP_DIR}/scripts/validate-skill-kit.mjs" "${TMP_DIR}"
