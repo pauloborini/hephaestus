@@ -36,6 +36,10 @@
     "ambiguity": {
       "type": "string",
       "enum": ["low", "medium", "high"]
+    },
+    "structuralType": {
+      "type": "string",
+      "enum": ["seção", "regra", "checklist", "exemplo", "tabela", "preferência", "metadado", "desconhecido"]
     }
   }
 }

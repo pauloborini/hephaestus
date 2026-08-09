@@ -37,6 +37,7 @@
     "references/canonical-structure/README.md",
     "schemas/fragment.schema.json",
     "schemas/artifact.schema.json",
+    "schemas/coverage-map.schema.json",
     "schemas/external-references-report.schema.json",
     "schemas/run-state.schema.json",
     "schemas/package.schema.json",

@@ -48,7 +48,8 @@ Antes de concluir a síntese:
 3. conferir se todo fragmento `reference` foi para `project-rules/reference/*` ou foi omitido com justificativa;
 4. registrar fragmentos `unknown`, conflitantes ou de baixa confiança como pendência;
 5. confirmar que `AGENTS.md` não virou depósito de regras;
-6. registrar referências externas citadas por arquivos de `project-rules/` em `.hardless/manifests/external-references-report.json`.
+6. registrar referências externas citadas por arquivos de `project-rules/` em `.hardless/manifests/external-references-report.json`;
+7. persistir `.hardless/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
 
 ## Relatório De Dependências Externas
 
