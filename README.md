@@ -1,5 +1,8 @@
 # Hardless Skill Kit
 
+> **Hephaestus** — nome grego deste projeto no umbrella `greek-stack`.
+> O repo mantém o nome `hardless-skill-kit` por SEO, links e clonado existente.
+
 Kit repo-native para transformar regras cruas do projeto em um pacote fragmentado, canônico e mais operacional para uso com LLM.
 
 Este `README.md` é para pessoas.
