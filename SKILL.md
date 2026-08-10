@@ -1,6 +1,6 @@
-# Hardless Skill Kit
+# Hephaestus · Hardless Skill Kit
 
-> **Hephaestus** — nome grego deste projeto no umbrella `greek-stack`. O nome do repo (`hardless-skill-kit`) é mantido por SEO e compatibilidade de links.
+> Nome grego no umbrella `greek-stack`; nome formal do kit: **Hardless Skill Kit**.
 
 ## Objetivo
 

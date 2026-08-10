@@ -1,6 +1,6 @@
 {
-  "name": "hardless-skill-kit",
-  "version": "0.2.0",
+  "name": "hephaestus",
+  "version": "0.3.0",
   "distributionMode": "clone-or-zip",
   "requiredFiles": [
     "README.md",
