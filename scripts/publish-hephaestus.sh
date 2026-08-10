@@ -1,10 +1,10 @@
 #!/bin/zsh
 set -euo pipefail
 
-REPO_SLUG="${HARDLESS_SKILL_KIT_PUBLIC_REPO:-pauloborini/hardless-skill-kit}"
+REPO_SLUG="${HARDLESS_SKILL_KIT_PUBLIC_REPO:-pauloborini/hephaestus}"
 BRANCH="${HARDLESS_SKILL_KIT_PUBLIC_BRANCH:-main}"
 SOURCE_DIR="${HARDLESS_SKILL_KIT_PUBLIC_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
-TMP_DIR="${HARDLESS_SKILL_KIT_PUBLISH_TMP:-/tmp/hardless-skill-kit-publish}"
+TMP_DIR="${HARDLESS_SKILL_KIT_PUBLISH_TMP:-/tmp/hephaestus-publish}"
 COMMIT_MESSAGE="${HARDLESS_SKILL_KIT_COMMIT_MESSAGE:-chore: publish hardless skill kit update}"
 
 if [[ ! -d "${SOURCE_DIR}" ]]; then
@@ -33,7 +33,7 @@ rsync -a --delete \
   --exclude '.gitkeep' \
   --exclude '.gitignore' \
   --exclude '.DS_Store' \
-  --exclude 'scripts/publish-hardless-skill-kit.sh' \
+  --exclude 'scripts/publish-hephaestus.sh' \
   --exclude '.app-work' \
   "${SOURCE_DIR}/" "${TMP_DIR}/"
 

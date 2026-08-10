@@ -1,7 +1,6 @@
-# Hardless Skill Kit
+# Hephaestus · Hardless Skill Kit
 
-> **Hephaestus** — nome grego deste projeto no umbrella `greek-stack`.
-> O repo mantém o nome `hardless-skill-kit` por SEO, links e clonado existente.
+> Nome grego deste projeto no umbrella `greek-stack`. Nome formal do kit: **Hardless Skill Kit**.
 
 Kit repo-native para transformar regras cruas do projeto em um pacote fragmentado, canônico e mais operacional para uso com LLM.
 
@@ -118,13 +117,13 @@ Baixe o `.zip`, extraia a pasta e deixe esse conteúdo acessível no ambiente em
 2. Se vier do GitHub por `.zip`, a pasta extraída normalmente terá um nome como:
 
 ```text
-hardless-skill-kit-main/
+hephaestus-main/
 ```
 
 3. Renomeie para algo limpo, por exemplo:
 
 ```text
-hardless-skill-kit/
+hephaestus/
 ```
 
 4. Coloque essa pasta dentro do workspace do projeto onde a LLM vai trabalhar.
@@ -133,17 +132,17 @@ Exemplo:
 
 ```text
 workspace-do-usuario/
-  hardless-skill-kit/
+  hephaestus/
 ```
 
 ou:
 
 ```text
 meu-projeto/
-  hardless-skill-kit/
+  hephaestus/
 ```
 
-5. No chat da LLM, aponte para `hardless-skill-kit/SKILL.md` usando o prompt pronto abaixo.
+5. No chat da LLM, aponte para `hephaestus/SKILL.md` usando o prompt pronto abaixo.
 
 Para o uso atual do kit, prefira deixá-lo dentro do projeto alvo em vez de instalar globalmente numa pasta geral de skills do editor.
 
@@ -189,12 +188,12 @@ Se você não apontar fontes, a LLM ainda pode descobrir parte do material, mas 
 
 ## Prompt Pronto Para Colar
 
-Depois de posicionar a pasta `hardless-skill-kit/` dentro do projeto, cole isto no chat da LLM:
+Depois de posicionar a pasta `hephaestus/` dentro do projeto, cole isto no chat da LLM:
 
 ```text
-Use a skill em `./hardless-skill-kit/SKILL.md` como procedimento principal para este trabalho.
+Use a skill em `./hephaestus/SKILL.md` como procedimento principal para este trabalho.
 
-Leia primeiro o `README.md` e depois o `SKILL.md` dentro de `./hardless-skill-kit/`.
+Leia primeiro o `README.md` e depois o `SKILL.md` dentro de `./hephaestus/`.
 
 Quero que você use o Hardless Skill Kit para analisar e reorganizar as regras e instruções deste projeto seguindo o fluxo:
 discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review
@@ -276,7 +275,7 @@ Se a execução cair ou parar no meio, use algo assim:
 ```text
 Retome o processo do Hardless Skill Kit a partir do estado atual.
 
-Leia `./hardless-skill-kit/SKILL.md`, releia `.hardless/manifests/run-state.json` e continue a partir da última fase `validated`.
+Leia `./hephaestus/SKILL.md`, releia `.hardless/manifests/run-state.json` e continue a partir da última fase `validated`.
 
 Não trate fase apenas `produced` como concluída.
 Se houver dependências externas já detectadas, preserve e atualize `.hardless/manifests/external-references-report.json`.

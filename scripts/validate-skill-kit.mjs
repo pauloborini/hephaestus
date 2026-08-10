@@ -49,7 +49,7 @@ const allowedExtensions = new Set([".md", ".template", ".json", ".mjs"]);
 // Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
 const skippedRelativePaths = new Set([
   ".gitignore",
-  path.join("scripts", "publish-hardless-skill-kit.sh"),
+  path.join("scripts", "publish-hephaestus.sh"),
 ]);
 
 const collectedFiles = [];
