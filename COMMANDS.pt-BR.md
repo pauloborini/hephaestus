@@ -40,8 +40,8 @@ Exige GitHub CLI autenticado. Sincroniza o repositório público configurado via
 
 | Variável | Default | Função |
 |---|---|---|
-| `HARDLESS_SKILL_KIT_PUBLIC_REPO` | `pauloborini/hephaestus` | Repositório GitHub alvo |
-| `HARDLESS_SKILL_KIT_PUBLIC_BRANCH` | `main` | Branch alvo |
-| `HARDLESS_SKILL_KIT_PUBLIC_DIR` | raiz do repositório | Diretório-fonte |
-| `HARDLESS_SKILL_KIT_PUBLISH_TMP` | `/tmp/hephaestus-publish` | Clone temporário |
-| `HARDLESS_SKILL_KIT_COMMIT_MESSAGE` | padrão de publicação | Mensagem de commit |
+| `HEPHAESTUS_PUBLIC_REPO` | `pauloborini/hephaestus` | Repositório GitHub alvo |
+| `HEPHAESTUS_PUBLIC_BRANCH` | `main` | Branch alvo |
+| `HEPHAESTUS_PUBLIC_DIR` | raiz do repositório | Diretório-fonte |
+| `HEPHAESTUS_PUBLISH_TMP` | `/tmp/hephaestus-publish` | Clone temporário |
+| `HEPHAESTUS_COMMIT_MESSAGE` | padrão de publicação | Mensagem de commit |

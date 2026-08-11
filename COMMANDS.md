@@ -42,8 +42,8 @@ Environment variables accepted by the publisher:
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HARDLESS_SKILL_KIT_PUBLIC_REPO` | `pauloborini/hephaestus` | Target GitHub repository |
-| `HARDLESS_SKILL_KIT_PUBLIC_BRANCH` | `main` | Target branch |
-| `HARDLESS_SKILL_KIT_PUBLIC_DIR` | repository root | Source directory |
-| `HARDLESS_SKILL_KIT_PUBLISH_TMP` | `/tmp/hephaestus-publish` | Temporary clone |
-| `HARDLESS_SKILL_KIT_COMMIT_MESSAGE` | publish default | Commit message |
+| `HEPHAESTUS_PUBLIC_REPO` | `pauloborini/hephaestus` | Target GitHub repository |
+| `HEPHAESTUS_PUBLIC_BRANCH` | `main` | Target branch |
+| `HEPHAESTUS_PUBLIC_DIR` | repository root | Source directory |
+| `HEPHAESTUS_PUBLISH_TMP` | `/tmp/hephaestus-publish` | Temporary clone |
+| `HEPHAESTUS_COMMIT_MESSAGE` | publish default | Commit message |

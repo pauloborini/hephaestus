@@ -1,8 +1,8 @@
 <!-- Idioma: [English](README.md) · **Português** -->
 
-# Hephaestus · Hardless Skill Kit
+# Hephaestus
 
-> Nome grego deste projeto no umbrella `greek-stack`. Nome formal do kit: **Hardless Skill Kit**.
+> Nome grego deste projeto no umbrella `greek-stack`.
 
 Kit repo-native para transformar regras cruas do projeto em um pacote fragmentado, canônico e mais operacional para uso com LLM.
 
@@ -11,7 +11,7 @@ O [SKILL.md](SKILL.md) é para a LLM. Referência operacional: [COMMANDS.pt-BR.m
 
 ## Objetivo
 
-O `Hardless Skill Kit` existe para reduzir improviso quando um agente precisa trabalhar em cima de:
+O kit Hephaestus existe para reduzir improviso quando um agente precisa trabalhar em cima de:
 
 - `AGENTS.md` muito grande;
 - regras espalhadas em vários arquivos;
@@ -39,7 +39,7 @@ A estrutura gerada é sempre a mesma; o que muda é o conteúdo, preenchido pela
 - `project-rules/rules/*` → regras obrigatórias (architecture, operational, domain, error handling, auth, security, ui);
 - `project-rules/reference/*` → apoio, exemplos e contratos longos;
 - `project-rules/contracts/*` → contratos externos (ex.: OpenAPI), quando existirem;
-- `.hardless/manifests/` → checkpoint do processo de geração (retomada), não parte da estrutura canônica.
+- `.hephaestus/manifests/` → checkpoint do processo de geração (retomada), não parte da estrutura canônica.
 
 Exemplo: num projeto Flutter, a LLM preenche os gates de `operational_rules.md` com `flutter analyze`/`melos run ...`; num projeto TypeScript, com `tsc`/`eslint`. A estrutura das pastas não muda.
 
@@ -186,7 +186,7 @@ Se você não apontar fontes, a LLM ainda pode descobrir parte do material, mas 
 3. Ler apenas os prompts, templates, references e schemas necessários para a fase atual.
 4. Gerar uma saída canônica, pequena e neutra, adaptada ao framework real do repositório.
 5. Bloquear a conclusão quando o contrato mínimo falhar.
-6. Manter `.hardless/manifests/run-state.json` atualizado a cada fase.
+6. Manter `.hephaestus/manifests/run-state.json` atualizado a cada fase.
 
 ## Prompt Pronto Para Colar
 
@@ -197,7 +197,7 @@ Use a skill em `./hephaestus/SKILL.md` como procedimento principal para este tra
 
 Leia primeiro o `README.md` e depois o `SKILL.md` dentro de `./hephaestus/`.
 
-Quero que você use o Hardless Skill Kit para analisar e reorganizar as regras e instruções deste projeto seguindo o fluxo:
+Quero que você use o kit Hephaestus para analisar e reorganizar as regras e instruções deste projeto seguindo o fluxo:
 discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review
 
 Objetivo deste trabalho:
@@ -213,9 +213,9 @@ O kit é agnóstico de framework: detecte o stack deste repositório e preencha 
 O `AGENTS.md` final deve ser apenas o centralizador do workflow, da precedência e do roteamento.
 Não coloque regras de domínio, arquitetura, UI, contrato, segurança ou operação diretamente no `AGENTS.md`; coloque essas regras nos arquivos adequados em `project-rules/rules/*`.
 
-Se algum arquivo dentro de `project-rules/` precisar citar material fora dessa pasta, isso pode permanecer quando for parte real do contrato operacional do projeto. Nesse caso, registre essas dependências em `.hardless/manifests/external-references-report.json` e me avise explicitamente no fechamento.
+Se algum arquivo dentro de `project-rules/` precisar citar material fora dessa pasta, isso pode permanecer quando for parte real do contrato operacional do projeto. Nesse caso, registre essas dependências em `.hephaestus/manifests/external-references-report.json` e me avise explicitamente no fechamento.
 
-Mantenha `.hardless/manifests/run-state.json` atualizado durante o processo para marcar:
+Mantenha `.hephaestus/manifests/run-state.json` atualizado durante o processo para marcar:
 - fases `not_started`;
 - fases `in_progress`;
 - fases `produced`;
@@ -249,7 +249,7 @@ Depois que a LLM terminar o fluxo principal, é recomendável rodar uma checagem
 Cole algo como:
 
 ```text
-Agora faça o fechamento do Hardless Skill Kit sobre o que você acabou de gerar.
+Agora faça o fechamento do kit Hephaestus sobre o que você acabou de gerar.
 
 1. Verifique se ainda existe alguma pendência, ambiguidade, conflito ou decisão em aberto.
 2. Me avise explicitamente cada pendência restante.
@@ -259,7 +259,7 @@ Agora faça o fechamento do Hardless Skill Kit sobre o que você acabou de gerar
    - `AGENTS.md` não contém regras que deveriam estar em `project-rules/rules/*`;
    - as regras necessárias já estão distribuídas na pasta `project-rules/`;
    - os índices em `project-rules/index/*` apontam apenas para regras e referências existentes;
-   - dependências externas citadas por arquivos em `project-rules/` foram registradas em `.hardless/manifests/external-references-report.json`;
+   - dependências externas citadas por arquivos em `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`;
    - o mapa de cobertura mostra destino para as regras relevantes das fontes originais;
    - não ficaram categorias vazias, artificiais ou redundantes;
    - há algum ponto em que a estrutura ainda esteja fraca, degradada ou dependente de inferência.
@@ -275,12 +275,12 @@ Esse fechamento é importante porque o kit pode terminar com status útil, mas a
 Se a execução cair ou parar no meio, use algo assim:
 
 ```text
-Retome o processo do Hardless Skill Kit a partir do estado atual.
+Retome o processo do kit Hephaestus a partir do estado atual.
 
-Leia `./hephaestus/SKILL.md`, releia `.hardless/manifests/run-state.json` e continue a partir da última fase `validated`.
+Leia `./hephaestus/SKILL.md`, releia `.hephaestus/manifests/run-state.json` e continue a partir da última fase `validated`.
 
 Não trate fase apenas `produced` como concluída.
-Se houver dependências externas já detectadas, preserve e atualize `.hardless/manifests/external-references-report.json`.
+Se houver dependências externas já detectadas, preserve e atualize `.hephaestus/manifests/external-references-report.json`.
 
 No fim, me diga:
 - de qual fase você retomou;
@@ -299,7 +299,7 @@ project-rules/
   rules/
   reference/
   contracts/   (opcional)
-.hardless/     (checkpoint do processo; opcional no pacote final)
+.hephaestus/     (checkpoint do processo; opcional no pacote final)
   manifests/
 ```
 

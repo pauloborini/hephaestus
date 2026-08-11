@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Hardless Skill Kit Package",
+  "title": "Hephaestus Package",
   "type": "object",
   "additionalProperties": false,
   "required": ["name", "version", "requiredFiles"],

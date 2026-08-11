@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Hardless Skill Kit Coverage Map",
+  "title": "Hephaestus Coverage Map",
   "type": "object",
   "additionalProperties": false,
   "required": ["coverageEntries", "lastUpdatedAt"],

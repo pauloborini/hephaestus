@@ -16,7 +16,7 @@ Descrever como interpretar a estrutura canônica sem amarrar o kit a um domínio
   - apoio, exemplos e contratos longos
 - `project-rules/contracts/*`
   - contratos externos (ex.: OpenAPI), quando existirem — somente consulta
-- `.hardless/manifests/*`
+- `.hephaestus/manifests/*`
   - rastreabilidade, cobertura e validação do processo de geração
 
 ## Regra central

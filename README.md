@@ -1,8 +1,8 @@
 <!-- Language: **English** · [Português](README.pt-BR.md) -->
 
-# Hephaestus · Hardless Skill Kit
+# Hephaestus
 
-The **Hardless Skill Kit** is a repository-native kit for turning scattered project rules into a small, canonical, operational package for LLMs. Its scope is documentation structure, not application code or an editor plugin.
+The **Hephaestus** kit is a repository-native kit for turning scattered project rules into a small, canonical, operational package for LLMs. Its scope is documentation structure, not application code or an editor plugin.
 
 This README is for people. [SKILL.md](SKILL.md) is the procedural entrypoint for the LLM.
 
@@ -19,11 +19,11 @@ project-rules/
   rules/
   reference/
   contracts/        # optional
-.hardless/
+.hephaestus/
   manifests/
 ```
 
-`AGENTS.md` owns workflow, precedence, and routing. `project-rules/` owns operational rules. `.hardless/manifests/` is process state, not a source of project rules.
+`AGENTS.md` owns workflow, precedence, and routing. `project-rules/` owns operational rules. `.hephaestus/manifests/` is process state, not a source of project rules.
 
 ## Install
 
@@ -54,7 +54,7 @@ The required sequence is:
 discover → snapshot → fragment → classify → synthesize → validate → export/apply → closeout-review
 ```
 
-Before synthesis, the LLM creates a coverage map from source fragment to destination and flags ambiguity, conflict, or low confidence. A phase is resumable only after it is marked `validated` in `.hardless/manifests/run-state.json`.
+Before synthesis, the LLM creates a coverage map from source fragment to destination and flags ambiguity, conflict, or low confidence. A phase is resumable only after it is marked `validated` in `.hephaestus/manifests/run-state.json`.
 
 Expected closeout states:
 
@@ -76,7 +76,7 @@ project-rules/ files. Do not invent the target tree.
 
 Before synthesis, create a coverage map linking each source fragment to its
 operational classification and destination. Surface ambiguity, conflicts, and
-low-confidence items. Keep .hardless/manifests/run-state.json updated; only a
+low-confidence items. Keep .hephaestus/manifests/run-state.json updated; only a
 validated phase is resumable.
 
 At closeout, list pending decisions, recommended resolutions, final status,
