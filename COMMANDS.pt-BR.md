@@ -33,7 +33,7 @@ Verifica `AGENTS.md`, índices de regras, manifests, mapa de cobertura e relató
 ## Publicar o kit público — apenas mantenedores
 
 ```bash
-scripts/publish-hephaestus.sh
+zsh scripts/publish-hephaestus.sh
 ```
 
 Exige GitHub CLI autenticado. Sincroniza o repositório público configurado via diretório temporário, valida o kit de saída, cria commit e envia ao remoto. É mutável; não use para validação local.

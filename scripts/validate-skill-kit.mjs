@@ -41,6 +41,7 @@ if (missingFiles.length > 0) {
 const publicDocumentationPairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["SKILL.en.md", "SKILL.md"],
 ];
 
 for (const [english, portuguese] of publicDocumentationPairs) {
@@ -63,6 +64,7 @@ const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
 const legacyPatterns = ["project-context", "extended-memory"];
 
 const allowedExtensions = new Set([".md", ".template", ".json", ".mjs"]);
+const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
 // Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
 const skippedRelativePaths = new Set([
@@ -85,6 +87,10 @@ const walk = (dirPath) => {
       continue;
     }
 
+    if (relativePath === ".app-work" || relativePath.startsWith(`.app-work${path.sep}`)) {
+      continue;
+    }
+
     if (entry.isDirectory()) {
       walk(absolutePath);
       continue;
@@ -98,7 +104,7 @@ walk(rootDir);
 
 const unsupportedFiles = collectedFiles.filter((filePath) => {
   const ext = path.extname(filePath);
-  return !allowedExtensions.has(ext);
+  return !allowedExtensions.has(ext) && !allowedExtensionlessFiles.has(path.basename(filePath));
 });
 
 if (unsupportedFiles.length > 0) {

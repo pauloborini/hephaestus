@@ -33,7 +33,7 @@ Checks the generated `AGENTS.md`, rule indexes, manifests, coverage map, and ext
 ## Publish the public kit — maintainers only
 
 ```bash
-scripts/publish-hephaestus.sh
+zsh scripts/publish-hephaestus.sh
 ```
 
 This command requires authenticated GitHub CLI access. It synchronizes the configured public repository through a temporary directory, validates the outgoing kit, commits, and pushes. It is intentionally mutating; do not run it for local validation.

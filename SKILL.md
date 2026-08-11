@@ -1,3 +1,5 @@
+<!-- Idioma: [English](SKILL.en.md) · **Português** -->
+
 # Hephaestus
 
 > Nome grego no umbrella `greek-stack`.
