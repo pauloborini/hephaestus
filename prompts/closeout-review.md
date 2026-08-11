@@ -11,6 +11,9 @@ Fazer a revisão final do que foi gerado após `export_apply` e entregar ao usu�
 - conferir o estado de `.hephaestus/manifests/coverage-map.json`: cada fragmento relevante precisa ter destino (`artifactType` + `outputPath`); pendência por fragmento sem destino;
 - conferir o estado de `.hephaestus/manifests/external-references-report.json` quando existir; pendência por referência externa sem internalização registrada;
 - revisar `AGENTS.md` e `project-rules/` para detectar regras que deveriam ter ido para `project-rules/rules/*` mas ficaram no `AGENTS.md`, ou árvore final inflada com arquivos vazios;
+- ler `.hephaestus/manifests/immutable-blocks-report.json`; para cada bloco, confirmar no
+  `AGENTS.md` os marcadores, ID, versão e igualdade entre `sourceSha256` e `destinationSha256`.
+  Divergência é pendência bloqueante; nunca corrigir o bloco durante o closeout;
 - nunca alterar `AGENTS.md` nem `project-rules/` durante o closeout — o closeout revisa e aponta; correções voltam para `export_apply` na próxima execução;
 - não fixar ferramenta de stack: a revisão registra o que foi usado, sem recomendar substituição de analyzer/linter/validador fora de placeholder `<preencher na síntese>`;
 - não citar projeto real em nenhum item do fechamento.
@@ -22,6 +25,8 @@ A revisão final deve conter, sem omitir seção mesmo quando vazia (com `nenhum
 - lista de pendências restantes;
 - decisões em aberto com recomendação objetiva para cada uma;
 - confirmação do estado final de `AGENTS.md`;
+- blocos imutáveis identificados, com ID, origem, destino e confirmação explícita de que cada um
+  foi mantido exatamente como estava; quando não houver bloco, declarar `nenhum`;
 - confirmação do estado final da pasta `project-rules/`;
 - confirmação de que os fragmentos relevantes têm destino no mapa de cobertura (`.hephaestus/manifests/coverage-map.json`);
 - resumo explícito das referências externas encontradas em `project-rules/` e recomendação do que deveria ser internalizado;

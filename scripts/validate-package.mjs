@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 
 const ALLOWED_RUN_STATE_TOP_LEVEL = new Set([
   "runId",
@@ -69,6 +70,9 @@ const ALLOWED_COVERAGE_VALIDATION = new Set([
   "blocked",
 ]);
 
+const IMMUTABLE_START_PATTERN = /<!-- hephaestus:immutable:start id="([^"]+)" version="([^"]+)" -->/g;
+const IMMUTABLE_END_PATTERN = /<!-- hephaestus:immutable:end id="([^"]+)" -->/g;
+
 const PLACEHOLDER_PATTERN = /<preencher[^>]*>|<[^>]*preencher[^>]*>/i;
 
 const AGENTS_HEADER_PATTERN = /^# .+— contrato do agente/m;
@@ -136,7 +140,18 @@ const checkAgents = (root) => {
   if (PLACEHOLDER_PATTERN.test(contents)) {
     fail("AGENTS.md: contains placeholder (`<...>` / `<preencher...>`) — must be replaced");
   }
-  return "AGENTS.md header OK; no placeholders.";
+  const markers = [...contents.matchAll(/<!-- hephaestus:immutable:(?:start|end)\b/g)];
+  const starts = [...contents.matchAll(IMMUTABLE_START_PATTERN)];
+  const ends = [...contents.matchAll(IMMUTABLE_END_PATTERN)];
+  if (markers.length !== starts.length + ends.length || starts.length !== ends.length) {
+    fail("AGENTS.md: malformed immutable-block marker");
+  }
+  for (let index = 0; index < starts.length; index += 1) {
+    if (starts[index][1] !== ends[index][1] || starts[index].index > ends[index].index) {
+      fail("AGENTS.md: immutable-block markers must be paired in order with matching IDs");
+    }
+  }
+  return `AGENTS.md header OK; no placeholders; ${starts.length} immutable block(s) structurally valid.`;
 };
 
 const globMatch = (rootDir, linkedPath) => {
@@ -423,6 +438,66 @@ const checkCoverageMap = (root) => {
   return `coverage-map.json: ${entries.length} entry(ies) structurally valid.`;
 };
 
+const checkImmutableBlocksReport = (root) => {
+  const reportPath = path.join(root, ".hephaestus", "manifests", "immutable-blocks-report.json");
+  const parsed = readJsonObject(reportPath);
+  if (parsed === null) {
+    const agents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+    if (agents.includes("<!-- hephaestus:immutable:")) {
+      fail("immutable-blocks-report.json: required when AGENTS.md contains immutable blocks");
+    }
+    return "immutable-blocks-report.json: not present (skipped).";
+  }
+  const fileLabel = path.relative(root, reportPath);
+  if (!Array.isArray(parsed.blocks) || typeof parsed.lastUpdatedAt !== "string" || parsed.lastUpdatedAt.length === 0) {
+    fail(`${fileLabel}: requires blocks array and non-empty lastUpdatedAt`);
+  }
+  const agentsPath = path.join(root, "AGENTS.md");
+  const agents = fs.readFileSync(agentsPath, "utf8");
+  const starts = [...agents.matchAll(IMMUTABLE_START_PATTERN)];
+  const ends = [...agents.matchAll(IMMUTABLE_END_PATTERN)];
+  const destinationBlocks = new Map();
+  for (let index = 0; index < starts.length; index += 1) {
+    const start = starts[index];
+    const end = ends[index];
+    if (!end || start[1] !== end[1]) {
+      fail(`${fileLabel}: cannot map immutable block ${start[1] ?? "unknown"} in AGENTS.md`);
+    }
+    const content = agents.slice(start.index, end.index + end[0].length);
+    destinationBlocks.set(start[1], {
+      version: start[2],
+      sha256: crypto.createHash("sha256").update(content).digest("hex"),
+    });
+  }
+  if (destinationBlocks.size !== parsed.blocks.length) {
+    fail(`${fileLabel}: report count does not match immutable blocks in AGENTS.md`);
+  }
+  for (const [index, block] of parsed.blocks.entries()) {
+    if (typeof block !== "object" || block === null || Array.isArray(block)) {
+      fail(`${fileLabel}: blocks[${index}] must be an object`);
+    }
+    for (const key of ["id", "version", "sourceFile", "destinationFile", "sourceSha256", "destinationSha256", "status"]) {
+      if (typeof block[key] !== "string" || block[key].length === 0) {
+        fail(`${fileLabel}: blocks[${index}].${key} must be a non-empty string`);
+      }
+    }
+    if (!/^[a-f0-9]{64}$/.test(block.sourceSha256) || !/^[a-f0-9]{64}$/.test(block.destinationSha256)) {
+      fail(`${fileLabel}: blocks[${index}] hashes must be lowercase SHA-256`);
+    }
+    if (block.status !== "preserved" || block.sourceSha256 !== block.destinationSha256) {
+      fail(`${fileLabel}: blocks[${index}] is not proven preserved`);
+    }
+    const destination = destinationBlocks.get(block.id);
+    if (!destination || block.destinationFile !== "AGENTS.md" || destination.version !== block.version) {
+      fail(`${fileLabel}: blocks[${index}] does not match AGENTS.md marker`);
+    }
+    if (destination.sha256 !== block.destinationSha256) {
+      fail(`${fileLabel}: blocks[${index}] destination hash does not match AGENTS.md`);
+    }
+  }
+  return `immutable-blocks-report.json: ${parsed.blocks.length} block(s) proven preserved.`;
+};
+
 const main = (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     printUsage();
@@ -445,6 +520,7 @@ const main = (argv) => {
     checkRunState(root),
     checkExternalReferences(root),
     checkCoverageMap(root),
+    checkImmutableBlocksReport(root),
   ];
 
   for (const message of reports) {
