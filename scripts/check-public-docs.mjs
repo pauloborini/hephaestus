@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
-const pairs = [["README.md", "README.pt-BR.md"], ["COMMANDS.md", "COMMANDS.pt-BR.md"]];
+const pairs = [
+  ["README.md", "README.pt-BR.md"],
+  ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["SKILL.en.md", "SKILL.md"],
+];
 let failed = false;
 
 for (const [english, portuguese] of pairs) {

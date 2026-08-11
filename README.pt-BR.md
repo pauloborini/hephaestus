@@ -353,3 +353,7 @@ Você está usando o kit corretamente quando:
 - referências externas dentro de `project-rules/` não devem ser escondidas; devem ser reportadas;
 - templates e references existem para reduzir deriva, não para serem copiados cegamente;
 - `README.md` é para o humano, `SKILL.md` é para a LLM.
+
+## Licença
+
+Distribuído sob a [licença MIT](LICENSE).

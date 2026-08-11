@@ -4,7 +4,7 @@
 
 The **Hephaestus** kit is a repository-native kit for turning scattered project rules into a small, canonical, operational package for LLMs. Its scope is documentation structure, not application code or an editor plugin.
 
-This README is for people. [SKILL.md](SKILL.md) is the procedural entrypoint for the LLM.
+This README is for people. [SKILL.en.md](SKILL.en.md) is the English procedural entrypoint for the LLM.
 
 ## Why it exists
 
@@ -34,7 +34,7 @@ my-project/
   hephaestus/
 ```
 
-Then point the LLM to `./hephaestus/SKILL.md`. Keep the kit in the target workspace rather than installing it globally; it needs to inspect the project’s actual files and tooling.
+Then point the LLM to `./hephaestus/SKILL.en.md`. Keep the kit in the target workspace rather than installing it globally; it needs to inspect the project’s actual files and tooling.
 
 ## What to provide
 
@@ -65,9 +65,9 @@ Expected closeout states:
 ## Prompt to start
 
 ```text
-Use ./hephaestus/SKILL.md as the primary procedure.
+Use ./hephaestus/SKILL.en.md as the primary procedure.
 
-Read README.md and SKILL.md first. Reorganize the project rules through:
+Read README.md and SKILL.en.md first. Reorganize the project rules through:
 discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review.
 
 Keep AGENTS.md limited to workflow, precedence, and routing. Put domain,
@@ -98,10 +98,15 @@ See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation,
 
 ## Repository map
 
-- [SKILL.md](SKILL.md) — LLM procedure;
+- [SKILL.en.md](SKILL.en.md) — English LLM procedure;
+- [SKILL.md](SKILL.md) — Portuguese LLM procedure;
 - `prompts/` — phase instructions;
 - `templates/` — canonical output structure;
 - `references/` — neutral format references;
 - `schemas/` — fragment and artifact contracts;
 - `manifests/` — naming and package policy;
 - `scripts/` — validators and maintainer publishing.
+
+## License
+
+Released under the [MIT License](LICENSE).
