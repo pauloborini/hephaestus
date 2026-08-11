@@ -1,6 +1,6 @@
-# Hephaestus · Hardless Skill Kit
+# Hephaestus
 
-> Nome grego no umbrella `greek-stack`; nome formal do kit: **Hardless Skill Kit**.
+> Nome grego no umbrella `greek-stack`.
 
 ## Objetivo
 
@@ -28,7 +28,7 @@ O kit é agnóstico de framework e linguagem.
 
 ## Estado De Execução
 
-Durante o processo, a execução deve manter checkpoint em `.hardless/manifests/run-state.json` no workspace do usuário.
+Durante o processo, a execução deve manter checkpoint em `.hephaestus/manifests/run-state.json` no workspace do usuário.
 
 Esse arquivo é obrigatório sempre que houver trabalho multi-etapa, para permitir retomada confiável após interrupção. Ele é mecanismo do processo; não faz parte da estrutura canônica do pacote gerado.
 
@@ -56,7 +56,7 @@ project-rules/
   rules/
   reference/
   contracts/       (opcional)
-.hardless/         (checkpoint do processo; opcional no pacote final)
+.hephaestus/         (checkpoint do processo; opcional no pacote final)
   manifests/
 ```
 
@@ -104,7 +104,7 @@ Congele o inventário textual relevante antes de reorganizar.
 Saída mínima:
 
 - mapa entre fonte original e unidades processáveis;
-- checkpoint da fase em `.hardless/manifests/run-state.json`.
+- checkpoint da fase em `.hephaestus/manifests/run-state.json`.
 
 ### 3. Fragment
 
@@ -156,13 +156,13 @@ O pacote final deve conter:
 
 - `AGENTS.md` gerado;
 - árvore `project-rules/` gerada;
-- manifests de proveniência e validação em `.hardless/manifests/`, quando aplicável;
-- relatório de dependências externas em `.hardless/manifests/external-references-report.json`, quando `project-rules/` citar arquivos fora da própria pasta;
-- estado final de execução em `.hardless/manifests/run-state.json`.
+- manifests de proveniência e validação em `.hephaestus/manifests/`, quando aplicável;
+- relatório de dependências externas em `.hephaestus/manifests/external-references-report.json`, quando `project-rules/` citar arquivos fora da própria pasta;
+- estado final de execução em `.hephaestus/manifests/run-state.json`.
 
 `SKILL.md` não entra no pacote gerado para o projeto do usuário.
 
-Destinos que já existirem no projeto alvo (`AGENTS.md` ou qualquer arquivo em `project-rules/`) são preservados em `.hardless/backup/<YYYYMMDDTHHMMSS>/` antes da sobrescrita, e cada backup é registrado em `artifactsWritten` do run-state; um diretório por execução, sem rotação. Veja `prompts/validate.md` para o contrato completo de backup.
+Destinos que já existirem no projeto alvo (`AGENTS.md` ou qualquer arquivo em `project-rules/`) são preservados em `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` antes da sobrescrita, e cada backup é registrado em `artifactsWritten` do run-state; um diretório por execução, sem rotação. Veja `prompts/validate.md` para o contrato completo de backup.
 
 ### 8. Closeout Review
 
@@ -177,7 +177,7 @@ Saída mínima:
 - confirmação do estado final de `AGENTS.md`;
 - confirmação do estado final da pasta `project-rules/`;
 - aviso explícito ao usuário sobre referências externas encontradas em `project-rules/`, com recomendação do que deveria ser internalizado;
-- confirmação do estado final de `.hardless/manifests/run-state.json`;
+- confirmação do estado final de `.hephaestus/manifests/run-state.json`;
 - indicação clara se o resultado está `ready`, `degraded-but-usable` ou `needs-followup`.
 
 ## Leituras obrigatórias por fase
@@ -202,7 +202,7 @@ Saída mínima:
 - regras de engenharia devem ser autocontidas: nada em `AGENTS.md` ou `project-rules/` pode depender de arquivo externo para completar decisão;
 - dependências externas de arquivos dentro de `project-rules/` devem ser mapeadas e reportadas, não escondidas;
 - fase `in_progress` nunca pode ser tratada como concluída após interrupção;
-- fase só pode ser considerada retomável como concluída quando estiver marcada como `validated` em `.hardless/manifests/run-state.json`;
+- fase só pode ser considerada retomável como concluída quando estiver marcada como `validated` em `.hephaestus/manifests/run-state.json`;
 - não concluir síntese sem mapa de cobertura entre fragmentos e arquivos de destino;
 - não encerrar o trabalho sem explicitar pendências ou confirmar que não há pendências relevantes.
 
@@ -226,7 +226,7 @@ Ao concluir o fluxo, você deve sempre:
 - revisar se `AGENTS.md` já centraliza corretamente o novo método;
 - revisar se `AGENTS.md` não recebeu regras que deveriam estar em `project-rules/rules/*`;
 - revisar se a pasta `project-rules/` contém as regras necessárias;
-- revisar se dependências externas de `project-rules/` foram registradas em `.hardless/manifests/external-references-report.json`;
-- revisar se `.hardless/manifests/run-state.json` marca corretamente fases `validated`, `produced`, `in_progress` ou `failed`;
+- revisar se dependências externas de `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`;
+- revisar se `.hephaestus/manifests/run-state.json` marca corretamente fases `validated`, `produced`, `in_progress` ou `failed`;
 - revisar se o mapa de cobertura explica o destino das regras relevantes;
 - dizer explicitamente se o pacote final já pode ser considerado utilizável.

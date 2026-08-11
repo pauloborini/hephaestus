@@ -181,4 +181,4 @@ if (missingTargets.length > 0) {
   fail(`templates reference missing rule/reference templates:\n${missingTargets.join("\n")}`);
 }
 
-console.log("Hardless Skill Kit validation passed.");
+console.log("Hephaestus validation passed.");
