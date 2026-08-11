@@ -38,6 +38,24 @@ if (missingFiles.length > 0) {
   fail(`missing required files:\n${missingFiles.join("\n")}`);
 }
 
+const publicDocumentationPairs = [
+  ["README.md", "README.pt-BR.md"],
+  ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+];
+
+for (const [english, portuguese] of publicDocumentationPairs) {
+  for (const [file, peer, marker] of [
+    [english, portuguese, "Language:"],
+    [portuguese, english, "Idioma:"],
+  ]) {
+    const contents = fs.readFileSync(path.join(rootDir, file), "utf8");
+    const header = contents.split("\n").slice(0, 5).join("\n");
+    if (!header.includes(marker) || !header.includes(`](${peer})`)) {
+      fail(`${file} must link ${peer} in its language header`);
+    }
+  }
+}
+
 const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
   ? namingPolicy.forbiddenPatterns
   : [];
