@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Immutable Blocks Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["blocks", "lastUpdatedAt"],
+  "properties": {
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version",
+          "sourceFile",
+          "destinationFile",
+          "sourceSha256",
+          "destinationSha256",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "sourceFile": { "type": "string", "minLength": 1 },
+          "destinationFile": { "type": "string", "minLength": 1 },
+          "sourceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "destinationSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "status": { "const": "preserved" }
+        }
+      }
+    },
+    "lastUpdatedAt": { "type": "string", "minLength": 1 }
+  }
+}

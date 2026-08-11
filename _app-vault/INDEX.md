@@ -1,6 +1,6 @@
 ---
 vault_version: 1
-updated: 2026-08-10
+updated: 2026-08-11
 scope: Kit Hephaestus — decisões de produto e contrato do kit
 ---
 
@@ -8,12 +8,12 @@ scope: Kit Hephaestus — decisões de produto e contrato do kit
 
 ## Domínios
 
-_Nenhum ainda. Primeira regra vigente abre a numeração de decisões._
+- [estrutura-do-kit](docs/decisions/estrutura-do-kit.md) — contratos de preservação e validação do kit
 
 ## Features válidas
 
-_Nenhuma ainda._
+`governanca-kit`
 
 ## Por feature
 
-_Nenhuma ainda._
+- governanca-kit → estrutura-do-kit

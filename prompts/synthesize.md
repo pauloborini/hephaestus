@@ -24,6 +24,16 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - manter `## Workflow obrigatório`, `## Precedência interna` e as regras universais base idênticos ao template (protocolo fixo, igual em todos os projetos); preencher somente os pontos marcados como `<preencher na síntese>`: gates da validação, tipos de teste, estrutura do repositório e regras universais específicas do projeto;
 - preencher a seção de estrutura do repositório e documentação com a realidade do projeto: apps/packages/pastas e seus papéis (ou a raiz única do app), os componentes de `project-rules/` gerados (índices, regras, referências, contratos) e onde vivem os docs de produto — todo componente existente de `project-rules/` deve ser alcançável pela precedência interna ou referenciado nessa seção;
 - não adicionar frontmatter de cliente (ex.: `description`/`alwaysApply`) ao `AGENTS.md` gerado; as ferramentas leem `AGENTS.md` por padrão;
+- tratar cada bloco `hephaestus:immutable` capturado no snapshot como região opaca: copiar a
+  sequência de bytes integral para o `AGENTS.md` final, sem qualquer alteração de conteúdo,
+  espaços, quebras de linha, ID, versão ou marcadores; nunca reconstruir o bloco a partir de
+  significado, mesmo se ele parecer redundante com o template;
+- inserir cada bloco imutável na mesma posição relativa quando ela puder ser preservada sem
+  violar o template; caso contrário, inserir o bloco completo ao fim do `AGENTS.md`, separado por
+  uma linha em branco. A posição pode mudar; os bytes do bloco, não;
+- gerar `.hephaestus/manifests/immutable-blocks-report.json`, inclusive quando `blocks` for vazio.
+  Para cada bloco, registrar `id`, `version`, `sourceFile`, `destinationFile`, `sourceSha256`,
+  `destinationSha256` e `status: preserved`; hashes diferentes são falha, nunca adaptação;
 - manter `AGENTS.md` focado em workflow, precedência, triagem e validação;
 - garantir que a triagem tente ler `project-rules/index/<tipo>.md` antes da pré-confirmação;
 - garantir que a pré-confirmação use o índice já carregado para listar regras/referências acionadas e não pause aguardando aprovação;
@@ -50,6 +60,8 @@ Antes de concluir a síntese:
 5. confirmar que `AGENTS.md` não virou depósito de regras;
 6. registrar referências externas citadas por arquivos de `project-rules/` em `.hephaestus/manifests/external-references-report.json`;
 7. persistir `.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
+8. registrar `immutable-blocks-report.json` em `artifactsWritten` e no fechamento; bloco marcado
+   como imutável não conta como regra duplicada em `AGENTS.md`.
 
 ## Relatório De Dependências Externas
 

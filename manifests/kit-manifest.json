@@ -47,6 +47,7 @@
     "schemas/artifact.schema.json",
     "schemas/coverage-map.schema.json",
     "schemas/external-references-report.schema.json",
+    "schemas/immutable-blocks-report.schema.json",
     "schemas/run-state.schema.json",
     "schemas/package.schema.json",
     "manifests/naming-policy.json"
