@@ -83,12 +83,12 @@ const printUsage = () => {
     [
       "Usage: node scripts/validate-package.mjs <pacote>",
       "",
-      "Validates a generated Hardless Skill Kit package:",
+      "Validates a generated Hephaestus package:",
       "  - AGENTS.md real header (no placeholder)",
       "  - project-rules/index/*.md pointing to existing files",
-      "  - .hardless/manifests/run-state.json structural shape (no unknown properties)",
-      "  - .hardless/manifests/external-references-report.json structural shape",
-      "  - .hardless/manifests/coverage-map.json structural shape (fragmentId required)",
+      "  - .hephaestus/manifests/run-state.json structural shape (no unknown properties)",
+      "  - .hephaestus/manifests/external-references-report.json structural shape",
+      "  - .hephaestus/manifests/coverage-map.json structural shape (fragmentId required)",
       "",
       "Exit 0 on full pass, exit 1 on first failing check.",
     ].join("\n"),
@@ -209,7 +209,7 @@ const checkIndexes = (root) => {
 };
 
 const checkRunState = (root) => {
-  const runStatePath = path.join(root, ".hardless", "manifests", "run-state.json");
+  const runStatePath = path.join(root, ".hephaestus", "manifests", "run-state.json");
   const parsed = readJsonObject(runStatePath);
   if (parsed === null) {
     return "run-state.json: not present (skipped).";
@@ -306,7 +306,7 @@ const checkRunState = (root) => {
 const checkExternalReferences = (root) => {
   const extRefPath = path.join(
     root,
-    ".hardless",
+    ".hephaestus",
     "manifests",
     "external-references-report.json",
   );
@@ -352,7 +352,7 @@ const checkExternalReferences = (root) => {
 };
 
 const checkCoverageMap = (root) => {
-  const coveragePath = path.join(root, ".hardless", "manifests", "coverage-map.json");
+  const coveragePath = path.join(root, ".hephaestus", "manifests", "coverage-map.json");
   const parsed = readJsonObject(coveragePath);
   if (parsed === null) {
     return "coverage-map.json: not present (skipped).";

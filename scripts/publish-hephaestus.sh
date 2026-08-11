@@ -1,11 +1,11 @@
 #!/bin/zsh
 set -euo pipefail
 
-REPO_SLUG="${HARDLESS_SKILL_KIT_PUBLIC_REPO:-pauloborini/hephaestus}"
-BRANCH="${HARDLESS_SKILL_KIT_PUBLIC_BRANCH:-main}"
-SOURCE_DIR="${HARDLESS_SKILL_KIT_PUBLIC_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
-TMP_DIR="${HARDLESS_SKILL_KIT_PUBLISH_TMP:-/tmp/hephaestus-publish}"
-COMMIT_MESSAGE="${HARDLESS_SKILL_KIT_COMMIT_MESSAGE:-chore: publish hardless skill kit update}"
+REPO_SLUG="${HEPHAESTUS_PUBLIC_REPO:-pauloborini/hephaestus}"
+BRANCH="${HEPHAESTUS_PUBLIC_BRANCH:-main}"
+SOURCE_DIR="${HEPHAESTUS_PUBLIC_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+TMP_DIR="${HEPHAESTUS_PUBLISH_TMP:-/tmp/hephaestus-publish}"
+COMMIT_MESSAGE="${HEPHAESTUS_COMMIT_MESSAGE:-chore: publish hephaestus update}"
 
 if [[ ! -d "${SOURCE_DIR}" ]]; then
   echo "Missing source dir: ${SOURCE_DIR}"

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Hardless Skill Kit Run State",
+  "title": "Hephaestus Run State",
   "type": "object",
   "additionalProperties": false,
   "required": [
