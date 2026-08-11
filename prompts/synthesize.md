@@ -37,7 +37,7 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - não perder checklists, proibições, precedências ou exceções presentes nas fontes;
 - quando houver material suficiente, criar regra específica em `project-rules/rules/*` em vez de esconder no índice;
 - não prometer que `project-rules/` está totalmente autocontido quando ainda houver dependências externas reais;
-- ao iniciar a fase, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hardless/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `synthesize` como `in_progress`; ao terminar, registrar artefatos gerados e marcar a fase como `produced`; marcar `synthesize` como `validated` quando a árvore gerada tiver cobertura suficiente e os artefatos mínimos existirem; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme a `## Regra De Retomada` deste prompt).
+- ao iniciar a fase, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `synthesize` como `in_progress`; ao terminar, registrar artefatos gerados e marcar a fase como `produced`; marcar `synthesize` como `validated` quando a árvore gerada tiver cobertura suficiente e os artefatos mínimos existirem; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme a `## Regra De Retomada` deste prompt).
 
 ## Cobertura Obrigatória
 
@@ -48,14 +48,14 @@ Antes de concluir a síntese:
 3. conferir se todo fragmento `reference` foi para `project-rules/reference/*` ou foi omitido com justificativa;
 4. registrar fragmentos `unknown`, conflitantes ou de baixa confiança como pendência;
 5. confirmar que `AGENTS.md` não virou depósito de regras;
-6. registrar referências externas citadas por arquivos de `project-rules/` em `.hardless/manifests/external-references-report.json`;
-7. persistir `.hardless/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
+6. registrar referências externas citadas por arquivos de `project-rules/` em `.hephaestus/manifests/external-references-report.json`;
+7. persistir `.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
 
 ## Relatório De Dependências Externas
 
 Quando qualquer arquivo em `project-rules/` citar arquivo fora dessa pasta, gerar:
 
-- `.hardless/manifests/external-references-report.json`
+- `.hephaestus/manifests/external-references-report.json`
 
 O relatório deve listar, no mínimo:
 
@@ -71,9 +71,9 @@ O relatório deve ser compatível com `schemas/external-references-report.schema
 
 Se a execução anterior for interrompida antes de concluir, ao retomar:
 
-1. detectar a execução anterior lendo `.hardless/manifests/run-state.json`;
-2. gravar `status: interrupted` em `.hardless/manifests/run-state.json` (e atualizar `lastUpdatedAt`) antes de qualquer leitura subsequente ou continuação;
-3. reler `.hardless/manifests/run-state.json` após essa marcação;
+1. detectar a execução anterior lendo `.hephaestus/manifests/run-state.json`;
+2. gravar `status: interrupted` em `.hephaestus/manifests/run-state.json` (e atualizar `lastUpdatedAt`) antes de qualquer leitura subsequente ou continuação;
+3. reler `.hephaestus/manifests/run-state.json` após essa marcação;
 4. retomar da última fase marcada como `validated`;
 5. reexecutar integralmente a fase que estiver em `in_progress`, `failed` ou apenas `produced` (a fase `in_progress` nunca é tratada como concluída após interrupção);
 6. quando o impedimento exigir intervenção humana (fase ou run sem caminho seguro de retomada automática), marcar o run como `blocked` e parar até decisão explícita; o run `blocked` não é retomado sozinho, e a fase que originou o bloqueio é reexecutada integralmente na próxima retomada autorizada.
@@ -117,4 +117,4 @@ Gerar apenas arquivos sustentados pelo material disponível, usando nomes previs
 3. `project-rules/rules/*`
 4. `project-rules/reference/*`
 5. `project-rules/contracts/*` (quando houver)
-6. `.hardless/manifests/*`
+6. `.hephaestus/manifests/*`

@@ -9,7 +9,7 @@ project-rules/
   rules/
   reference/
   contracts/   (opcional)
-.hardless/     (checkpoint do processo de geração)
+.hephaestus/     (checkpoint do processo de geração)
   manifests/
 ```
 

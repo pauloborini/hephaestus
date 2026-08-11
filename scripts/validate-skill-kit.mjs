@@ -38,6 +38,25 @@ if (missingFiles.length > 0) {
   fail(`missing required files:\n${missingFiles.join("\n")}`);
 }
 
+const publicDocumentationPairs = [
+  ["README.md", "README.pt-BR.md"],
+  ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["SKILL.en.md", "SKILL.md"],
+];
+
+for (const [english, portuguese] of publicDocumentationPairs) {
+  for (const [file, peer, marker] of [
+    [english, portuguese, "Language:"],
+    [portuguese, english, "Idioma:"],
+  ]) {
+    const contents = fs.readFileSync(path.join(rootDir, file), "utf8");
+    const header = contents.split("\n").slice(0, 5).join("\n");
+    if (!header.includes(marker) || !header.includes(`](${peer})`)) {
+      fail(`${file} must link ${peer} in its language header`);
+    }
+  }
+}
+
 const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
   ? namingPolicy.forbiddenPatterns
   : [];
@@ -45,6 +64,7 @@ const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
 const legacyPatterns = ["project-context", "extended-memory"];
 
 const allowedExtensions = new Set([".md", ".template", ".json", ".mjs"]);
+const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
 // Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
 const skippedRelativePaths = new Set([
@@ -67,6 +87,10 @@ const walk = (dirPath) => {
       continue;
     }
 
+    if (relativePath === ".app-work" || relativePath.startsWith(`.app-work${path.sep}`)) {
+      continue;
+    }
+
     if (entry.isDirectory()) {
       walk(absolutePath);
       continue;
@@ -80,7 +104,7 @@ walk(rootDir);
 
 const unsupportedFiles = collectedFiles.filter((filePath) => {
   const ext = path.extname(filePath);
-  return !allowedExtensions.has(ext);
+  return !allowedExtensions.has(ext) && !allowedExtensionlessFiles.has(path.basename(filePath));
 });
 
 if (unsupportedFiles.length > 0) {
@@ -163,4 +187,4 @@ if (missingTargets.length > 0) {
   fail(`templates reference missing rule/reference templates:\n${missingTargets.join("\n")}`);
 }
 
-console.log("Hardless Skill Kit validation passed.");
+console.log("Hephaestus validation passed.");
