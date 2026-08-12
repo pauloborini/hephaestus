@@ -38,6 +38,10 @@
         "closeout"
       ]
     },
+    "mode": {
+      "type": "string",
+      "enum": ["adopt", "maintain"]
+    },
     "phaseStates": {
       "type": "object",
       "additionalProperties": false,

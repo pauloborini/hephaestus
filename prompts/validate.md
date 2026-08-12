@@ -2,7 +2,12 @@
 
 ## Objetivo
 
-Verificar se o pacote final atende o contrato mínimo do kit.
+Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com **um corpo, dois alvos**: `verify(staging)` prova a intenção (fase 10) e `verify(applied)` prova o resultado (fase 12).
+
+## Alvo
+
+- `Alvo: staging` — os checks rodam contra `.hephaestus/staging/` (o pacote materializado por `compose`, ainda não gravado);
+- `Alvo: applied` — os checks rodam contra o repositório, acrescidos do check de hash: cada artefato do `.hephaestus/staging-manifest.json` tem o sha256 recomputado no disco; divergência dispara rollback imediato por `git` e por `.hephaestus/backup/<ts>/`, nesta ordem, e `.app-work/hephaestus-state.json` nunca é revertido.
 
 ## Checklist
 
@@ -32,6 +37,10 @@ Verificar se o pacote final atende o contrato mínimo do kit.
 - `.hephaestus/manifests/run-state.json` existe e distingue corretamente `in_progress`, `produced`, `validated` e `failed`;
 - pendências, conflitos e ambiguidades restantes estão explicitados.
 
+## Escreve no repositório
+
+Não. A verificação lê o pacote (staging ou disco) e os manifests; nenhum byte do repositório é alterado nesta fase.
+
 ## Status possíveis
 
 - `valid`
@@ -52,16 +61,14 @@ Verificar se o pacote final atende o contrato mínimo do kit.
 - usar `blocked` quando houver dependências externas quebradas ou não reportadas;
 - usar `blocked` quando o `run-state.json` impedir determinar com segurança quais fases estão realmente validadas;
 - nunca tratar fase `produced` como equivalente a `validated`;
-- aplicar a regra única de checkpoint do `SKILL.md` em todas as três fases: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar `validate`, marcar a fase como `in_progress`; ao concluir, marcar `validate` como `produced` e depois `validated` quando todos os checks mínimos estiverem consistentes; em `export_apply`, marcar `export_apply` como `in_progress`, depois `produced` e `validated` quando os artefatos finais forem realmente gravados; em `closeout_review`, marcar `closeout_review` como `in_progress`, depois `produced` e `validated` quando o relatório final ao usuário estiver consistente com os manifests; em qualquer das três, fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/synthesize.md`);
-- distinguir `failed` de `blocked` no run-state: `failed` é estado de fase que terminou a execução mas não pôde ser validada e é reexecutada integralmente na retomada; `blocked` é estado do run (não de fase) que indica impedimento exigindo decisão humana e não é retomado sozinho, conforme a `## Regra De Retomada` de `prompts/synthesize.md`;
-- em `export_apply`, antes de gravar `AGENTS.md` ou qualquer arquivo em `project-rules/` que já exista no projeto alvo, copiar o estado anterior para `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` preservando a estrutura relativa (ex.: `project-rules/rules/x.md` vira `.hephaestus/backup/<ts>/project-rules/rules/x.md`); registrar cada backup como entrada em `artifactsWritten` do run-state com `outputPath` igual ao caminho do backup, `phase: export_apply` e `validationStatus: valid`; usar um diretório por execução, com timestamp no formato `YYYYMMDDTHHMMSS`, sem rotação nem reuso entre execuções;
-- quando o ambiente do projeto alvo tiver `node` disponível, rodar `node scripts/validate-package.mjs <pasta-do-pacote>` como gate recomendado antes de marcar a fase como `validated`; em ambientes sem node, registrar a não execução do gate como observação no relatório — o gate não bloqueia ambientes sem node e a ausência de execução não muda o status de `validated` automaticamente;
+- distinguir `failed` de `blocked` no run-state: `failed` é estado de fase que terminou a execução mas não pôde ser validada e é reexecutada integralmente na retomada; `blocked` é estado do run (não de fase) que indica impedimento exigindo decisão humana e não é retomado sozinho, conforme a regra de retomada de `prompts/preflight.md`;
+- aplicar a regra única de checkpoint do `SKILL.md` em ambas as passagens: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar `verify_staging` ou `verify_applied`, marcar a fase como `in_progress`; ao concluir, `produced` e depois `validated` quando todos os checks mínimos estiverem consistentes; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
+- em `applied`, conferir o `staging-manifest.json` contra o disco hash a hash (gate `checkAppliedHashes`); qualquer divergência dispara rollback imediato por `git` e por `.hephaestus/backup/<ts>/`, nesta ordem, e `.app-work/hephaestus-state.json` nunca é revertido;
+- quando o ambiente do projeto alvo tiver `node` disponível, rodar `node scripts/validate-package.mjs <pasta>` como gate recomendado antes de marcar a fase como `validated` — em `staging`, `<pasta>` é o diretório `.hephaestus/staging`; em `applied`, é o repositório; em ambientes sem node, registrar a não execução do gate como observação no relatório — o gate não bloqueia ambientes sem node e a ausência de execução não muda o status de `validated` automaticamente;
 - ao final, produzir uma revisão objetiva de fechamento com:
   - pendências em aberto;
   - decisão recomendada para cada pendência relevante;
   - confirmação do estado de `AGENTS.md`;
-  - blocos imutáveis identificados, destino, status de preservação e confirmação de igualdade
-    entre os hashes de origem e destino;
   - confirmação do estado da pasta `project-rules/`;
   - resumo explícito das referências externas encontradas e do que deveria ser internalizado;
   - confirmação de que a retomada futura pode começar após a última fase `validated`;

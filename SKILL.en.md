@@ -6,18 +6,23 @@
 
 ## Purpose
 
-This kit turns a user's raw sources into a fragmented, canonical, repository-native package of project rules.
+This kit turns a user's raw sources into a fragmented, canonical, repository-native package of project rules, written in a single write transaction.
 
 Follow this pipeline:
 
-1. `discover`
-2. `snapshot`
-3. `fragment`
-4. `classify`
-5. `synthesize`
-6. `validate`
-7. `export_apply`
-8. `closeout_review`
+1. `preflight`
+2. `discover`
+3. `snapshot`
+4. `fragment`
+5. `route`
+6. `reconcile`
+7. `interview`
+8. `plan`
+9. `compose`
+10. `verify_staging`
+11. `apply`
+12. `verify_applied`
+13. `closeout`
 
 ## Framework agnosticism
 
@@ -25,12 +30,12 @@ The kit is framework- and language-agnostic.
 
 - The generated structure (`AGENTS.md` + `project-rules/`) is the same for every repository.
 - Templates do not prescribe framework-specific tools, commands, or gates.
-- During synthesis, detect the target repository's framework and language (for example Flutter, React, Go, or Python) and fill rules, checklists, and gates with its real tooling.
+- During composition, detect the target repository's framework and language (for example Flutter, React, Go, or Python) and fill rules, checklists, and gates with its real tooling.
 - User-specific domain rules belong in the generated package, never in this kit.
 
 ## Execution state
 
-For multi-step work, keep a checkpoint at `.hephaestus/manifests/run-state.json` in the user's workspace. It enables safe resumption after interruption and is process state, not part of the generated canonical structure.
+For multi-step work, keep a checkpoint at `.hephaestus/manifests/run-state.json` in the user's workspace. It enables safe resumption after interruption and is process state, not part of the generated canonical structure. The `.hephaestus/` directory is fully ephemeral and gitignored: staging, backup, run-state and execution ledgers live there, and the `.hephaestus/` line in the target `.gitignore` is guaranteed by the `apply` phase.
 
 ## Core rule
 
@@ -75,55 +80,113 @@ If classification is weak, mark it `unknown` or low confidence, record the ambig
 
 ## Phases
 
-### 1. Discover
+### 1. Preflight
 
-Read [prompts/discover.md](prompts/discover.md). Output: found and missing sources plus initial structural ambiguity.
+Read [prompts/preflight.md](prompts/preflight.md).
 
-### 2. Snapshot
+Guards the ground before any work: requires a git repository and a clean worktree in both modes, without override, and resolves `mode` by the presence of `.app-work/hephaestus-state.json` (`adopt` when absent, `maintain` when present) — never by heuristics over present structure. Nothing is written to the repository.
+
+### 2. Discover
+
+Read [prompts/discover.md](prompts/discover.md).
+
+Output: source inventory by mode (`adopt` is a full scan, `maintain` is driven by `catalog/drift-catalog.json`), missing sources, and initial structural ambiguity notes.
+
+### 3. Snapshot
 
 Read [prompts/snapshot.md](prompts/snapshot.md). Freeze the relevant source inventory before reorganization. Output: source-to-unit map and a checkpoint in `.hephaestus/manifests/run-state.json`.
 
-### 3. Fragment
+### 4. Fragment
 
 Read [prompts/fragment.md](prompts/fragment.md). Output: smaller source fragments with location and raw text.
 
-### 4. Classify
+### 5. Route
 
-Read [prompts/classify.md](prompts/classify.md). Output: candidate operational role, confidence, and ambiguity for each fragment.
+Read [prompts/route.md](prompts/route.md).
 
-### 5. Synthesize
+Assigns `territory` and `regime` per fragment, with evidence, through a cascade that stops at the first deciding level; LLM residue never decides a destructive destination on its own.
 
-Read [prompts/synthesize.md](prompts/synthesize.md). Output: coverage map, proposed `AGENTS.md`, necessary categories, and categories omitted because evidence is insufficient.
+Output: routing per fragment (`territory`, `regime`, `destinationPath`, `decidedBy`, `evidence`).
 
-### 6. Validate
+### 6. Reconcile
 
-Read [prompts/validate.md](prompts/validate.md). Output: `valid`, `degraded`, or `blocked`; conflicts; gaps; identity-leakage risk; schema compliance; and a checkpoint that distinguishes `validated` from `produced`.
+Read [prompts/reconcile.md](prompts/reconcile.md).
 
-### 7. Export/Apply
+Matches decisions by `DEC-NNN` and by similarity; detects value conflicts and duplication across territories.
 
-Only after `valid` or `degraded`, prepare the final package:
+Output: reconciled decision inventory with preserved identity.
 
-- generated `AGENTS.md`;
-- generated `project-rules/` tree;
-- provenance and validation manifests in `.hephaestus/manifests/` when applicable;
-- `.hephaestus/manifests/external-references-report.json` whenever `project-rules/` cites files outside itself;
-- final `.hephaestus/manifests/run-state.json`.
+### 7. Interview
 
-`SKILL.en.md` and `SKILL.md` do not belong in the generated user package. Before overwriting an existing target `AGENTS.md` or `project-rules/` file, preserve it at `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` and record every backup in `artifactsWritten`; use one directory per execution and do not rotate it. See [prompts/validate.md](prompts/validate.md) for the full backup contract.
+Read [prompts/interview.md](prompts/interview.md).
 
-### 8. Closeout review
+Single drain for the question queue; persists answers in the state **outside** the transaction (immune to rollback).
 
-After `export_apply`, read [prompts/closeout-review.md](prompts/closeout-review.md) and review the generated package without modifying it. Report remaining issues, open decisions, an objective recommendation for each relevant decision, coverage-map completeness, final `AGENTS.md` and `project-rules/` state, external references and their internalization recommendation, run-state status, and one final state: `ready`, `degraded-but-usable`, or `needs-followup`.
+Output: drained queue and answers persisted in the `answers` block.
+
+### 8. Plan
+
+Read [prompts/plan.md](prompts/plan.md).
+
+Emits readable, editable `.hephaestus/plan.json` and `.hephaestus/plan.md`, with mandatory tracing to a fragment or an answer and destructiveness derived by mechanical definition. The user reads and approves before any write.
+
+Output: per-artifact plan (operation, regime, rationale, origin, destructiveness).
+
+### 9. Compose
+
+Read [prompts/compose.md](prompts/compose.md).
+
+Materializes the whole package into `.hephaestus/staging/**` with `.hephaestus/staging-manifest.json` (sha256 per artifact). Does not write to the repository; doubts here are bugs from a previous phase, never questions.
+
+Output: complete staging + `staging-manifest.json`; `external-references-report.json` and `coverage-map.json` preserved.
+
+### 10. Verify (staging)
+
+Read [prompts/validate.md](prompts/validate.md) with `Target: staging`.
+
+Runs the enforcements against `.hephaestus/staging/`; status `valid`, `degraded`, or `blocked`.
+
+Output: staging verdict and a checkpoint distinguishing `validated` from `produced`.
+
+### 11. Apply
+
+Read [prompts/apply.md](prompts/apply.md).
+
+The only phase that writes to the repository. Complete backup in `.hephaestus/backup/<ts>/` before the first byte, worktree revalidated since `preflight`, and the order `relocate` → `reconcile` → `generate` → `keep`. The final list is exactly the `staging-manifest.json`.
+
+Output: package written in transactional order; complete `artifactsWritten` in the run-state.
+
+### 12. Verify (applied)
+
+Read [prompts/validate.md](prompts/validate.md) with `Target: applied`.
+
+Recomputes the hash of every `staging-manifest.json` artifact on disk; divergence triggers immediate rollback via git and `backup/<ts>/`, preserving the state.
+
+Output: disk verdict, hash by hash.
+
+### 13. Closeout
+
+Read [prompts/closeout.md](prompts/closeout.md).
+
+Emits `.hephaestus/report.md` with pending items, open decisions, external references and the final verdict (`ready`, `degraded-but-usable`, or `needs-followup`). Never modifies the package.
+
+Output: closeout report consistent with the manifests.
 
 ## Required reading by phase
 
+- `preflight`: `prompts/preflight.md`, `catalog/routing-defaults.json`, `catalog/drift-catalog.json`
 - `discover`: `prompts/discover.md`, `manifests/naming-policy.json`
 - `snapshot`: `prompts/snapshot.md`
 - `fragment`: `prompts/fragment.md`, `schemas/fragment.schema.json`
-- `classify`: `prompts/classify.md`, `schemas/fragment.schema.json`
-- `synthesize`: `prompts/synthesize.md`, `templates/`, `references/`
-- `validate`: `prompts/validate.md`, `schemas/`, `manifests/`
-- `closeout_review`: `prompts/closeout-review.md`, `templates/`, generated artifacts
+- `route`: `prompts/route.md`, `catalog/routing-defaults.json`, `routing` and `answers` blocks of the state
+- `reconcile`: `prompts/reconcile.md`, `_app-vault/docs/decisions/**`
+- `interview`: `prompts/interview.md`, `answers` block of the state
+- `plan`: `prompts/plan.md`, execution ledgers
+- `compose`: `prompts/compose.md`, `templates/`, `references/`
+- `verify_staging`: `prompts/validate.md` (Target: staging), `schemas/`, `manifests/`
+- `apply`: `prompts/apply.md`, `staging-manifest.json`
+- `verify_applied`: `prompts/validate.md` (Target: applied), `staging-manifest.json`
+- `closeout`: `prompts/closeout.md`, `templates/`, generated artifacts
 
 The phase prompts are currently maintained in Portuguese; they are normative detail for the procedure above.
 
@@ -136,13 +199,14 @@ The phase prompts are currently maintained in Portuguese; they are normative det
 - Keep `AGENTS.md` concise and centralizing. Domain, architecture, UI, contract, security, and operational rules belong in `project-rules/rules/*`.
 - Engineering rules must be self-contained: nothing in `AGENTS.md` or `project-rules/` may depend on an external file to complete a decision.
 - Map and report, never hide, external dependencies cited from `project-rules/`.
+- Nothing is written to the repository outside the `apply` phase; the only exception is `interview` writing `.app-work/hephaestus-state.json` outside the transaction.
 - Never treat `in_progress` as complete after interruption, nor `produced` as equivalent to `validated`.
-- Do not conclude synthesis without a fragment-to-destination coverage map.
+- Do not conclude composition without a fragment-to-destination coverage map.
 - Do not close work without listing pending items or confirming that none remain.
 
 ## When to block
 
-Block completion when `AGENTS.md` is missing; classification is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; or minimum schema contracts fail.
+Block completion when `AGENTS.md` is missing; classification is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree is dirty; or the backup is incomplete in the `apply` phase.
 
 ## Mandatory closeout
 

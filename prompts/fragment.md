@@ -36,7 +36,11 @@ O objetivo é preservar todas as regras relevantes em fragmentos menores, rastre
 - não descartar regra porque parece específica demais;
 - não mover decisão para inferência quando a fonte original traz uma regra explícita;
 - quando houver dúvida, manter o fragmento e marcar baixa confiança na classificação posterior.
-- ao iniciar, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `fragment` como `in_progress`; ao finalizar a fase, marcar `fragment` como `produced`; marcar `fragment` como `validated` quando a saída mínima estiver consistente e cobrindo as fontes previstas em `snapshot`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/synthesize.md`).
+- ao iniciar, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `fragment` como `in_progress`; ao finalizar a fase, marcar `fragment` como `produced`; marcar `fragment` como `validated` quando a saída mínima estiver consistente e cobrindo as fontes previstas em `snapshot`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
+
+## Escreve no repositório
+
+Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored).
 
 ## Saída Mínima Por Fragmento
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 
 // Os enums de vocabulário são lidos dos schemas (fonte única), nunca
 // redeclarados aqui: alterar o schema altera o gate na execução seguinte.
@@ -77,6 +79,9 @@ const printUsage = () => {
       "  - .hephaestus/manifests/external-references-report.json structural shape",
       "  - .hephaestus/manifests/coverage-map.json structural shape (fragmentId required)",
       "  - territory x regime legality per coverage entry",
+      "  - .hephaestus/ gitignored (CN12) and absent from the git index",
+      "  - .hephaestus/plan.json contract (origin tracing; INV7)",
+      "  - verify(applied): disk hash vs .hephaestus/staging-manifest.json (D27)",
       "",
       "Exit 0 on full pass, exit 1 on first failing check.",
     ].join("\n"),
@@ -206,6 +211,7 @@ const checkRunState = (root) => {
 
   const allowedTopLevel = loadPropertyNames("run-state.schema.json", "properties");
   const allowedStatus = loadEnum("run-state.schema.json", "properties.status.enum");
+  const allowedModes = loadEnum("run-state.schema.json", "properties.mode.enum");
   const allowedPhases = loadEnum("run-state.schema.json", "properties.currentPhase.enum");
   const allowedPhaseStatus = loadEnum("run-state.schema.json", "$defs.phaseState.properties.status.enum");
   const allowedArtifactPhase = loadEnum("run-state.schema.json", "$defs.artifactState.properties.phase.enum");
@@ -224,6 +230,9 @@ const checkRunState = (root) => {
 
   if (!allowedStatus.has(parsed.status)) {
     fail(`${fileLabel}: status "${parsed.status}" not in enum`);
+  }
+  if (parsed.mode !== undefined && !allowedModes.has(parsed.mode)) {
+    fail(`${fileLabel}: mode "${parsed.mode}" not in enum`);
   }
   if (!allowedPhases.has(parsed.currentPhase)) {
     fail(`${fileLabel}: currentPhase "${parsed.currentPhase}" not in enum`);
@@ -474,6 +483,173 @@ const checkTerritoryRegime = (root) => {
   return `territory×regime: ${evaluated} entrie(s) legally combined.`;
 };
 
+// CN12 / AC-2.2.1 (D6): `.hephaestus/` é 100% gitignored. Exige a linha
+// `.hephaestus/` no `.gitignore` do alvo (ou em `.git/info/exclude`) e que
+// nenhum arquivo sob `.hephaestus/` conste do índice do git — por amostragem
+// do diretório com `git ls-files --error-unmatch`; ausência de git é
+// `skipped`, nunca falha.
+const EPHEMERAL_LINE = ".hephaestus/";
+
+const hasIgnoreLine = (ignorePath) => {
+  if (!fs.existsSync(ignorePath)) return false;
+  return fs
+    .readFileSync(ignorePath, "utf8")
+    .split("\n")
+    .some((line) => line.trim().startsWith(EPHEMERAL_LINE));
+};
+
+const sampleFilesUnder = (root, hephDir, max = 10) => {
+  const results = [];
+  const stack = [hephDir];
+  while (stack.length > 0 && results.length < max) {
+    const current = stack.pop();
+    const entries = fs.readdirSync(current, { withFileTypes: true });
+    for (const entry of entries) {
+      if (results.length >= max) break;
+      const absolutePath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(absolutePath);
+      } else {
+        results.push(path.relative(root, absolutePath));
+      }
+    }
+  }
+  return results;
+};
+
+const checkEphemeralIgnored = (root) => {
+  const gitignorePath = path.join(root, ".gitignore");
+  const excludePath = path.join(root, ".git", "info", "exclude");
+  const ignoredByGitignore = hasIgnoreLine(gitignorePath);
+  const ignoredByExclude = hasIgnoreLine(excludePath);
+  if (!ignoredByGitignore && !ignoredByExclude) {
+    fail(
+      `${path.relative(process.cwd(), gitignorePath)}: missing "${EPHEMERAL_LINE}" line — .hephaestus/ must be gitignored (apply scaffolds it)`,
+    );
+  }
+
+  const hephDir = path.join(root, ".hephaestus");
+  if (!fs.existsSync(hephDir)) {
+    return ".hephaestus/: ignore line present; no .hephaestus dir to check in the git index.";
+  }
+  const tracked = [];
+  let gitAvailable = true;
+  for (const rel of sampleFilesUnder(root, hephDir)) {
+    const res = spawnSync("git", ["ls-files", "--error-unmatch", "--", rel], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    if (res.error || res.status === 128) {
+      gitAvailable = false;
+      break;
+    }
+    if (res.status === 0) {
+      tracked.push(rel);
+    }
+  }
+  if (!gitAvailable) {
+    return ".hephaestus/: ignore line present; git index check skipped (no git repository here).";
+  }
+  if (tracked.length > 0) {
+    fail(`.hephaestus/: tracked in git index: ${tracked.join(", ")}`);
+  }
+  return ".hephaestus/: ignore line present; no ephemeral file tracked in the git index.";
+};
+
+// CN3 / AC-2.3.1 e AC-2.3.2 (INV7): o plano aprovável exige rastreio de toda
+// operação a fragmento ou resposta (`origin`) e reprova operação destrutiva
+// decidida exclusivamente pela LLM sem aprovação registrada. `destructive` é
+// campo derivado no plan.json (nunca preenchido à mão); o gate aplica INV7
+// sobre o resultado derivado.
+const PLAN_OPERATIONS = new Set(["create", "amend", "overwrite", "move", "keep", "skip"]);
+const PLAN_DECIDED_BY = new Set(["keep", "state", "catalog", "detector", "llm", "human"]);
+
+const checkPlanContract = (root) => {
+  const planPath = path.join(root, ".hephaestus", "plan.json");
+  const parsed = readJsonObject(planPath);
+  if (parsed === null) {
+    return "plan.json: not present (skipped).";
+  }
+  const fileLabel = path.relative(root, planPath);
+  if (!Array.isArray(parsed.entries)) {
+    fail(`${fileLabel}: missing "entries" array`);
+  }
+  for (const [index, entry] of parsed.entries.entries()) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      fail(`${fileLabel}: entries[${index}] must be an object`);
+    }
+    if (typeof entry.artifactPath !== "string" || entry.artifactPath.length === 0) {
+      fail(`${fileLabel}: entries[${index}] missing artifactPath`);
+    }
+    if (!PLAN_OPERATIONS.has(entry.operation)) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) operation "${entry.operation}" not in enum`,
+      );
+    }
+    if (typeof entry.origin !== "string" || entry.origin.length === 0) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) missing origin — every operation must trace to a fragment or an answer`,
+      );
+    }
+    if (entry.decidedBy !== undefined && !PLAN_DECIDED_BY.has(entry.decidedBy)) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) decidedBy "${entry.decidedBy}" not in enum`,
+      );
+    }
+    if (entry.destructive === true && entry.decidedBy === "llm" && entry.approved !== true) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive operation decided by llm without recorded approval (INV7)`,
+      );
+    }
+  }
+  return `plan.json: ${parsed.entries.length} entrie(s) contractually valid.`;
+};
+
+// AC-2.5.1 (D27): verify(applied) recomputa o sha256 de cada artefato do
+// `staging-manifest.json` lendo o disco; divergência (ou ausência) chama
+// `fail()` nomeando o artefato, o hash esperado e o obtido, e o relatório
+// pede rollback.
+const sha256File = (filePath) => {
+  const hash = createHash("sha256");
+  hash.update(fs.readFileSync(filePath));
+  return hash.digest("hex");
+};
+
+const checkAppliedHashes = (root, manifestPath) => {
+  const parsed = readJsonObject(manifestPath);
+  if (parsed === null) {
+    return "staging-manifest.json: not present (skipped).";
+  }
+  const fileLabel = path.relative(root, manifestPath);
+  if (!Array.isArray(parsed.artifacts)) {
+    fail(`${fileLabel}: missing "artifacts" array`);
+  }
+  for (const [index, artifact] of parsed.artifacts.entries()) {
+    if (typeof artifact !== "object" || artifact === null || Array.isArray(artifact)) {
+      fail(`${fileLabel}: artifacts[${index}] must be an object`);
+    }
+    if (typeof artifact.outputPath !== "string" || artifact.outputPath.length === 0) {
+      fail(`${fileLabel}: artifacts[${index}] missing outputPath`);
+    }
+    if (typeof artifact.sha256 !== "string" || artifact.sha256.length !== 64) {
+      fail(`${fileLabel}: artifacts[${index}] (${artifact.outputPath}) missing sha256`);
+    }
+    const diskPath = path.join(root, artifact.outputPath);
+    if (!fs.existsSync(diskPath)) {
+      fail(
+        `${fileLabel}: ${artifact.outputPath} missing on disk — divergence triggers rollback`,
+      );
+    }
+    const actual = sha256File(diskPath);
+    if (actual !== artifact.sha256) {
+      fail(
+        `${fileLabel}: ${artifact.outputPath} hash mismatch (expected ${artifact.sha256}, got ${actual}) — divergence triggers rollback`,
+      );
+    }
+  }
+  return `verify(applied): ${parsed.artifacts.length} artefato(s) with disk hash equal to staging-manifest.`;
+};
+
 const main = (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     printUsage();
@@ -497,6 +673,9 @@ const main = (argv) => {
     checkExternalReferences(root),
     checkCoverageMap(root),
     checkTerritoryRegime(root),
+    checkEphemeralIgnored(root),
+    checkPlanContract(root),
+    checkAppliedHashes(root, path.join(root, ".hephaestus", "staging-manifest.json")),
   ];
 
   for (const message of reports) {

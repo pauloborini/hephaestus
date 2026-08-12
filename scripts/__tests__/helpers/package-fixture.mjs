@@ -18,6 +18,9 @@ export const THE_13_PHASES = [
 ];
 
 export const makeValidPackage = (root) => {
+  // A linha .hephaestus/ no .gitignore é exigida por checkEphemeralIgnored
+  // (AC-2.2.1/CN12); sem ela todo pacote validado reprova.
+  writeFile(root, ".gitignore", ".hephaestus/\n");
   writeFile(
     root,
     "AGENTS.md",
