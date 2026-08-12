@@ -200,8 +200,6 @@ Saída mínima:
 - não inflar a árvore final com arquivos vazios;
 - não marcar `valid` quando houver violação dos contratos mínimos;
 - `AGENTS.md` deve ser centralizador e enxuto, não um depósito de todas as regras;
-- bloco delimitado por `hephaestus:immutable` em uma fonte é contrato de preservação: não editar,
-  resumir, mover nem adaptar seu conteúdo; marcador inválido bloqueia a execução;
 - regras de domínio, arquitetura, UI, contrato, segurança e operação devem ficar em `project-rules/rules/*`, não no `AGENTS.md`;
 - regras de engenharia devem ser autocontidas: nada em `AGENTS.md` ou `project-rules/` pode depender de arquivo externo para completar decisão;
 - dependências externas de arquivos dentro de `project-rules/` devem ser mapeadas e reportadas, não escondidas;

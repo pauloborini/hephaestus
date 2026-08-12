@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "artifacts": [
+    ".cursor/rules/",
+    ".cursorrules",
+    ".windsurfrules",
+    ".github/copilot-instructions.md",
+    ".devin/",
+    ".clinerules",
+    ".aider.conf.yml",
+    ".junie/"
+  ]
+}

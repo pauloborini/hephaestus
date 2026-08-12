@@ -2,6 +2,9 @@
   "name": "hephaestus",
   "version": "0.3.0",
   "distributionMode": "clone-or-zip",
+  "packExcludes": [
+    "scripts/__tests__"
+  ],
   "requiredFiles": [
     "README.md",
     "README.pt-BR.md",
@@ -43,11 +46,18 @@
     "references/canonical-structure/AGENTS.example.md",
     "references/canonical-structure/STRUCTURE.md",
     "references/canonical-structure/README.md",
+    "references/vault-schema/SCHEMA.md",
+    "templates/vault/DECISION_TEMPLATE.md",
+    "templates/vault/INDEX_TEMPLATE.md",
+    "templates/vault/ISSUES_README_TEMPLATE.md",
+    "templates/vault/ISSUES_INDEX_TEMPLATE.md",
+    "catalog/routing-defaults.json",
+    "catalog/drift-catalog.json",
     "schemas/fragment.schema.json",
     "schemas/artifact.schema.json",
     "schemas/coverage-map.schema.json",
     "schemas/external-references-report.schema.json",
-    "schemas/immutable-blocks-report.schema.json",
+    "schemas/routing.schema.json",
     "schemas/run-state.schema.json",
     "schemas/package.schema.json",
     "manifests/naming-policy.json"

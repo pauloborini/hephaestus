@@ -23,38 +23,53 @@
     "currentPhase": {
       "type": "string",
       "enum": [
+        "preflight",
         "discover",
         "snapshot",
         "fragment",
-        "classify",
-        "synthesize",
-        "validate",
-        "export_apply",
-        "closeout_review"
+        "route",
+        "reconcile",
+        "interview",
+        "plan",
+        "compose",
+        "verify_staging",
+        "apply",
+        "verify_applied",
+        "closeout"
       ]
     },
     "phaseStates": {
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "preflight",
         "discover",
         "snapshot",
         "fragment",
-        "classify",
-        "synthesize",
-        "validate",
-        "export_apply",
-        "closeout_review"
+        "route",
+        "reconcile",
+        "interview",
+        "plan",
+        "compose",
+        "verify_staging",
+        "apply",
+        "verify_applied",
+        "closeout"
       ],
       "properties": {
+        "preflight": { "$ref": "#/$defs/phaseState" },
         "discover": { "$ref": "#/$defs/phaseState" },
         "snapshot": { "$ref": "#/$defs/phaseState" },
         "fragment": { "$ref": "#/$defs/phaseState" },
-        "classify": { "$ref": "#/$defs/phaseState" },
-        "synthesize": { "$ref": "#/$defs/phaseState" },
-        "validate": { "$ref": "#/$defs/phaseState" },
-        "export_apply": { "$ref": "#/$defs/phaseState" },
-        "closeout_review": { "$ref": "#/$defs/phaseState" }
+        "route": { "$ref": "#/$defs/phaseState" },
+        "reconcile": { "$ref": "#/$defs/phaseState" },
+        "interview": { "$ref": "#/$defs/phaseState" },
+        "plan": { "$ref": "#/$defs/phaseState" },
+        "compose": { "$ref": "#/$defs/phaseState" },
+        "verify_staging": { "$ref": "#/$defs/phaseState" },
+        "apply": { "$ref": "#/$defs/phaseState" },
+        "verify_applied": { "$ref": "#/$defs/phaseState" },
+        "closeout": { "$ref": "#/$defs/phaseState" }
       }
     },
     "artifactsWritten": {
@@ -106,14 +121,19 @@
         "phase": {
           "type": "string",
           "enum": [
+            "preflight",
             "discover",
             "snapshot",
             "fragment",
-            "classify",
-            "synthesize",
-            "validate",
-            "export_apply",
-            "closeout_review"
+            "route",
+            "reconcile",
+            "interview",
+            "plan",
+            "compose",
+            "verify_staging",
+            "apply",
+            "verify_applied",
+            "closeout"
           ]
         },
         "validationStatus": {

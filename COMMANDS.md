@@ -22,6 +22,14 @@ Check that public English/Portuguese document pairs link each other:
 node scripts/check-public-docs.mjs
 ```
 
+## Run the test suite
+
+```bash
+node --test "scripts/__tests__/**/*.test.mjs"
+```
+
+Runs the kit's test harness with Node's native test runner (no dependencies). Fixtures and helpers live under `scripts/__tests__/` and are excluded from the distributable package (`manifests/kit-manifest.json:packExcludes`).
+
 ## Validate a generated package
 
 ```bash

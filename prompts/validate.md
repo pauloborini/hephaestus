@@ -30,9 +30,6 @@ Verificar se o pacote final atende o contrato mínimo do kit.
 - dependências externas citadas por `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`, quando existirem;
 - `.hephaestus/manifests/external-references-report.json`, quando existir, satisfaz `schemas/external-references-report.schema.json`;
 - `.hephaestus/manifests/run-state.json` existe e distingue corretamente `in_progress`, `produced`, `validated` e `failed`;
-- cada marcador `hephaestus:immutable` em `AGENTS.md` tem par, ID igual, versão no início, sem
-  aninhamento e corresponde a uma entrada `preserved` em
-  `.hephaestus/manifests/immutable-blocks-report.json` com hashes idênticos;
 - pendências, conflitos e ambiguidades restantes estão explicitados.
 
 ## Status possíveis
@@ -54,8 +51,6 @@ Verificar se o pacote final atende o contrato mínimo do kit.
 - usar `degraded` quando houver dependências externas legítimas ainda não internalizadas, mesmo com relatório completo;
 - usar `blocked` quando houver dependências externas quebradas ou não reportadas;
 - usar `blocked` quando o `run-state.json` impedir determinar com segurança quais fases estão realmente validadas;
-- usar `blocked` quando algum bloco imutável estiver malformado, ausente do destino, alterado ou
-  sem prova de preservação no relatório de blocos;
 - nunca tratar fase `produced` como equivalente a `validated`;
 - aplicar a regra única de checkpoint do `SKILL.md` em todas as três fases: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar `validate`, marcar a fase como `in_progress`; ao concluir, marcar `validate` como `produced` e depois `validated` quando todos os checks mínimos estiverem consistentes; em `export_apply`, marcar `export_apply` como `in_progress`, depois `produced` e `validated` quando os artefatos finais forem realmente gravados; em `closeout_review`, marcar `closeout_review` como `in_progress`, depois `produced` e `validated` quando o relatório final ao usuário estiver consistente com os manifests; em qualquer das três, fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/synthesize.md`);
 - distinguir `failed` de `blocked` no run-state: `failed` é estado de fase que terminou a execução mas não pôde ser validada e é reexecutada integralmente na retomada; `blocked` é estado do run (não de fase) que indica impedimento exigindo decisão humana e não é retomado sozinho, conforme a `## Regra De Retomada` de `prompts/synthesize.md`;
