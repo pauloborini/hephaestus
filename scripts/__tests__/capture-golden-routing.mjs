@@ -22,15 +22,18 @@ const fixturePath = path.join(
 );
 
 const fragments = buildFragments(fixturePath);
-const { routing, questions } = buildRouting(fixturePath, { fragments });
+const { routing, questions } = buildRouting(fixturePath, {
+  fragments,
+  now: "2026-08-12",
+});
 
 const golden = {
   _provenance: {
     fixture: "scripts/__tests__/fixtures/repo-desorganizado",
-    capturedAt: new Date().toISOString().slice(0, 10),
+    capturedAt: "2026-08-12",
     command: "node scripts/__tests__/capture-golden-routing.mjs",
     generatedBy:
-      "routing-engine.mjs (níveis 1-4 determinísticos, catálogo real) + resíduo da LLM congelado (S9)",
+      "routing-engine.mjs (níveis 1-4 determinísticos, catálogo real) + resíduo da LLM congelado (S9); done/ expandido DEC-002",
     fragmentCount: fragments.length,
   },
   entries: routing,

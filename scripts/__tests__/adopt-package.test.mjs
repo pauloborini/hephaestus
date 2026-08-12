@@ -44,7 +44,19 @@ test("AC-4.3.1/CN1: os quatro territórios existem e estão coerentes", () => {
   // process
   assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", ".gitignore")));
   assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", "brainstorming", "tema-x.md")));
-  assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", "done", "GUIDE.md")));
+  assert.ok(
+    fs.existsSync(
+      path.join(
+        FIXTURE,
+        ".app-work",
+        "done",
+        "2026-08",
+        "semana-33_08-10_a_08-16",
+        "XPTO_GUIDE",
+        "GUIDE.md",
+      ),
+    ),
+  );
   assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", "references", "analise-argus.md")));
 });
 
@@ -70,7 +82,10 @@ test("AC-4.3.1/CN1: guide e brainstorm foram movidos para .app-work/ sem reescri
   const origem = path.join(import.meta.dirname, "fixtures", "repo-desorganizado");
   const moved = [
     ["docs/brainstorming/tema-x.md", ".app-work/brainstorming/tema-x.md"],
-    ["docs/guides/XPTO_GUIDE/GUIDE.md", ".app-work/done/GUIDE.md"],
+    [
+      "docs/guides/XPTO_GUIDE/GUIDE.md",
+      ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
+    ],
     ["docs/archive/clones-oss/analise-argus.md", ".app-work/references/analise-argus.md"],
   ];
   for (const [src, dest] of moved) {
@@ -122,28 +137,26 @@ test("AC-4.3.2/CN1: INDEX.md lista exatamente os domínios existentes e Por feat
 });
 
 test("AC-4.3.3/CN1: scaffold sem pasta fora da lista fechada de SCHEMA.md §2 e .app-work/.gitignore presente", () => {
-  // filhos de diretório permitidos pela lista fechada de SCHEMA.md §2
-  const allowedChildren = {
+  // lista fechada = filhos diretos de .app-work e _app-vault — nesting sob
+  // done/ (mês/semana) é conteúdo, não pasta nova da lista (DEC-002)
+  const allowedTopLevel = {
     "_app-vault": new Set(["docs", "specs"]),
     "_app-vault/docs": new Set(["decisions", "TEMPLATES"]),
     ".app-work": new Set([
       "guides", "brainstorming", "prd", "references", "private", "issues", "done", "archive",
     ]),
   };
-  const checkDir = (relDir) => {
+  for (const [relDir, allowed] of Object.entries(allowedTopLevel)) {
     const abs = path.join(FIXTURE, relDir);
-    const allowed = allowedChildren[relDir] ?? new Set();
+    if (!fs.existsSync(abs)) continue;
     for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       assert.ok(
         allowed.has(entry.name),
         `${relDir}/${entry.name} fora da lista fechada de SCHEMA.md §2`,
       );
-      checkDir(`${relDir}/${entry.name}`);
     }
-  };
-  checkDir("_app-vault");
-  checkDir(".app-work");
+  }
   // .app-work/.gitignore versionado mesmo com conteúdo mínimo
   const gitignore = read(".app-work/.gitignore");
   assert.ok(gitignore.includes("references/"), gitignore);
@@ -167,7 +180,7 @@ test("AC-4.3.x/CN1: replay do pipeline sobre cópia do fixture reproduz os terri
     ".app-work/.gitignore",
     ".app-work/references/analise-argus.md",
     ".app-work/brainstorming/tema-x.md",
-    ".app-work/done/GUIDE.md",
+    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
   ];
   for (const rel of compared) {
     assert.equal(files.get(rel), read(rel), `replay divergiu em ${rel}`);

@@ -227,7 +227,7 @@ export const discoverMaintain = (root, { state = {}, driftCatalog } = {}) => {
 export const runMaintainPipeline = (root, { state = {}, residue = [], now = "2026-08-12" } = {}) => {
   const inventory = discoverMaintain(root, { state });
   const fragments = buildFragments(root);
-  const { routing, questions } = buildRouting(root, { fragments, state, residue });
+  const { routing, questions } = buildRouting(root, { fragments, state, residue, now });
   const srcByFragment = new Map(fragments.map((f) => [f.fragmentId, f.provenance[0].sourcePath]));
   const planEntries = routing.map((entry) => {
     const src = srcByFragment.get(entry.fragmentId);

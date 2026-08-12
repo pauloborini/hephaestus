@@ -138,7 +138,7 @@ const INDEX_README = `# Índice do projeto
 // (entrada do staging-manifest e do artifactsWritten).
 export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
   const fragments = buildFragments(fixtureRoot);
-  const { routing, questions } = buildRouting(fixtureRoot, { fragments });
+  const { routing, questions } = buildRouting(fixtureRoot, { fragments, now });
   const { identityMap, conflicts, decisions } = reconcileVault({
     fragments,
     routing,

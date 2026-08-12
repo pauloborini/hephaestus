@@ -68,7 +68,7 @@ test("AC-5.3.1: shield por prefixo de pasta blinda todos os arquivos sob ela", (
   const guideAbs = path.join(fixture, GUIDE_SRC);
   assert.ok(fs.existsSync(guideAbs), "arquivo sob pasta blindada deve permanecer no lugar");
   // nada foi movido para .app-work/done/
-  assert.ok(!fs.existsSync(path.join(fixture, ".app-work", "done", "GUIDE.md")));
+  assert.ok(!fs.existsSync(path.join(fixture, ".app-work", "done")));
 });
 
 test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plano antes de aplicar", () => {
@@ -100,10 +100,25 @@ test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plan
   const moveEntry = planEntries.find((e) => e.origin === guideFrag.fragmentId);
   assert.ok(moveEntry, "operação do guia deve aparecer no plano");
   assert.equal(moveEntry.operation, "move", "remoção/reabsorção é operação move no plano");
-  assert.equal(moveEntry.artifactPath, ".app-work/done/GUIDE.md");
+  assert.equal(
+    moveEntry.artifactPath,
+    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
+  );
   // após o apply (sem blindagem), o conteúdo saiu da origem
   assert.ok(!fs.existsSync(path.join(fixture, GUIDE_SRC)), "sem shield o guia é reabsorvido");
-  assert.ok(fs.existsSync(path.join(fixture, ".app-work", "done", "GUIDE.md")));
+  assert.ok(
+    fs.existsSync(
+      path.join(
+        fixture,
+        ".app-work",
+        "done",
+        "2026-08",
+        "semana-33_08-10_a_08-16",
+        "XPTO_GUIDE",
+        "GUIDE.md",
+      ),
+    ),
+  );
   // não enfileira: o catálogo decide com confiança alta
   assert.ok(!questions.some((q) => q.sourcePath === GUIDE_SRC));
 });
@@ -116,5 +131,17 @@ test("AC-5.3.1: o mesmo arquivo fora da lista na execução seguinte é reabsorv
   // execução 2: mesmo arquivo fora da lista — é reabsorvido
   runOnce(fixture, stateWithShield([]));
   assert.ok(!fs.existsSync(path.join(fixture, GUIDE_SRC)), "blindagem removida ⇒ reabsorve");
-  assert.ok(fs.existsSync(path.join(fixture, ".app-work", "done", "GUIDE.md")));
+  assert.ok(
+    fs.existsSync(
+      path.join(
+        fixture,
+        ".app-work",
+        "done",
+        "2026-08",
+        "semana-33_08-10_a_08-16",
+        "XPTO_GUIDE",
+        "GUIDE.md",
+      ),
+    ),
+  );
 });

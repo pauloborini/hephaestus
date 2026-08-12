@@ -38,6 +38,7 @@ Materializar o scaffold de processo conforme a lista fechada de `references/vaul
 
 - `.app-work/.gitignore` — **mesmo em projeto verde**, versionado, com as linhas `references/` e `private/` (e `issues/` quando o repositório for público);
 - apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `done/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
+- sob `done/`, materializar o nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo` do `destinationPath` já expandido pela cascata (DEC-002) — não achatar na raiz de `done/`;
 - fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
 
 ## Blindagem (shield)

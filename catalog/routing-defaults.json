@@ -14,7 +14,7 @@
       "destination": ".app-work/done/",
       "confidence": "alta",
       "since": "D29+Argus",
-      "reason": "todo guide executado vai a done"
+      "reason": "todo guide executado vai a done; a cascata expande `.app-work/done/` para `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo/` (DEC-002, data civil do run, semana ISO seg–dom)"
     },
     {
       "pattern": "brainstorms (`docs/brainstorming/`, equivalentes)",
