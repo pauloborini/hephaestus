@@ -42,7 +42,11 @@ _app-vault/                 # VERDADE VIGENTE — visível, buscável
   references/               # refs open source de terceiros — SEMPRE gitignored
   private/                  # área privada (sessões, roadmap, research, ops, auditorias) — SEMPRE gitignored
   issues/                   # registro de defeitos — versionado em repo privado; gitignored em repo público (D43)
-  done/                     # guides executados
+  done/                     # guides executados — nesting mês/semana (DEC-002)
+    YYYY-MM/
+      semana-WW_MM-DD_a_MM-DD/
+        <NOME>_GUIDE/       # pack preservado
+        <arquivo>.md        # guide solto (sem pack)
   archive/                  # o que o usuário quis guardar — sem formato, apagável
 ```
 
@@ -71,14 +75,18 @@ acidental ali é indistinguível de regra própria. O ignore viaja com o schema:
 
 ### 2.2 Ciclos
 
-- **Guide** — nasce em `.app-work/guides/`, é executado, vai para `.app-work/done/`. Nunca
-  consultado em análise de feature, infraestrutura ou arquitetura.
+- **Guide** — nasce em `.app-work/guides/`, é executado, vai para
+  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (ou arquivo solto sob a
+  semana). Semana ISO (segunda–domingo); pasta do mês = mês da segunda da semana; data = momento
+  em que o guide entra em `done/` (ou é reorganizado do flat legado). Path já no nesting é
+  canônico (não-toque); flat sob `done/` migra na próxima execução. Nunca consultado em análise
+  de feature, infraestrutura ou arquitetura.
 - **Brainstorm** — ao fechar, roteia e não permanece como referência viva: produto →
   `_app-vault/docs/decisions/`; arquitetura/implementação → `project-rules/`.
 - **PRD** — proposta datada, nem sempre cumprida na totalidade. Não é contrato.
 - **Archive** — depósito do usuário: guarda o que ele quiser, sem formato imposto, apagável a
   qualquer momento. Nenhuma regra do schema depende do que está lá. Distinto de `done/`, que tem
-  conteúdo definido (guides executados).
+  conteúdo definido (guides executados no nesting mês/semana).
 - **Private** — área privada: sessões, roadmap, research, ops, backlog e relatórios de auditoria de
   feature. Sempre gitignored — nunca sobe ao remoto, logo só existe na máquina local. Como todo
   `.app-work/`, é proibida como insumo de regra.
@@ -107,6 +115,7 @@ não hermética.
 
 - `docs/TEMPLATES/` **maiúsculo** (minúsculo passa em macOS e quebra em Linux/CI).
 - Guides: `.app-work/guides/<NOME>_GUIDE/`, `<NOME>` em `MAIUSCULO_COM_UNDERSCORE`.
+  Executados: `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (DEC-002).
 - Decisões: `docs/decisions/<dominio>.md`, kebab-case.
 - Gatilho do framework: `_app-vault/INDEX.md` existe. Sem ele, o agente **não cria** o vault.
 

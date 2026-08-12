@@ -37,14 +37,21 @@ Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, bas
 
 - entrada com `destination: null` **nunca decide** — enfileira pergunta;
 - entrada com `confidence: baixa` **nunca decide** — enfileira pergunta;
-- entrada com `confidence: alta` e destino concreto decide `decidedBy: catalog`.
+- entrada com `confidence: alta` e destino concreto decide `decidedBy: catalog`;
+- destino `.app-work/done/` (raiz do catálogo) **não** é o path final: expandir para
+  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (pack) ou
+  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/` (arquivo solto) — semana ISO
+  (segunda–domingo), pasta do mês = mês da segunda, data = data civil do run
+  (DEC-002). O `destinationPath` emitido é o path expandido (termina em `/`).
 
 ### Nível 4 — detectores sintáticos
 
 Classificação estrutural determinística (a mesma usada no nível 1), nesta ordem:
 
 - regra de domínio enterrada no contrato do agente — origem `AGENTS.md` legado (com seção de regra, ex. `## Regra de domínio`) ou arquivo de regras de agente de outra ferramenta (os globs vigiados de `catalog/drift-catalog.json`) + verbo deôntico ⇒ regra → `project-rules/rules/`;
-- origem já em território canônico (`AGENTS.md`, `project-rules/`, `_app-vault/`, `.app-work/`) ⇒ destino é a própria origem — regra do não-toque: o conteúdo adotado fica no lugar, e uma rodada de `maintain` sem drift não reclassifica o que já está no território certo (INV2/INV11/CN2), mesmo quando o texto menciona `openapi`, `DEC-NNN` ou verbos deônticos;
+- origem em `.app-work/done/` **já** no nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/` ⇒ destino é a própria origem — não-toque (DEC-002);
+- origem em `.app-work/done/` **flat** (legado, fora do nesting) ⇒ expandir para a semana do run (DEC-002) — relocate, nunca keep;
+- origem já em território canônico (`AGENTS.md`, `project-rules/`, `_app-vault/`, `.app-work/` fora do caso flat de `done/`) ⇒ destino é a própria origem — regra do não-toque: o conteúdo adotado fica no lugar, e uma rodada de `maintain` sem drift não reclassifica o que já está no território certo (INV2/INV11/CN2), mesmo quando o texto menciona `openapi`, `DEC-NNN` ou verbos deônticos;
 - OpenAPI/JSON-Schema (texto com `openapi` ou `json-schema`) ⇒ contrato → `project-rules/contracts/`;
 - heading + verbo deôntico + valor numérico ⇒ candidato a decisão → `_app-vault/docs/decisions/`;
 - tabela tipo→arquivo ⇒ índice → `project-rules/index/`;

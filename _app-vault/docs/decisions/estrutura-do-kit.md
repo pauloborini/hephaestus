@@ -2,6 +2,14 @@
 
 Afeta: [governanca-kit]
 
+### DEC-002 — Guides em done/ segmentados por mês e semana ISO
+
+Guide executado vive em `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (pack) ou
+arquivo solto sob a pasta da semana. Semana ISO (segunda–domingo); pasta do mês = mês da segunda;
+data = momento em que o guide entra em `done/` (ou é reorganizado). Path já segmentado é canônico
+(não-toque); flat sob `done/` migra. A raiz da lista fechada continua `done/` — só muda o nesting.
+Catálogo mantém destino `.app-work/done/`; a cascata expande para o path da semana.
+
 ## Histórico
 
 - 2026-08-11 — DEC-001 removida. Era: blocos delimitados por `hephaestus:immutable` preservados
