@@ -23,6 +23,23 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - o próprio `staging-manifest.json` não entra na lista que descreve;
 - nenhuma pergunta aqui: dúvida nesta fase é bug de fase anterior, nunca pergunta ao usuário.
 
+## Territórios de produto (`_app-vault/`)
+
+Materializar as decisões reconciliadas (`identity-map.json` da fase `reconcile`, Plano 04) a partir dos templates absorvidos:
+
+- `_app-vault/docs/decisions/<dominio>.md` — um arquivo por domínio de produto, instanciado de `templates/vault/DECISION_TEMPLATE.md` com os comentários removidos: heading `### DEC-NNN — <regra>` com o ID cunhado/alterado pelo `reconcile`, enunciado vigente e notas inline preservadas; `Afeta:` logo após o título, acima da primeira cláusula, com features em kebab-case do vocabulário do projeto;
+- `_app-vault/INDEX.md` — instanciado de `templates/vault/INDEX_TEMPLATE.md`: `## Domínios` com um ponteiro por arquivo de `docs/decisions/`; lista de features válidas declarada **acima** de `## Por feature`; `## Por feature` **derivado** dos campos `Afeta:` de todos os arquivos — nunca escrito à mão; divergindo, `Afeta:` é a verdade e o índice é corrigido (`SCHEMA.md` §7);
+- remoções decididas pelo `reconcile` ganham a linha em `## Histórico` no fim do arquivo do domínio — o ID continua imortal ao inventário de numeração;
+- nada de `.app-work/` é indexado no `INDEX.md` — indexá-lo o torna descobrível e desfaz a separação (`SCHEMA.md` §3).
+
+## Scaffold de `.app-work/`
+
+Materializar o scaffold de processo conforme a lista fechada de `references/vault-schema/SCHEMA.md` §2:
+
+- `.app-work/.gitignore` — **mesmo em projeto verde**, versionado, com as linhas `references/` e `private/` (e `issues/` quando o repositório for público);
+- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `done/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
+- fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
+
 ## Regras
 
 - começar por `AGENTS.md`;
@@ -56,7 +73,7 @@ Antes de concluir a composição:
 4. registrar fragmentos `unknown`, conflitantes ou de baixa confiança como pendência;
 5. confirmar que `AGENTS.md` não virou depósito de regras;
 6. registrar referências externas citadas por arquivos de `project-rules/` em `.hephaestus/staging/.hephaestus/manifests/external-references-report.json`;
-7. persistir `.hephaestus/staging/.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
+7. persistir `.hephaestus/staging/.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; as entradas de território `vault` já decididas pelo `reconcile` são preservadas (nunca reescritas à mão); o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
 
 ## Relatório De Dependências Externas
 
@@ -117,4 +134,6 @@ Gerar apenas arquivos sustentados pelo material disponível, usando nomes previs
 3. `project-rules/rules/*`
 4. `project-rules/reference/*`
 5. `project-rules/contracts/*` (quando houver)
-6. `.hephaestus/manifests/*`
+6. `_app-vault/` (decisões do `identity-map.json` + `INDEX.md` derivado de `Afeta:`)
+7. `.app-work/` (scaffold da lista fechada + realocação dos fragmentos `relocate`)
+8. `.hephaestus/manifests/*`

@@ -81,6 +81,9 @@ const printUsage = () => {
       "  - territory x regime legality per coverage entry",
       "  - .hephaestus/ gitignored (CN12) and absent from the git index",
       "  - .hephaestus/plan.json contract (origin tracing; INV7)",
+      "  - DEC identity: no renumbered/reused ID, none live and in Histórico (INV3)",
+      "  - single territory: no decision value duplicated in project-rules without citation (INV4)",
+      "  - AGENTS territory: no vault fragment housed in AGENTS.md (CN8)",
       "  - snapshot coverage: every byte belongs to a fragment or declared ignored region (INV5)",
       "  - keep bytes: routing keep fragments copied byte by byte (INV2)",
       "  - residue gate: llm residue degrading destinations require degraded verdict + nominal list (D26)",
@@ -508,6 +511,269 @@ const checkTerritoryRegime = (root) => {
   return `territory×regime: ${evaluated} entrie(s) legally combined.`;
 };
 
+// INV3 / AC-4.1.x (D17): identidade de decisão. `checkDecIdentity` coleta os
+// IDs de `_app-vault/docs/decisions/**` de DUAS fontes — headings `### DEC-NNN`
+// (cláusulas vivas) e IDs citados nas linhas da seção `## Histórico` — e
+// reprova quando: um ID aparece nas duas listas (decisão removida reusada como
+// viva); o `identity-map.json` registra `create` com ID menor ou igual ao
+// `inventoriedMax` (cunhagem reusaria ID existente) ou reusa ID presente em
+// `## Histórico`; ou registra `keep`/`amend`/`remove` com `decId` diferente do
+// `matchedId` (renumeração detectável). Restringir o inventário às cláusulas
+// vivas é o P0-3 do pre-mortem: um vault com `DEC-002` só no `## Histórico`
+// passaria a cunhar `DEC-002` de novo, reapontando toda citação externa.
+const DEC_HEADING_RE = /^###\s+(DEC-\d+)\b/gm;
+
+const collectDecisionIds = (root) => {
+  const decisionsDir = path.join(root, "_app-vault", "docs", "decisions");
+  if (!fs.existsSync(decisionsDir)) {
+    return { live: [], historico: [], max: 0 };
+  }
+  const live = new Set();
+  const historico = new Set();
+  let max = 0;
+  const stack = [decisionsDir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const abs = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(abs);
+        continue;
+      }
+      if (!entry.name.endsWith(".md")) continue;
+      const content = fs.readFileSync(abs, "utf8");
+      const historicoIndex = content.indexOf("## Histórico");
+      const livePart = historicoIndex === -1 ? content : content.slice(0, historicoIndex);
+      const historicoPart = historicoIndex === -1 ? "" : content.slice(historicoIndex);
+      for (const match of livePart.matchAll(DEC_HEADING_RE)) {
+        live.add(match[1]);
+      }
+      for (const match of historicoPart.matchAll(/DEC-(\d+)/g)) {
+        historico.add(`DEC-${match[1]}`);
+      }
+    }
+  }
+  for (const id of [...live, ...historico]) {
+    const n = Number(id.slice(4));
+    if (n > max) max = n;
+  }
+  return { live: [...live], historico: [...historico], max };
+};
+
+const DEC_ACTIONS = new Set(["keep", "amend", "create", "remove"]);
+
+const checkDecIdentity = (root) => {
+  const identityPath = path.join(root, ".hephaestus", "manifests", "identity-map.json");
+  const decisionsDir = path.join(root, "_app-vault", "docs", "decisions");
+  if (!fs.existsSync(identityPath) && !fs.existsSync(decisionsDir)) {
+    return "identidade DEC: sem _app-vault/docs/decisions/ e sem identity-map.json (skipped).";
+  }
+  const ids = collectDecisionIds(root);
+  const fileLabel = path.relative(root, identityPath);
+
+  const both = ids.live.filter((id) => ids.historico.includes(id));
+  if (both.length > 0) {
+    fail(
+      `identidade DEC: ${both[0]} presente ao mesmo tempo como cláusula viva e em ## Histórico — ID removido não pode ser reusado (INV3)`,
+    );
+  }
+
+  const identity = readJsonObject(identityPath);
+  if (identity === null) {
+    return "identidade DEC: identity-map.json ausente; IDs do vault conferidos sem mapa (sem cunhagem a validar).";
+  }
+  if (!Object.prototype.hasOwnProperty.call(identity, "inventoriedMax")) {
+    fail(`${fileLabel}: missing required property "inventoriedMax"`);
+  }
+  if (
+    typeof identity.inventoriedMax !== "number" ||
+    identity.inventoriedMax < 0 ||
+    !Number.isInteger(identity.inventoriedMax)
+  ) {
+    fail(`${fileLabel}: inventoriedMax must be a non-negative integer`);
+  }
+  if (!Array.isArray(identity.entries)) {
+    fail(`${fileLabel}: missing "entries" array`);
+  }
+  const inventoriedMax = identity.inventoriedMax;
+  for (const [index, entry] of identity.entries.entries()) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      fail(`${fileLabel}: entries[${index}] must be an object`);
+    }
+    for (const requiredKey of ["fragmentId", "decId", "action", "domain", "matchedId"]) {
+      if (!Object.prototype.hasOwnProperty.call(entry, requiredKey)) {
+        fail(`${fileLabel}: entries[${index}] missing required property "${requiredKey}"`);
+      }
+    }
+    if (typeof entry.fragmentId !== "string" || entry.fragmentId.length === 0) {
+      fail(`${fileLabel}: entries[${index}] fragmentId must be a non-empty string`);
+    }
+    if (typeof entry.decId !== "string" || !/^DEC-\d+$/.test(entry.decId)) {
+      fail(`${fileLabel}: entries[${index}] decId "${entry.decId}" must match DEC-NNN`);
+    }
+    if (typeof entry.domain !== "string" || entry.domain.length === 0) {
+      fail(`${fileLabel}: entries[${index}] domain must be a non-empty string`);
+    }
+    if (!DEC_ACTIONS.has(entry.action)) {
+      fail(`${fileLabel}: entries[${index}] action "${entry.action}" not in {keep, amend, create, remove}`);
+    }
+    const decNumber = Number(entry.decId.slice(4));
+    if (entry.action === "create") {
+      if (entry.matchedId !== null) {
+        fail(`${fileLabel}: entries[${index}] create com matchedId "${entry.matchedId}" — create não casa com ID pré-existente (INV3)`);
+      }
+      if (decNumber <= inventoriedMax) {
+        fail(
+          `${fileLabel}: entries[${index}] create ${entry.decId} com ID menor ou igual ao max inventariado (${inventoriedMax}) — cunhagem reusaria ID existente (INV3)`,
+        );
+      }
+      if (ids.historico.includes(entry.decId)) {
+        fail(`${fileLabel}: entries[${index}] create ${entry.decId} reusa ID presente em ## Histórico (INV3)`);
+      }
+    } else {
+      if (typeof entry.matchedId !== "string" || entry.matchedId !== entry.decId) {
+        fail(
+          `${fileLabel}: entries[${index}] ${entry.action} de ${entry.decId} com matchedId "${entry.matchedId}" — renumeração detectável (INV3)`,
+        );
+      }
+      if (entry.action === "remove") {
+        if (!ids.historico.includes(entry.decId)) {
+          fail(`${fileLabel}: entries[${index}] remove de ${entry.decId} sem linha em ## Histórico no vault (INV3)`);
+        }
+      } else if (!ids.live.includes(entry.decId)) {
+        fail(`${fileLabel}: entries[${index}] ${entry.action} de ${entry.decId} sem cláusula viva correspondente no vault (INV3)`);
+      }
+    }
+  }
+  return `identidade DEC: ${ids.live.length} cláusula(s) viva(s), ${ids.historico.length} ID(s) no Histórico, ${identity.entries.length} entrada(s) no mapa sem reuso nem renumeração (INV3).`;
+};
+
+// INV4 / AC-4.2.1 (D18): um valor de regra existe em exatamente um território.
+// `checkDuplicatedValue` extrai de cada cláusula de `_app-vault/docs/decisions/**`
+// os VALORES — números com unidade, limites, itens de enumeração explícita —
+// e procura ocorrência literal dos mesmos valores em `project-rules/**`.
+// Ocorrência acompanhada da citação da `DEC-NNN` correspondente na mesma linha
+// ou no mesmo bloco (parágrafo) é a referência prescrita e passa; ocorrência
+// sem citação reprova nomeando o valor, a DEC-NNN e o arquivo de project-rules.
+// A extração exige número + unidade (nunca um dígito solto) para não reprovar
+// por coincidência textual de um `20` qualquer.
+const DEC_VALUE_PATTERNS = [
+  // moeda: R$ 99, R$ 99/ano
+  /R\$\s?\d+(?:[.,]\d+)?(?:\s*\/\s*[a-zà-ú]+)?/gi,
+  // número + unidade (ex.: 20 exports/mês, 20 consultas por mês, 3 projetos)
+  /\b\d+(?:[.,]\d+)?\s+[a-zà-ú]{2,}(?:\s*\/\s*[a-zà-ú]{2,})?(?:\s+por\s+[a-zà-ú]{2,})?/gi,
+];
+
+const extractDecisionValues = (decisionsFile, body) => {
+  const values = new Set();
+  for (const pattern of DEC_VALUE_PATTERNS) {
+    for (const match of body.matchAll(pattern)) {
+      values.add(match[0].replace(/\s+/g, " ").trim().replace(/[.,;:!?)\]}»]+$/, ""));
+    }
+  }
+  return [...values];
+};
+
+const listMdFiles = (root, relDir) => {
+  const absDir = path.join(root, relDir);
+  if (!fs.existsSync(absDir)) return [];
+  const files = [];
+  const stack = [absDir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const abs = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(abs);
+        continue;
+      }
+      if (entry.name.endsWith(".md")) {
+        files.push(path.relative(root, abs));
+      }
+    }
+  }
+  return files.sort();
+};
+
+const checkDuplicatedValue = (root) => {
+  const decisionsFiles = listMdFiles(root, path.join("_app-vault", "docs", "decisions"));
+  if (decisionsFiles.length === 0) {
+    return "território único: sem _app-vault/docs/decisions/ (skipped).";
+  }
+  const prFiles = listMdFiles(root, path.join("project-rules"));
+  if (prFiles.length === 0) {
+    return "território único: sem project-rules/ (skipped).";
+  }
+  const prContents = prFiles.map((rel) => ({
+    rel,
+    content: fs.readFileSync(path.join(root, rel), "utf8"),
+  }));
+
+  const tokens = [];
+  for (const rel of decisionsFiles) {
+    const content = fs.readFileSync(path.join(root, rel), "utf8");
+    const clauses = content.split(/^###\s+DEC-\d+/m);
+    const heads = [...content.matchAll(/^###\s+(DEC-\d+)\b/gm)].map((m) => m[1]);
+    for (let i = 0; i < heads.length; i += 1) {
+      const body = clauses[i + 1] ?? "";
+      const bodyPart = body.split(/^##\s/m)[0];
+      for (const value of extractDecisionValues(rel, bodyPart)) {
+        tokens.push({ value, decId: heads[i], file: rel });
+      }
+    }
+  }
+
+  for (const token of tokens) {
+    for (const { rel, content } of prContents) {
+      const paragraphs = content.split(/\n\s*\n/);
+      for (const paragraph of paragraphs) {
+        const normalized = paragraph.replace(/\s+/g, " ");
+        if (!normalized.includes(token.value)) continue;
+        const citesId = new RegExp(`\\b${token.decId}\\b`).test(normalized);
+        if (!citesId) {
+          fail(
+            `território único: valor "${token.value}" da ${token.decId} (${token.file}) duplicado literalmente em ${rel} sem citar o ID — project-rules/ referencia a DEC-NNN, nunca copia o valor (D18/INV4)`,
+          );
+        }
+      }
+    }
+  }
+  return `território único: ${tokens.length} valor(es) de decisão conferido(s) contra ${prFiles.length} arquivo(s) de project-rules/ sem duplicação sem citação (INV4).`;
+};
+
+// CN8 / AC-4.2.2: `checkAgentsTerritory` reprova regra de produto alojada no
+// `AGENTS.md`. Duas frentes: (a) o `coverage-map.json` registra fragmento com
+// `territory: vault` cujo `outputPath` é `AGENTS.md` — a cascata realocaria o
+// fragmento, o gate confirma que não sobrou; (b) o `AGENTS.md` contém cláusula
+// de decisão (`### DEC-NNN`) embutida, sem ponteiro — valor de decisão não
+// mora no AGENTS.md.
+const checkAgentsTerritory = (root) => {
+  const coveragePath = path.join(root, ".hephaestus", "manifests", "coverage-map.json");
+  const parsed = readJsonObject(coveragePath);
+  if (parsed !== null) {
+    const entries = Array.isArray(parsed.coverageEntries) ? parsed.coverageEntries : [];
+    for (const [index, entry] of entries.entries()) {
+      if (typeof entry !== "object" || entry === null) continue;
+      if (
+        entry.territory === "vault" &&
+        (entry.outputPath === "AGENTS.md" || entry.outputPath.startsWith("AGENTS.md/"))
+      ) {
+        fail(
+          `AGENTS.md: fragmento ${entry.fragmentId} com territory vault alojado no AGENTS.md (coverage-map[${index}]) — regra de produto fora do território (CN8)`,
+        );
+      }
+    }
+  }
+  const agentsPath = path.join(root, "AGENTS.md");
+  if (fs.existsSync(agentsPath)) {
+    const contents = fs.readFileSync(agentsPath, "utf8");
+    if (/^###\s+DEC-\d+/m.test(contents)) {
+      fail("AGENTS.md: contém cláusula de decisão (### DEC-NNN) sem ponteiro — valor de decisão não mora no AGENTS.md (CN8)");
+    }
+  }
+  return "AGENTS.md: nenhum fragmento vault alojado; sem cláusula DEC embutida (CN8).";
+};
+
 // CN12 / AC-2.2.1 (D6): `.hephaestus/` é 100% gitignored. Exige a linha
 // `.hephaestus/` no `.gitignore` do alvo (ou em `.git/info/exclude`) e que
 // nenhum arquivo sob `.hephaestus/` conste do índice do git — por amostragem
@@ -915,6 +1181,9 @@ const main = (argv) => {
     checkExternalReferences(root),
     checkCoverageMap(root),
     checkTerritoryRegime(root),
+    checkDecIdentity(root),
+    checkDuplicatedValue(root),
+    checkAgentsTerritory(root),
     checkEphemeralIgnored(root),
     checkPlanContract(root),
     checkCoverage(root),
