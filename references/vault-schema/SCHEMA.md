@@ -6,8 +6,9 @@
 
 Referência operacional das skills de vault. Contém o **quê**; o **porquê** fica na SPEC.
 
-O `AGENTS.md` do projeto **não** cita este arquivo: ele contém somente a âncora imutável do vault
-(ver `ANCHOR_AGENTS.md`). O protocolo de leitura/escrita chega pela instrução global.
+O `AGENTS.md` do projeto **não** cita este arquivo: ele contém somente a âncora imutável do vault.
+O protocolo de leitura/escrita chega pela instrução global (no Hephaestus, a seção de produto do
+`AGENTS.md` é conteúdo gerado pela execução de `/hephaestus` — D8).
 
 ---
 
@@ -114,9 +115,9 @@ não hermética.
 Classificação legado → canônico (adoção **e** manutenção) usa `ROUTING_DEFAULTS.md` (mesmo
 diretório deste arquivo). É asset **vivo**: linhas de confiança `alta` evitam reperguntar;
 respostas novas a classificação ambígua viram candidatos e só entram na tabela após promoção
-explícita no gate D42 — handoff do `vault-migrate` **ou** fim da correção / modalidade
-roteamento do `vault-maintain`. Destino ilegal (fora da §2) é recusado. Ver procedimento nas
-skills.
+explícita no gate D42 — handoff da adoção (`/hephaestus` modo `adopt`) **ou** fim da correção /
+modalidade roteamento do modo `maintain` (`/hephaestus`). Destino ilegal (fora da §2) é recusado.
+Ver procedimento nas fases do pipeline do Hephaestus.
 
 ---
 
@@ -283,7 +284,7 @@ existente:
    `## Domínios`, lista de features válidas e `## Por feature` (§3, §7).
 
 Sem o passo 3, "sem conflito → nada a escrever" vira drift silencioso. Sem o passo 4, o índice fica
-divergente até a próxima varredura de `vault-maintain`.
+divergente até a próxima execução de manutenção (`/hephaestus` modo `maintain`).
 
 ### 5.4 Cross-domínio
 
@@ -316,7 +317,7 @@ corrente.
 teste, detalhe interno.
 
 **Backstop:** ao fechar plano ou guide, o executor registra `Candidatos a decisão` no `LEDGER.md`
-do pack, com o texto da regra e onde foi citada. A skill `vault-maintain` apresenta em lote.
+do pack, com o texto da regra e onde foi citada. O modo `maintain` de `/hephaestus` apresenta em lote.
 Backstop é rede de segurança, não caminho principal.
 
 ---
@@ -330,7 +331,8 @@ Backstop é rede de segurança, não caminho principal.
 - **Caso transversal** (segurança, logging, i18n, privacidade): a decisão mora em domínio próprio
   e é tagueada em todas as features que toca. Não existe domínio "transversal" só de ponteiros.
 - **Derivação, não escrita livre.** Divergindo, `Afeta:` é a verdade e o `INDEX.md` é corrigido.
-  A derivação roda **na própria escrita** (§5.3 passo 4), não só na varredura de `vault-maintain`.
+  A derivação roda **na própria escrita** (§5.3 passo 4), não só na varredura de manutenção
+  (`/hephaestus` modo `maintain`).
 
 ---
 
@@ -342,8 +344,8 @@ Backstop é rede de segurança, não caminho principal.
 | **Código** | `project-rules/` | normas de implementação ao codar |
 | **Processo** | `.app-work/` | guide, brainstorm, PRD, references, issues — descartável |
 
-A adoção não mescla os três. O `AGENTS.md` do projeto recebe apenas a âncora imutável de produto
-(ver `ANCHOR_AGENTS.md`); `.app-work/` **não** é ancorado — é justamente o que não deve ser
+A adoção não mescla os três. O `AGENTS.md` do projeto recebe apenas a seção de produto gerada
+pelo Hephaestus (conteúdo gerado por `/hephaestus` — D8); `.app-work/` **não** é ancorado — é justamente o que não deve ser
 consultado.
 
 **Caso híbrido** (~15% das regras): o **efeito observável pelo usuário final** vai para

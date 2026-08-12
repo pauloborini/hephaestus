@@ -1,7 +1,8 @@
 // AC-7.2.1 (S8, ancorada): a lista final de `--exclude` do publicador vem do
 // mesmo dado do empacotador (`manifests/kit-manifest.json:packExcludes`) mais
-// `.git` — nenhuma exclusão de conteúdo vive literalmente no script. Duas
-// listas parciais é exatamente a condição que produziu ISSUE-002.
+// `.git` e o artefato de saída do empacotador (`hephaestus-*.zip`), exclusões
+// próprias do publicador — nenhuma exclusão de conteúdo vive literalmente no
+// script. Duas listas parciais é exatamente a condição que produziu ISSUE-002.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -23,7 +24,7 @@ test("AC-7.2.1: nenhum --exclude literal de conteúdo no script de publicação"
   );
 });
 
-test("AC-7.2.1: o script deriva a lista de packExcludes do manifesto e soma .git", () => {
+test("AC-7.2.1: o script deriva a lista de packExcludes do manifesto e soma .git e o zip do release", () => {
   const expressionMatch = script.match(
     /node\s+-e\s+'([^']+)'\s+"(\$\{SOURCE_DIR\}\/manifests\/kit-manifest\.json)"/,
   );
@@ -39,9 +40,13 @@ test("AC-7.2.1: o script deriva a lista de packExcludes do manifesto e soma .git
   const derived = result.stdout.split("\n").filter(Boolean);
   assert.deepEqual(derived, manifest.packExcludes, "derivação diverge do packExcludes do manifesto");
 
-  // A lista final é packExcludes + `.git` (exclusão própria do publicador):
-  // o loop que monta os argumentos adiciona exatamente ".git".
-  assert.ok(/for entry in "\$\{PACK_EXCLUDES\[\@\]\}" "\.git"/.test(script), "loop não soma .git");
+  // A lista final é packExcludes + `.git` + artefato do empacotador
+  // (exclusões próprias do publicador): o loop que monta os argumentos
+  // adiciona exatamente os dois. O zip de release na raiz não viaja para o
+  // repositório público (sem a exclusão, o validador do kit no clone
+  // reprovaria a extensão `.zip` — fail-fast sem vazamento, mas o publish
+  // não deve nem copiá-lo).
+  assert.ok(/for entry in "\$\{PACK_EXCLUDES\[\@\]\}" "\.git" "hephaestus-\*\.zip"/.test(script), "loop não soma .git e hephaestus-*.zip");
   assert.ok(script.includes("--exclude=${entry}"), "argumentos não montados de --exclude=${entry}");
 });
 
