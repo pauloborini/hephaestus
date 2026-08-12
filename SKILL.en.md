@@ -37,6 +37,19 @@ The kit is framework- and language-agnostic.
 
 For multi-step work, keep a checkpoint at `.hephaestus/manifests/run-state.json` in the user's workspace. It enables safe resumption after interruption and is process state, not part of the generated canonical structure. The `.hephaestus/` directory is fully ephemeral and gitignored: staging, backup, run-state and execution ledgers live there, and the `.hephaestus/` line in the target `.gitignore` is guaranteed by the `apply` phase.
 
+## Project state
+
+Besides the ephemeral checkpoint, execution reads and writes the project's **versioned** state at `.app-work/hephaestus-state.json` (lowercase name — the validator gate rejects uppercase variants). It is hand-editable and split into **four blocks** (D29), each with a distinct reading owner:
+
+| Block | Read by | Content |
+|-------|---------|---------|
+| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versions and last run identity |
+| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` |
+| `answers` | `route` (cascade level 2) and `interview` | map `questionKey` → human answer with structured `answer`, `scope` (`this-run`/`this-project`/`promote-to-catalog`) and `sourceEvidence` |
+| `shield` | `route` (before level 1) and `compose` | opt-in shielding of third-party content: list of `{ path, selector }`, empty by default |
+
+The file carries **no metrics**: telemetry (for example `llmDecidedRatio`) lives in `.hephaestus/`, never here — a file that accumulates telemetry stops being hand-editable in practice. Unknown top-level fields are **ignored** and the needed information is asked again, never migrated (D4). `interview` is the only phase that writes the state, outside the transaction: the `verify(applied)` rollback never reverts human answers (INV1, exception declared in `prompts/apply.md`).
+
 ## Core rule
 
 Do not invent the final tree freely. Before producing final artifacts:

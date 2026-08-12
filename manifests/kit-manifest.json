@@ -22,6 +22,7 @@
     "prompts/fragment.md",
     "prompts/route.md",
     "prompts/reconcile.md",
+    "prompts/interview.md",
     "prompts/plan.md",
     "prompts/compose.md",
     "prompts/validate.md",
@@ -63,6 +64,7 @@
     "schemas/external-references-report.schema.json",
     "schemas/routing.schema.json",
     "schemas/run-state.schema.json",
+    "schemas/hephaestus-state.schema.json",
     "schemas/package.schema.json",
     "manifests/naming-policy.json"
   ]

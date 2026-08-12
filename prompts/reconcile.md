@@ -47,6 +47,24 @@ Decisão por caso:
 - **Split obrigatório do caso híbrido** (`SCHEMA.md` §8): uma frase só com norma de produto e norma de implementação exige divisão — o **efeito observável pelo usuário final** (número, limite, item de enumeração, opção de plano) vai para `docs/decisions/` como `DEC-NNN`; a **norma de como implementar** vai para `project-rules/` referenciando o ID, nunca copiando o número;
 - **Cobertura e citações pendentes** antes de qualquer remoção de ID: nenhum `remove` sem a checagem completa do repositório, incluindo caminhos ocultos.
 
+## Fila de perguntas
+
+Perguntas nascem **enfileiradas** — esta fase nunca pergunta (D22). Tudo que precisa de decisão humana sai em `questions.json` com `questionKey = sha256(contexto normalizado)`, drenado por `interview` num único lote.
+
+**Justifica pergunta** (lista fechada — nada além disto enfileira no reconcile):
+
+- conflito de valor entre fontes para a mesma regra — registrado em `conflicts.json`, nunca escolhido aqui;
+- mudança de decisão vigente com valor divergente entre fontes;
+- remoção de `DEC-NNN` com citação pendente não resolvida;
+- remoção de conteúdo de terceiros fora da lista `shield` do state.
+
+**Nunca pergunta** (lista fechada — decidir em silêncio, com evidência):
+
+- rota com match alto já decidida pela cascata (território e regime fixos);
+- decisão por não-toque, identidade congelada (`### DEC-NNN`) ou detector;
+- nome de arquivo, ordem de seções e forma da nota inline;
+- nada já respondido com `scope: this-project` — vinculante e reusado por `questionKey`.
+
 ## Gate
 
 - todo fragmento de território `vault` sai com `action` decidida e `decId` — nunca em silêncio;

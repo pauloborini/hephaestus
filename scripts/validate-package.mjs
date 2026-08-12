@@ -335,6 +335,182 @@ const checkRunState = (root) => {
   return "run-state.json: required keys, enums and no unknown properties.";
 };
 
+// CN10 / AC-5.1.x (D7, D29, D4): contrato do estado versionado
+// `.app-work/hephaestus-state.json` (nome em minúsculo é gate — variante em
+// caixa alta reprova indicando o esperado). Quatro blocos (meta, routing,
+// answers, shield), sem métricas. Bloco de topo que o schema não conhece é
+// IGNORADO e registrado como observação (D4 — retrocompatibilidade zero:
+// ignora o que não entende e repergunta o necessário, nunca migra); bloco
+// conhecido malformado reprova nomeando o bloco.
+const STATE_KNOWN_BLOCKS = ["meta", "routing", "answers", "shield"];
+const STATE_ANSWER_SCOPES = ["this-run", "this-project", "promote-to-catalog"];
+
+const checkStateContract = (root) => {
+  const appWorkPath = path.join(root, ".app-work");
+  if (!fs.existsSync(appWorkPath)) {
+    return "hephaestus-state.json: not present (skipped).";
+  }
+  const wrongCase = fs
+    .readdirSync(appWorkPath)
+    .find(
+      (name) =>
+        name.toLowerCase() === "hephaestus-state.json" && name !== "hephaestus-state.json",
+    );
+  if (wrongCase) {
+    fail(
+      `.app-work/${wrongCase}: nome do estado em caixa alta — esperado .app-work/hephaestus-state.json em minúsculo (D7)`,
+    );
+  }
+  const statePath = path.join(appWorkPath, "hephaestus-state.json");
+  if (!fs.existsSync(statePath)) {
+    return "hephaestus-state.json: not present (skipped).";
+  }
+  const parsed = readJsonObject(statePath);
+  const fileLabel = path.relative(root, statePath);
+
+  // Campo de topo desconhecido (schema de versão futura ou edição à mão):
+  // observação, nunca bloqueio (D4).
+  const observations = [];
+  for (const key of Object.keys(parsed)) {
+    if (!STATE_KNOWN_BLOCKS.includes(key)) {
+      observations.push(`bloco de topo desconhecido "${key}" ignorado (D4)`);
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parsed, "meta")) {
+    const meta = parsed.meta;
+    if (typeof meta !== "object" || meta === null || Array.isArray(meta)) {
+      fail(`${fileLabel}: bloco "meta" deve ser um objeto`);
+    }
+    for (const key of Object.keys(meta)) {
+      if (!["packVersion", "schemaVersion", "lastRunAt", "lastRunId"].includes(key)) {
+        fail(`${fileLabel}: meta: campo desconhecido "${key}" — nenhuma métrica vive no estado (D29)`);
+      }
+    }
+    for (const key of ["packVersion", "schemaVersion", "lastRunAt", "lastRunId"]) {
+      if (
+        Object.prototype.hasOwnProperty.call(meta, key) &&
+        (typeof meta[key] !== "string" || meta[key].length === 0)
+      ) {
+        fail(`${fileLabel}: meta: ${key} deve ser string não vazia`);
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parsed, "routing")) {
+    const routing = parsed.routing;
+    if (typeof routing !== "object" || routing === null || Array.isArray(routing)) {
+      fail(`${fileLabel}: bloco "routing" deve ser um objeto`);
+    }
+    for (const key of Object.keys(routing)) {
+      if (!["overlay", "forbiddenPatterns"].includes(key)) {
+        fail(`${fileLabel}: routing: campo desconhecido "${key}"`);
+      }
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(routing, "forbiddenPatterns") &&
+      (!Array.isArray(routing.forbiddenPatterns) ||
+        routing.forbiddenPatterns.some((p) => typeof p !== "string" || p.length === 0))
+    ) {
+      fail(`${fileLabel}: routing: forbiddenPatterns deve ser um array de strings não vazias`);
+    }
+    if (Object.prototype.hasOwnProperty.call(routing, "overlay")) {
+      const overlay = routing.overlay;
+      if (!Array.isArray(overlay)) {
+        fail(`${fileLabel}: routing: overlay deve ser um array`);
+      }
+      for (const [index, entry] of overlay.entries()) {
+        if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+          fail(`${fileLabel}: routing: overlay[${index}] deve ser um objeto`);
+        }
+        for (const requiredKey of ["pattern", "destination", "confidence"]) {
+          if (!Object.prototype.hasOwnProperty.call(entry, requiredKey)) {
+            fail(`${fileLabel}: routing: overlay[${index}] sem "${requiredKey}"`);
+          }
+        }
+        if (typeof entry.pattern !== "string" || entry.pattern.length === 0) {
+          fail(`${fileLabel}: routing: overlay[${index}].pattern deve ser string não vazia`);
+        }
+        if (
+          entry.destination !== null &&
+          (typeof entry.destination !== "string" || entry.destination.length === 0)
+        ) {
+          fail(`${fileLabel}: routing: overlay[${index}].destination deve ser string ou null`);
+        }
+        if (!["alta", "baixa"].includes(entry.confidence)) {
+          fail(`${fileLabel}: routing: overlay[${index}].confidence deve ser "alta"|"baixa"`);
+        }
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parsed, "answers")) {
+    const answers = parsed.answers;
+    if (typeof answers !== "object" || answers === null || Array.isArray(answers)) {
+      fail(`${fileLabel}: bloco "answers" deve ser um objeto (questionKey -> resposta)`);
+    }
+    for (const [questionKey, answer] of Object.entries(answers)) {
+      if (questionKey.length === 0) {
+        fail(`${fileLabel}: answers: questionKey vazia`);
+      }
+      if (typeof answer !== "object" || answer === null || Array.isArray(answer)) {
+        fail(`${fileLabel}: answers: resposta de "${questionKey}" deve ser um objeto`);
+      }
+      for (const requiredKey of ["answer", "scope", "sourceEvidence"]) {
+        if (!Object.prototype.hasOwnProperty.call(answer, requiredKey)) {
+          fail(`${fileLabel}: answers: "${questionKey}" sem "${requiredKey}"`);
+        }
+      }
+      if (
+        typeof answer.answer !== "object" ||
+        answer.answer === null ||
+        Array.isArray(answer.answer)
+      ) {
+        fail(`${fileLabel}: answers: "${questionKey}".answer deve ser objeto estruturado`);
+      }
+      if (!STATE_ANSWER_SCOPES.includes(answer.scope)) {
+        fail(
+          `${fileLabel}: answers: "${questionKey}".scope fora de {this-run, this-project, promote-to-catalog}`,
+        );
+      }
+      if (typeof answer.sourceEvidence !== "string" || answer.sourceEvidence.length === 0) {
+        fail(`${fileLabel}: answers: "${questionKey}".sourceEvidence deve ser string não vazia`);
+      }
+      if (
+        Object.prototype.hasOwnProperty.call(answer, "answeredAt") &&
+        (typeof answer.answeredAt !== "string" || answer.answeredAt.length === 0)
+      ) {
+        fail(`${fileLabel}: answers: "${questionKey}".answeredAt deve ser string não vazia`);
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parsed, "shield")) {
+    const shield = parsed.shield;
+    if (!Array.isArray(shield)) {
+      fail(`${fileLabel}: bloco "shield" deve ser um array`);
+    }
+    for (const [index, entry] of shield.entries()) {
+      if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+        fail(`${fileLabel}: shield[${index}] deve ser um objeto`);
+      }
+      if (typeof entry.path !== "string" || entry.path.length === 0) {
+        fail(`${fileLabel}: shield[${index}].path deve ser string não vazia`);
+      }
+      if (
+        Object.prototype.hasOwnProperty.call(entry, "selector") &&
+        (typeof entry.selector !== "string" || entry.selector.length === 0)
+      ) {
+        fail(`${fileLabel}: shield[${index}].selector deve ser string não vazia`);
+      }
+    }
+  }
+
+  const observationNote =
+    observations.length > 0 ? `; observação: ${observations.join("; ")}` : "";
+  return `hephaestus-state.json: contrato OK (4 blocos, sem métricas, nome em minúsculo)${observationNote}.`;
+};
+
 const checkExternalReferences = (root) => {
   const extRefPath = path.join(
     root,
@@ -1178,6 +1354,7 @@ const main = (argv) => {
     checkAgents(root),
     checkIndexes(root),
     checkRunState(root),
+    checkStateContract(root),
     checkExternalReferences(root),
     checkCoverageMap(root),
     checkTerritoryRegime(root),
