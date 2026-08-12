@@ -81,6 +81,7 @@ const printUsage = () => {
       "  - territory x regime legality per coverage entry",
       "  - .hephaestus/ gitignored (CN12) and absent from the git index",
       "  - .hephaestus/plan.json contract (origin tracing; INV7)",
+      "  - process writes: no write outside .app-work/issues/, always additive (INV10)",
       "  - DEC identity: no renumbered/reused ID, none live and in Histórico (INV3)",
       "  - single territory: no decision value duplicated in project-rules without citation (INV4)",
       "  - AGENTS territory: no vault fragment housed in AGENTS.md (CN8)",
@@ -1334,6 +1335,48 @@ const checkResidueGate = (root) => {
   return `resíduo: ${degrading.length} degradante(s), ${nonDegrading.length} não-degradante(s), veredito ${verdict} coerente.`;
 };
 
+// INV10 / AC-6.2.2 (D19): escrita ativa em `.app-work/` só existe em
+// `issues/` e é sempre aditiva. `checkProcessWrites` percorre o plan.json:
+// operação com destino em `.app-work/` fora de `issues/` só pode ser
+// `move`/`keep`/`skip` (guia, brainstorm e PRD são processo — conteúdo de
+// processo nunca é gerado nem sobrescrito); operação com destino sob
+// `.app-work/issues/` nunca é `overwrite` (linha de issue é permanente pelo
+// protocolo de `.app-work/issues/README.md`).
+const PROCESS_NONWRITABLE_OPERATIONS = new Set(["create", "amend", "overwrite"]);
+
+const checkProcessWrites = (root) => {
+  const planPath = path.join(root, ".hephaestus", "plan.json");
+  const parsed = readJsonObject(planPath);
+  if (parsed === null) {
+    return "escrita em processo: plan.json not present (skipped).";
+  }
+  const fileLabel = path.relative(root, planPath);
+  if (!Array.isArray(parsed.entries)) {
+    fail(`${fileLabel}: missing "entries" array`);
+  }
+  let evaluated = 0;
+  for (const [index, entry] of parsed.entries.entries()) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      fail(`${fileLabel}: entries[${index}] must be an object`);
+    }
+    const dest = typeof entry.artifactPath === "string" ? entry.artifactPath : "";
+    if (!dest.startsWith(".app-work/")) continue;
+    evaluated += 1;
+    if (!dest.startsWith(".app-work/issues/")) {
+      if (PROCESS_NONWRITABLE_OPERATIONS.has(entry.operation)) {
+        fail(
+          `escrita em processo: ${dest} — operação "${entry.operation}" em .app-work/ fora de issues/ (INV10/D19) — conteúdo de processo só move/keep/skip, nunca é gerado nem sobrescrito`,
+        );
+      }
+    } else if (entry.operation === "overwrite") {
+      fail(
+        `escrita em processo: ${dest} — overwrite do registro de issues (INV10) — linha de issue é permanente, nunca sobrescrita nem deletada (protocolo .app-work/issues/README.md)`,
+      );
+    }
+  }
+  return `escrita em processo: ${evaluated} operação(ões) com destino em .app-work/ legal(is) (INV10).`;
+};
+
 const main = (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     printUsage();
@@ -1363,6 +1406,7 @@ const main = (argv) => {
     checkAgentsTerritory(root),
     checkEphemeralIgnored(root),
     checkPlanContract(root),
+    checkProcessWrites(root),
     checkCoverage(root),
     checkKeepBytes(root),
     checkResidueGate(root),

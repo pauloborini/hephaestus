@@ -9,7 +9,13 @@ Descobrir as fontes cruas do usuário antes de qualquer reorganização.
 O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo `mode` do run-state), nunca por heurística sobre estrutura presente:
 
 - `mode: adopt` — varredura integral do repositório: documentos de convenção do agente (`AGENTS.md`, `CLAUDE.md`), specs, docs arquiteturais, guias de workflow, convenções de projeto e os territórios canônicos como fonte (na reexecução, o destino também é input);
-- `mode: maintain` — escopo reduzido guiado por `catalog/drift-catalog.json` (paths/globs vigiados de outras ferramentas).
+- `mode: maintain` — escopo reduzido, guiado por dado: inventariar só o que difere da última execução e o que as outras ferramentas produzem, deixando o resto como fonte inalterada que cai em `keep` pelo nível 1 da cascata (o escopo reduzido diminui o custo, não a corretude — um maintain que varresse tudo produziria o mesmo resultado, só mais devagar):
+  1. `AGENTS.md` alterado desde o último run — comparar `mtime`/hash do arquivo contra `meta.lastRunAt` do `.app-work/hephaestus-state.json`;
+  2. `CLAUDE.md` presente e divergente do `AGENTS.md` (regra que o contrato do agente não cobre);
+  3. cada glob de `catalog/drift-catalog.json` (artefatos de outras ferramentas) presente no repositório — arquivos de regra de agente e artefatos de ferramenta entram como fonte com papel `source` e motivo nomeando a ferramenta de origem; **a lista de globs vigiados vive no catálogo e no overlay, nunca embutida no prompt** — ferramenta nova entra editando o catálogo ou o overlay do projeto (bloco `routing` do estado), sem tocar em prompt (D28);
+  4. docs, specs e READMEs novos ou alterados fora dos territórios canônicos;
+  5. integridade do vault: `INDEX.md` derivável dos campos `Afeta:` das decisões, `DEC-NNN` sem colisão nem reuso (cláusulas vivas + `## Histórico`), pasta fora da lista fechada de `references/vault-schema/SCHEMA.md` §2;
+  6. candidatos a decisão pendentes nas seções `Candidatos a decisão` dos `LEDGER.md` dos guides em `.app-work/guides/`.
 
 ## Regras
 
