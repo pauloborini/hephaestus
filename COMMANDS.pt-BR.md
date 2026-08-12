@@ -22,6 +22,14 @@ Cheque se os pares de documentos públicos em inglês/português apontam um para
 node scripts/check-public-docs.mjs
 ```
 
+## Rodar a suíte de testes
+
+```bash
+node --test "scripts/__tests__/**/*.test.mjs"
+```
+
+Roda o harness de teste do kit com o runner nativo do Node (sem dependências). Fixtures e helpers vivem em `scripts/__tests__/` e ficam de fora do pacote distribuível (`manifests/kit-manifest.json:packExcludes`).
+
 ## Validar um pacote gerado
 
 ```bash
@@ -29,6 +37,17 @@ node scripts/validate-package.mjs /caminho/para/pacote-gerado
 ```
 
 Verifica `AGENTS.md`, índices de regras, manifests, mapa de cobertura e relatório de referências externas. Sai com erro no primeiro contrato inválido.
+
+## Gerar o zip de release
+
+```bash
+node scripts/pack-release.mjs --dry-run
+node scripts/pack-release.mjs
+```
+
+O primeiro comando lista as entradas que iriam para o arquivo sem escrever nada. O segundo escreve `hephaestus-<version>.zip` na raiz do repositório: toda entrada é prefixada com a pasta fixa `hephaestus/` (sem versão no nome da pasta, então descompactar por cima de uma instalação existente sobrescreve em vez de acumular), `LICENSE` é incluída, e a lista final de exclusão vem de `manifests/kit-manifest.json:packExcludes` — o mesmo dado consumido pelo publicador.
+
+Versão = inteiro em `manifests/kit-manifest.json:version` (`DEC-003`). Runbook completo do mantenedor (tag, GitHub Release, upload do asset): [RELEASE.pt-BR.md](RELEASE.pt-BR.md) / [RELEASE.md](RELEASE.md).
 
 ## Publicar o kit público — apenas mantenedores
 

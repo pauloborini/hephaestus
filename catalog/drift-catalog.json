@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "resolutionRule": "paths/globs de artefatos de outras ferramentas vigiados em maintain; extensível pelo overlay do projeto (bloco routing do state), nunca por prompt (D28)",
+  "artifacts": [
+    {
+      "glob": ".cursor/rules/",
+      "tool": "cursor",
+      "since": "D28"
+    },
+    {
+      "glob": ".cursorrules",
+      "tool": "cursor",
+      "since": "D28"
+    },
+    {
+      "glob": ".windsurfrules",
+      "tool": "windsurf",
+      "since": "D28"
+    },
+    {
+      "glob": ".github/copilot-instructions.md",
+      "tool": "github-copilot",
+      "since": "D28"
+    },
+    {
+      "glob": ".devin/",
+      "tool": "devin",
+      "since": "D28"
+    },
+    {
+      "glob": ".clinerules",
+      "tool": "cline",
+      "since": "D28"
+    },
+    {
+      "glob": ".aider.conf.yml",
+      "tool": "aider",
+      "since": "D28"
+    },
+    {
+      "glob": ".junie/",
+      "tool": "junie",
+      "since": "D28"
+    }
+  ]
+}

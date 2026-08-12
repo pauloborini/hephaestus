@@ -5,6 +5,7 @@ const root = path.resolve(import.meta.dirname, "..");
 const pairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["RELEASE.md", "RELEASE.pt-BR.md"],
   ["SKILL.en.md", "SKILL.md"],
 ];
 let failed = false;

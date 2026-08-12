@@ -2,13 +2,13 @@
 
 # Hephaestus
 
-The **Hephaestus** kit is a repository-native kit for turning scattered project rules into a small, canonical, operational package for LLMs. Its scope is documentation structure, not application code or an editor plugin.
+The **Hephaestus** kit is a single command, `/hephaestus`, that governs the four documentary territories of a repository — `AGENTS.md`, `project-rules/`, `_app-vault/` and `.app-work/` — in one run and one write transaction. Its scope is documentation structure, not application code or an editor plugin.
 
 This README is for people. [SKILL.en.md](SKILL.en.md) is the English procedural entrypoint for the LLM.
 
 ## Why it exists
 
-Large `AGENTS.md` files, disconnected specs, and implicit conventions force agents to improvise. Hephaestus guides a repeatable flow that discovers sources, fragments and classifies them, synthesizes a canonical package, validates it, and leaves a resumable checkpoint.
+Large `AGENTS.md` files, disconnected specs, and implicit conventions force agents to improvise. Hephaestus runs a repeatable 13-phase flow that discovers sources, fragments and routes them, reconciles decision identity, interviews only on genuine ambiguity, stages a plan for approval, and applies everything in a single transactional write with hash verification.
 
 The generated structure is framework-agnostic:
 
@@ -19,42 +19,46 @@ project-rules/
   rules/
   reference/
   contracts/        # optional
-.hephaestus/
+_app-vault/         # product decisions (DEC-NNN) and specs
+.app-work/          # process: state, issues, guides
+.hephaestus/        # ephemeral process state, gitignored
   manifests/
 ```
 
-`AGENTS.md` owns workflow, precedence, and routing. `project-rules/` owns operational rules. `.hephaestus/manifests/` is process state, not a source of project rules.
+`AGENTS.md` owns workflow, precedence, and routing. `project-rules/` owns operational rules. `_app-vault/` owns product decisions. `.app-work/` is process, never a rule input. `.hephaestus/manifests/` is execution state, not a source of project rules.
 
 ## Install
 
-Clone or download the repository, rename the extracted folder if needed, and place it inside the target workspace:
+Build the release zip from the kit repository:
+
+```bash
+node scripts/pack-release.mjs
+```
+
+This writes `hephaestus-<version>.zip` at the repository root. Unzip it into your skills folder:
 
 ```text
-my-project/
+skills/
   hephaestus/
 ```
 
-Then point the LLM to `./hephaestus/SKILL.en.md`. Keep the kit in the target workspace rather than installing it globally; it needs to inspect the project’s actual files and tooling.
+Every entry in the zip is prefixed with the fixed folder `hephaestus/` — no version in the folder name — so unpacking an updated release over an existing install overwrites it instead of accumulating. The zip never contains `_app-vault/`, `.app-work/`, `COMMANDS*.md` or development artifacts; the final exclusion list lives in `manifests/kit-manifest.json:packExcludes`.
+
+Then run `/hephaestus` inside the target repository. Two internal modes are decided by the presence of `.app-work/hephaestus-state.json`: `adopt` (full scan) when the state is absent, `maintain` (drift-only, driven by `catalog/drift-catalog.json`) when it is present.
 
 ## What to provide
 
-Tell the LLM:
-
-- which sources it must reorganize (`AGENTS.md`, docs, specs, rules files, etc.);
-- whether the request is analysis-only or may apply changes;
-- the desired outcome and any scope boundaries.
-
-Without an explicit source set, discovery can still find material but will report uncertainty instead of inventing missing rules.
+Tell the LLM what the run must cover: the desired outcome and any scope boundaries. Without an explicit source set, discovery can still find material but will report uncertainty instead of inventing missing rules.
 
 ## LLM workflow
 
-The required sequence is:
+The required sequence is the 13-phase pipeline:
 
 ```text
-discover → snapshot → fragment → classify → synthesize → validate → export/apply → closeout-review
+preflight → discover → snapshot → fragment → route → reconcile → interview → plan → compose → verify(staging) → apply → verify(applied) → closeout
 ```
 
-Before synthesis, the LLM creates a coverage map from source fragment to destination and flags ambiguity, conflict, or low confidence. A phase is resumable only after it is marked `validated` in `.hephaestus/manifests/run-state.json`.
+Before `apply`, the run creates a coverage map from source fragment to destination and flags ambiguity, conflict, or low confidence. A phase is resumable only after it is marked `validated` in `.hephaestus/manifests/run-state.json`.
 
 Expected closeout states:
 
@@ -62,32 +66,9 @@ Expected closeout states:
 - `degraded-but-usable`;
 - `needs-followup`.
 
-## Prompt to start
-
-```text
-Use ./hephaestus/SKILL.en.md as the primary procedure.
-
-Read README.md and SKILL.en.md first. Reorganize the project rules through:
-discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review.
-
-Keep AGENTS.md limited to workflow, precedence, and routing. Put domain,
-architecture, security, UI, operational, and contract rules in the appropriate
-project-rules/ files. Do not invent the target tree.
-
-Before synthesis, create a coverage map linking each source fragment to its
-operational classification and destination. Surface ambiguity, conflicts, and
-low-confidence items. Keep .hephaestus/manifests/run-state.json updated; only a
-validated phase is resumable.
-
-At closeout, list pending decisions, recommended resolutions, final status,
-external references, and whether AGENTS.md and project-rules/ are usable.
-```
-
-For the complete Portuguese prompt and closeout/resume variants, see [README.pt-BR.md](README.pt-BR.md).
-
 ## Commands and validation
 
-See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation, and the maintainers-only publishing command.
+See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation, the release zip builder, and the maintainers-only publishing command.
 
 ## Guardrails
 
@@ -104,8 +85,9 @@ See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation,
 - `templates/` — canonical output structure;
 - `references/` — neutral format references;
 - `schemas/` — fragment and artifact contracts;
+- `catalog/` — routing and drift catalogs;
 - `manifests/` — naming and package policy;
-- `scripts/` — validators and maintainer publishing.
+- `scripts/` — validators, the release packer, and maintainer publishing.
 
 ## License
 

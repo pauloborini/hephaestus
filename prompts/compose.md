@@ -1,8 +1,8 @@
-# Synthesize
+# Compose
 
 ## Objetivo
 
-Montar a estrutura final usando os templates canônicos do kit.
+Materializar o pacote inteiro em staging, sem tocar no repositório: todo artefato do plano é montado sob `.hephaestus/staging/`, e o staging é provado por `verify(staging)` antes de `apply` gravar qualquer byte.
 
 O `AGENTS.md` final deve ser o dono do workflow e do roteamento.
 As regras do projeto devem ficar em `project-rules/rules/*`.
@@ -15,6 +15,35 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - Detecte o framework e a linguagem do repositório (ex.: Flutter, React, Go, Python).
 - Preencha gates, checklists e comandos com as ferramentas reais do projeto (analyzer, linter, validador, teste).
 - Não copie comandos nem exemplos de outro stack; a estrutura é fixa, o conteúdo é do projeto.
+
+## Staging
+
+- todo destino é `.hephaestus/staging/<caminho relativo>`, nunca o caminho real do repositório — o staging espelha o pacote final inteiro, incluindo os manifests do pacote sob `.hephaestus/staging/.hephaestus/manifests/`;
+- a saída inclui `.hephaestus/staging-manifest.json` com sha256 por artefato (um artefato por entrada: `outputPath` + `sha256`), que `apply` grava como lista final e `verify(applied)` confere hash a hash;
+- o próprio `staging-manifest.json` não entra na lista que descreve;
+- nenhuma pergunta aqui: dúvida nesta fase é bug de fase anterior, nunca pergunta ao usuário.
+
+## Territórios de produto (`_app-vault/`)
+
+Materializar as decisões reconciliadas (`identity-map.json` da fase `reconcile`, Plano 04) a partir dos templates absorvidos:
+
+- `_app-vault/docs/decisions/<dominio>.md` — um arquivo por domínio de produto, instanciado de `templates/vault/DECISION_TEMPLATE.md` com os comentários removidos: heading `### DEC-NNN — <regra>` com o ID cunhado/alterado pelo `reconcile`, enunciado vigente e notas inline preservadas; `Afeta:` logo após o título, acima da primeira cláusula, com features em kebab-case do vocabulário do projeto;
+- `_app-vault/INDEX.md` — instanciado de `templates/vault/INDEX_TEMPLATE.md`: `## Domínios` com um ponteiro por arquivo de `docs/decisions/`; lista de features válidas declarada **acima** de `## Por feature`; `## Por feature` **derivado** dos campos `Afeta:` de todos os arquivos — nunca escrito à mão; divergindo, `Afeta:` é a verdade e o índice é corrigido (`SCHEMA.md` §7);
+- remoções decididas pelo `reconcile` ganham a linha em `## Histórico` no fim do arquivo do domínio — o ID continua imortal ao inventário de numeração;
+- nada de `.app-work/` é indexado no `INDEX.md` — indexá-lo o torna descobrível e desfaz a separação (`SCHEMA.md` §3).
+
+## Scaffold de `.app-work/`
+
+Materializar o scaffold de processo conforme a lista fechada de `references/vault-schema/SCHEMA.md` §2:
+
+- `.app-work/.gitignore` — **mesmo em projeto verde**, versionado, com as linhas `references/` e `private/` (e `issues/` quando o repositório for público);
+- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `done/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
+- sob `done/`, materializar o nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo` do `destinationPath` já expandido pela cascata (DEC-002) — não achatar na raiz de `done/`;
+- fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
+
+## Blindagem (shield)
+
+Conteúdo declarado no bloco `shield` do state (`{ path, selector }`) **vence a estrutura canônica**: o artefato blindado é composto byte a byte do que está no repositório e o template se adapta em volta dele. Adaptação impossível sem alterar os bytes do bloco ⇒ registrar pendência e enfileirar pergunta — nunca "melhorar" o bloco. Conteúdo de terceiros **não** coberto pela lista `shield` é fonte como qualquer outra: reabsorvido e reescrito no padrão (D9), e a remoção aparece no `plan.md` antes de aplicar.
 
 ## Regras
 
@@ -37,25 +66,25 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - não perder checklists, proibições, precedências ou exceções presentes nas fontes;
 - quando houver material suficiente, criar regra específica em `project-rules/rules/*` em vez de esconder no índice;
 - não prometer que `project-rules/` está totalmente autocontido quando ainda houver dependências externas reais;
-- ao iniciar a fase, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `synthesize` como `in_progress`; ao terminar, registrar artefatos gerados e marcar a fase como `produced`; marcar `synthesize` como `validated` quando a árvore gerada tiver cobertura suficiente e os artefatos mínimos existirem; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme a `## Regra De Retomada` deste prompt).
+- ao iniciar a fase, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `compose` como `in_progress`; ao terminar, registrar artefatos em staging e marcar a fase como `produced`; marcar `compose` como `validated` quando a árvore em staging tiver cobertura suficiente e os artefatos mínimos existirem; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
 
 ## Cobertura Obrigatória
 
-Antes de concluir a síntese:
+Antes de concluir a composição:
 
 1. conferir se todo fragmento `rules` foi para algum arquivo em `project-rules/rules/*`;
 2. conferir se todo fragmento `index` foi refletido em algum `project-rules/index/*`;
 3. conferir se todo fragmento `reference` foi para `project-rules/reference/*` ou foi omitido com justificativa;
 4. registrar fragmentos `unknown`, conflitantes ou de baixa confiança como pendência;
 5. confirmar que `AGENTS.md` não virou depósito de regras;
-6. registrar referências externas citadas por arquivos de `project-rules/` em `.hephaestus/manifests/external-references-report.json`;
-7. persistir `.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
+6. registrar referências externas citadas por arquivos de `project-rules/` em `.hephaestus/staging/.hephaestus/manifests/external-references-report.json`;
+7. persistir `.hephaestus/staging/.hephaestus/manifests/coverage-map.json` com uma entrada por fragmento (`fragmentId` + destino: `artifactType`, `outputPath`, `derivedFrom`, `validationStatus`) e `lastUpdatedAt` com o momento da gravação; as entradas de território `vault` já decididas pelo `reconcile` são preservadas (nunca reescritas à mão); o arquivo deve ser compatível com `schemas/coverage-map.schema.json`.
 
 ## Relatório De Dependências Externas
 
 Quando qualquer arquivo em `project-rules/` citar arquivo fora dessa pasta, gerar:
 
-- `.hephaestus/manifests/external-references-report.json`
+- `.hephaestus/staging/.hephaestus/manifests/external-references-report.json`
 
 O relatório deve listar, no mínimo:
 
@@ -67,16 +96,9 @@ O relatório deve listar, no mínimo:
 
 O relatório deve ser compatível com `schemas/external-references-report.schema.json`.
 
-## Regra De Retomada
+## Escreve no repositório
 
-Se a execução anterior for interrompida antes de concluir, ao retomar:
-
-1. detectar a execução anterior lendo `.hephaestus/manifests/run-state.json`;
-2. gravar `status: interrupted` em `.hephaestus/manifests/run-state.json` (e atualizar `lastUpdatedAt`) antes de qualquer leitura subsequente ou continuação;
-3. reler `.hephaestus/manifests/run-state.json` após essa marcação;
-4. retomar da última fase marcada como `validated`;
-5. reexecutar integralmente a fase que estiver em `in_progress`, `failed` ou apenas `produced` (a fase `in_progress` nunca é tratada como concluída após interrupção);
-6. quando o impedimento exigir intervenção humana (fase ou run sem caminho seguro de retomada automática), marcar o run como `blocked` e parar até decisão explícita; o run `blocked` não é retomado sozinho, e a fase que originou o bloqueio é reexecutada integralmente na próxima retomada autorizada.
+Não. Todo artefato é materializado sob `.hephaestus/staging/` e os manifests do pacote sob `.hephaestus/staging/.hephaestus/manifests/` (efêmeros, gitignored).
 
 ## Índices Recomendados
 
@@ -117,4 +139,6 @@ Gerar apenas arquivos sustentados pelo material disponível, usando nomes previs
 3. `project-rules/rules/*`
 4. `project-rules/reference/*`
 5. `project-rules/contracts/*` (quando houver)
-6. `.hephaestus/manifests/*`
+6. `_app-vault/` (decisões do `identity-map.json` + `INDEX.md` derivado de `Afeta:`)
+7. `.app-work/` (scaffold da lista fechada + realocação dos fragmentos `relocate`)
+8. `.hephaestus/manifests/*`

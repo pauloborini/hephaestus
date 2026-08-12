@@ -30,8 +30,19 @@ if (!Array.isArray(manifest.requiredFiles) || manifest.requiredFiles.length === 
   fail("kit-manifest.json must declare requiredFiles");
 }
 
+// Arquivos em `packExcludes` existem na árvore de desenvolvimento mas não
+// viajam no zip nem no repositório público (VC4) — a checagem de
+// `requiredFiles` vale para o kit distribuído, então entradas excluídas
+// deixam de ser obrigatórias aqui.
+const packExcludes = Array.isArray(manifest.packExcludes) ? manifest.packExcludes : [];
+const isPackExcluded = (relativePath) => {
+  return packExcludes.some((entry) => {
+    return relativePath === entry || relativePath.startsWith(`${entry}/`);
+  });
+};
+
 const missingFiles = manifest.requiredFiles.filter((relativePath) => {
-  return !fs.existsSync(path.join(rootDir, relativePath));
+  return !isPackExcluded(relativePath) && !fs.existsSync(path.join(rootDir, relativePath));
 });
 
 if (missingFiles.length > 0) {
@@ -41,6 +52,7 @@ if (missingFiles.length > 0) {
 const publicDocumentationPairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["RELEASE.md", "RELEASE.pt-BR.md"],
   ["SKILL.en.md", "SKILL.md"],
 ];
 
@@ -70,6 +82,7 @@ const allowedExtensionlessFiles = new Set(["LICENSE"]);
 const skippedRelativePaths = new Set([
   ".gitignore",
   path.join("scripts", "publish-hephaestus.sh"),
+  path.join("scripts", "__tests__"),
 ]);
 
 const collectedFiles = [];
@@ -185,6 +198,86 @@ for (const filePath of templateFiles) {
 
 if (missingTargets.length > 0) {
   fail(`templates reference missing rule/reference templates:\n${missingTargets.join("\n")}`);
+}
+
+// Catálogo base de roteamento: destino ilegal (fora dos quatro territórios)
+// reprova o kit — a cascata não pode gravar fora deles (AC-1.5.2).
+const routingCatalogPath = path.join(rootDir, "catalog", "routing-defaults.json");
+let routingCatalog;
+try {
+  routingCatalog = JSON.parse(fs.readFileSync(routingCatalogPath, "utf8"));
+} catch (error) {
+  fail(`catalog/routing-defaults.json: invalid JSON (${error.message})`);
+}
+if (!Array.isArray(routingCatalog.entries) || routingCatalog.entries.length === 0) {
+  fail("catalog/routing-defaults.json must declare a non-empty entries array");
+}
+const legalDestination = (destination) => {
+  if (destination === null) return true;
+  if (typeof destination !== "string" || destination.length === 0) return false;
+  if (destination === "AGENTS.md") return true;
+  return ["project-rules/", "_app-vault/", ".app-work/"].some((prefix) =>
+    destination.startsWith(prefix),
+  );
+};
+for (const [index, entry] of routingCatalog.entries.entries()) {
+  if (
+    typeof entry !== "object" ||
+    entry === null ||
+    Array.isArray(entry) ||
+    typeof entry.pattern !== "string" ||
+    entry.pattern.length === 0
+  ) {
+    fail(`catalog/routing-defaults.json: entries[${index}] must have a non-empty pattern`);
+  }
+  if (!["alta", "baixa"].includes(entry.confidence)) {
+    fail(`catalog/routing-defaults.json: entries[${index}] (${entry.pattern}) has invalid confidence`);
+  }
+  if (typeof entry.since !== "string" || typeof entry.reason !== "string") {
+    fail(`catalog/routing-defaults.json: entries[${index}] (${entry.pattern}) must have since and reason`);
+  }
+  if (!legalDestination(entry.destination)) {
+    fail(
+      `catalog/routing-defaults.json: entries[${index}] (${entry.pattern}) has illegal destination "${entry.destination}"`,
+    );
+  }
+}
+
+// Catálogo de drift: lista de paths/globs vigiados em maintain, com a
+// ferramenta de origem e a data/ref de inclusão por entrada (D28). Cada
+// entrada é objeto {glob, tool, since} — glob de arquivo ou pasta vigiada.
+const driftCatalogPath = path.join(rootDir, "catalog", "drift-catalog.json");
+let driftCatalog;
+try {
+  driftCatalog = JSON.parse(fs.readFileSync(driftCatalogPath, "utf8"));
+} catch (error) {
+  fail(`catalog/drift-catalog.json: invalid JSON (${error.message})`);
+}
+if (
+  typeof driftCatalog !== "object" ||
+  driftCatalog === null ||
+  Array.isArray(driftCatalog) ||
+  !Array.isArray(driftCatalog.artifacts) ||
+  driftCatalog.artifacts.length === 0
+) {
+  fail("catalog/drift-catalog.json must declare a non-empty artifacts array");
+}
+for (const [index, artifact] of driftCatalog.artifacts.entries()) {
+  if (
+    typeof artifact !== "object" ||
+    artifact === null ||
+    Array.isArray(artifact) ||
+    typeof artifact.glob !== "string" ||
+    artifact.glob.length === 0
+  ) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] must have a non-empty glob`);
+  }
+  if (typeof artifact.tool !== "string" || artifact.tool.length === 0) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] (${artifact.glob}) must have a tool`);
+  }
+  if (typeof artifact.since !== "string" || artifact.since.length === 0) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] (${artifact.glob}) must have a since`);
+  }
 }
 
 console.log("Hephaestus validation passed.");

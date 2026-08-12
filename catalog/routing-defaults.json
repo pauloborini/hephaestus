@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "resolutionRule": "match mais específico vence o genérico; destination null ou ausência de match enfileira pergunta",
+  "entries": [
+    {
+      "pattern": "guides vivos / não executados — arquivo único ou pack `*_GUIDE/`",
+      "destination": ".app-work/guides/",
+      "confidence": "alta",
+      "since": "D29+Argus",
+      "reason": "formato irrelevante; status manda"
+    },
+    {
+      "pattern": "guides executados/concluídos — arquivo único ou pack `*_GUIDE/`",
+      "destination": ".app-work/done/",
+      "confidence": "alta",
+      "since": "D29+Argus",
+      "reason": "todo guide executado vai a done; a cascata expande `.app-work/done/` para `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo/` (DEC-002, data civil do run, semana ISO seg–dom)"
+    },
+    {
+      "pattern": "brainstorms (`docs/brainstorming/`, equivalentes)",
+      "destination": ".app-work/brainstorming/",
+      "confidence": "alta",
+      "since": "D29",
+      "reason": "caderno de processo"
+    },
+    {
+      "pattern": "PRDs (`docs/PRD`, `docs/prd`, propostas datadas)",
+      "destination": ".app-work/prd/",
+      "confidence": "alta",
+      "since": "D29",
+      "reason": "proposta, não contrato"
+    },
+    {
+      "pattern": "refs open source de terceiros",
+      "destination": ".app-work/references/",
+      "confidence": "alta",
+      "since": "D34",
+      "reason": "insumo envenenado; gitignored"
+    },
+    {
+      "pattern": "clones OSS / análise competitiva em `archive/` do vault",
+      "destination": ".app-work/references/",
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "path archive + conteúdo OSS → references (gitignore)"
+    },
+    {
+      "pattern": "`archive/` legado do vault (não-OSS / depósito do usuário)",
+      "destination": ".app-work/archive/",
+      "confidence": "alta",
+      "since": "D39",
+      "reason": "não é verdade vigente"
+    },
+    {
+      "pattern": "`_private/` legado do vault",
+      "destination": ".app-work/private/",
+      "confidence": "alta",
+      "since": "D41",
+      "reason": "área privada; gitignored"
+    },
+    {
+      "pattern": "auditorias de feature (`MEUS/AUDITORIA/*`, equivalentes)",
+      "destination": ".app-work/private/auditorias/",
+      "confidence": "alta",
+      "since": "D41",
+      "reason": "relatório privado"
+    },
+    {
+      "pattern": "backlog mestre (`BACKLOG_MESTRE_*.md`)",
+      "destination": ".app-work/private/",
+      "confidence": "alta",
+      "since": "D41",
+      "reason": "processo local"
+    },
+    {
+      "pattern": "roadmap / research / ops de sessão / dossiê de feature",
+      "destination": ".app-work/private/",
+      "confidence": "alta",
+      "since": "D41+Argus",
+      "reason": "envelhece; privado"
+    },
+    {
+      "pattern": "ops de release (`MANUAL_RELEASE`, `PATCH_PROCEDURE`, `RELEASE_BUMP`, equivalentes)",
+      "destination": ".app-work/private/",
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "ops local; não é verdade de produto"
+    },
+    {
+      "pattern": "`PERGUNTAS_EM_ABERTO.md` global (vivo)",
+      "destination": ".app-work/private/",
+      "confidence": "alta",
+      "since": "D41",
+      "reason": "registro de processo"
+    },
+    {
+      "pattern": "registros de defeitos/QA no vault (`docs/qa/`, `BUG_REGISTRY*`)",
+      "destination": ".app-work/issues/",
+      "confidence": "alta",
+      "since": "D43",
+      "reason": "defeito não é verdade vigente"
+    },
+    {
+      "pattern": "`ISSUES.md` / `docs/issues*` / registro de issues solto",
+      "destination": ".app-work/issues/",
+      "confidence": "alta",
+      "since": "D43",
+      "reason": "registro de processo"
+    },
+    {
+      "pattern": "docs legais/auditoria no vault (`docs/LEGAL/`, equivalentes)",
+      "destination": ".app-work/private/auditorias/",
+      "confidence": "alta",
+      "since": "2026-08-09",
+      "reason": "relatório de conformidade/auditoria; não é verdade vigente"
+    },
+    {
+      "pattern": "guias de fornecedores no vault (`docs/GUIAS/`, `revenue_*billing*.md`, equivalentes)",
+      "destination": ".app-work/references/",
+      "confidence": "alta",
+      "since": "2026-08-09",
+      "reason": "material de plataforma externa; gitignored (D34)"
+    },
+    {
+      "pattern": "specs de contrato backend (`_archive/BACKEND_SPECS/*`, `BACKEND_SPECS/`)",
+      "destination": "_app-vault/specs/BACKEND_SPECS/",
+      "confidence": "alta",
+      "since": "D41",
+      "reason": "contrato técnico vigente"
+    },
+    {
+      "pattern": "contrato técnico vigente (ex. `MEMORY_*_CONTRACT.md`)",
+      "destination": "_app-vault/specs/",
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "spec técnica, não processo"
+    },
+    {
+      "pattern": "SPEC de produto monolítica (tese/invariantes misturados)",
+      "destination": null,
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "procedimento de migração: extrair DECs → _app-vault/docs/decisions/; arquivo → .app-work/archive/; vigente sobe; casca arquiva"
+    },
+    {
+      "pattern": "`docs/adr/` / ADR aceito",
+      "destination": null,
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "procedimento de migração: extrair DECs → _app-vault/docs/decisions/; arquivo → .app-work/archive/; ADR não é casa da regra"
+    },
+    {
+      "pattern": "`docs/TEMPLATES/` / `docs/templates/`",
+      "destination": "_app-vault/docs/TEMPLATES/",
+      "confidence": "alta",
+      "since": "D23",
+      "reason": "template canônico (case)"
+    },
+    {
+      "pattern": "`docs/decisions/` já no vault",
+      "destination": "_app-vault/docs/decisions/",
+      "confidence": "alta",
+      "since": "D12",
+      "reason": "fonte de verdade"
+    },
+    {
+      "pattern": "contratos de produto/arquitetura vigentes (`*_contract.md`, `BASELINE_OPERACIONAL_*`)",
+      "destination": null,
+      "confidence": "alta",
+      "since": "2026-08-11",
+      "reason": "procedimento de migração: extrair DECs → _app-vault/docs/decisions/; shape técnico → _app-vault/specs/; casca → .app-work/archive/; decisão é regra; contrato técnico é spec; casca arquiva"
+    },
+    {
+      "pattern": "INDEX/ledger do vault com decisões embutidas (`INDEX_ATIVO_*`)",
+      "destination": null,
+      "confidence": "alta",
+      "since": "2026-08-11",
+      "reason": "procedimento de migração: extrair DECs → _app-vault/docs/decisions/; arquivo → .app-work/archive/; vigente sobe; casca arquiva"
+    },
+    {
+      "pattern": "runbook de ambiente com contrato embutido (`FIREBASE_AMBIENTES*`)",
+      "destination": null,
+      "confidence": "alta",
+      "since": "2026-08-11",
+      "reason": "procedimento de migração: extrair specs → _app-vault/specs/; runbook → .app-work/references/; matriz de contrato é spec; runbook é operacional"
+    },
+    {
+      "pattern": "`TEMPLATES/` em `references/` (ou equivalente)",
+      "destination": "_app-vault/docs/TEMPLATES/",
+      "confidence": "alta",
+      "since": "2026-08-11",
+      "reason": "template canônico (D23); origem references/ também migra"
+    },
+    {
+      "pattern": "logo / asset de marca no vault",
+      "destination": null,
+      "confidence": "alta",
+      "since": "Argus",
+      "reason": "destino fora dos territórios do framework: assets/ na raiz (fora do vault); marca pública ≠ verdade de produto"
+    },
+    {
+      "pattern": "`project-rules/`",
+      "destination": "project-rules/",
+      "confidence": "alta",
+      "since": "D3",
+      "reason": "norma de código (não mover)"
+    },
+    {
+      "pattern": "`docs/ARQUITETURA/`",
+      "destination": null,
+      "confidence": "baixa",
+      "since": "—",
+      "reason": "ambíguo: design vigente × processo"
+    },
+    {
+      "pattern": "`docs/PRODUTO/`, `docs/product/`, `docs/planning/`, `docs/wip/`",
+      "destination": null,
+      "confidence": "baixa",
+      "since": "—",
+      "reason": "ambíguo até inspecionar conteúdo"
+    },
+    {
+      "pattern": "`ui-ux-stitch/`, `MEUS/` (exceto AUDITORIA já roteada), `backups/`",
+      "destination": null,
+      "confidence": "baixa",
+      "since": "—",
+      "reason": "ambíguo / lixo possível"
+    },
+    {
+      "pattern": "`reports/` na raiz (relatórios de pipeline/sprint)",
+      "destination": null,
+      "confidence": "baixa",
+      "since": "—",
+      "reason": "ambíguo: private × archive × não tocar"
+    }
+  ]
+}
