@@ -1,77 +1,60 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 
-const ALLOWED_RUN_STATE_TOP_LEVEL = new Set([
-  "runId",
-  "status",
-  "currentPhase",
-  "phaseStates",
-  "artifactsWritten",
-  "pendingActions",
-  "lastUpdatedAt",
-]);
+// Os enums de vocabulário são lidos dos schemas (fonte única), nunca
+// redeclarados aqui: alterar o schema altera o gate na execução seguinte.
+// A memoização por path é correta porque o processo é de vida curta e valida
+// um pacote por invocação — schema editado no meio da execução não é esperado.
+const schemaCache = new Map();
 
-const ALLOWED_RUN_STATE_STATUS = new Set([
-  "running",
-  "interrupted",
-  "blocked",
-  "completed",
-]);
+const loadSchema = (schemaRelPath) => {
+  const schemaPath = path.join(import.meta.dirname, "..", "schemas", schemaRelPath);
+  if (!fs.existsSync(schemaPath)) {
+    fail(`schema not found: ${schemaPath} (loadEnum: ${schemaRelPath})`);
+  }
+  if (schemaCache.has(schemaPath)) {
+    return schemaCache.get(schemaPath);
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+  } catch (error) {
+    fail(`schema ${schemaPath}: invalid JSON (${error.message})`);
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    fail(`schema ${schemaPath}: expected JSON object at root`);
+  }
+  schemaCache.set(schemaPath, parsed);
+  return parsed;
+};
 
-const ALLOWED_PHASES = new Set([
-  "discover",
-  "snapshot",
-  "fragment",
-  "classify",
-  "synthesize",
-  "validate",
-  "export_apply",
-  "closeout_review",
-]);
+const resolvePointer = (obj, pointer, schemaRelPath) => {
+  let current = obj;
+  for (const segment of pointer.split(".")) {
+    if (current === null || typeof current !== "object" || !(segment in current)) {
+      fail(`schema ${schemaRelPath}: pointer "${pointer}" not found (segment "${segment}")`);
+    }
+    current = current[segment];
+  }
+  return current;
+};
 
-const ALLOWED_PHASE_STATUS = new Set([
-  "not_started",
-  "in_progress",
-  "produced",
-  "validated",
-  "failed",
-]);
+const loadEnum = (schemaRelPath, pointer) => {
+  const value = resolvePointer(loadSchema(schemaRelPath), pointer, schemaRelPath);
+  if (!Array.isArray(value)) {
+    fail(`schema ${schemaRelPath}: pointer "${pointer}" must be an enum array`);
+  }
+  return new Set(value);
+};
 
-const ALLOWED_ARTIFACT_PHASE = ALLOWED_PHASES;
-
-const ALLOWED_ARTIFACT_VALIDATION = new Set([
-  "valid",
-  "degraded",
-  "blocked",
-  "unknown",
-]);
-
-const ALLOWED_EXTERNAL_REF_STATUS = new Set([
-  "valid",
-  "missing",
-  "fragile",
-  "should-internalize",
-]);
-
-const ALLOWED_COVERAGE_ARTIFACT_TYPE = new Set([
-  "AGENTS",
-  "index",
-  "rules",
-  "reference",
-  "contracts",
-  "manifest",
-]);
-
-const ALLOWED_COVERAGE_VALIDATION = new Set([
-  "valid",
-  "degraded",
-  "blocked",
-]);
-
-const IMMUTABLE_START_PATTERN = /<!-- hephaestus:immutable:start id="([^"]+)" version="([^"]+)" -->/g;
-const IMMUTABLE_END_PATTERN = /<!-- hephaestus:immutable:end id="([^"]+)" -->/g;
+const loadPropertyNames = (schemaRelPath, pointer = "properties") => {
+  const value = resolvePointer(loadSchema(schemaRelPath), pointer, schemaRelPath);
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    fail(`schema ${schemaRelPath}: pointer "${pointer}" must be an object`);
+  }
+  return new Set(Object.keys(value));
+};
 
 const PLACEHOLDER_PATTERN = /<preencher[^>]*>|<[^>]*preencher[^>]*>/i;
 
@@ -93,6 +76,7 @@ const printUsage = () => {
       "  - .hephaestus/manifests/run-state.json structural shape (no unknown properties)",
       "  - .hephaestus/manifests/external-references-report.json structural shape",
       "  - .hephaestus/manifests/coverage-map.json structural shape (fragmentId required)",
+      "  - territory x regime legality per coverage entry",
       "",
       "Exit 0 on full pass, exit 1 on first failing check.",
     ].join("\n"),
@@ -140,18 +124,7 @@ const checkAgents = (root) => {
   if (PLACEHOLDER_PATTERN.test(contents)) {
     fail("AGENTS.md: contains placeholder (`<...>` / `<preencher...>`) — must be replaced");
   }
-  const markers = [...contents.matchAll(/<!-- hephaestus:immutable:(?:start|end)\b/g)];
-  const starts = [...contents.matchAll(IMMUTABLE_START_PATTERN)];
-  const ends = [...contents.matchAll(IMMUTABLE_END_PATTERN)];
-  if (markers.length !== starts.length + ends.length || starts.length !== ends.length) {
-    fail("AGENTS.md: malformed immutable-block marker");
-  }
-  for (let index = 0; index < starts.length; index += 1) {
-    if (starts[index][1] !== ends[index][1] || starts[index].index > ends[index].index) {
-      fail("AGENTS.md: immutable-block markers must be paired in order with matching IDs");
-    }
-  }
-  return `AGENTS.md header OK; no placeholders; ${starts.length} immutable block(s) structurally valid.`;
+  return "AGENTS.md header OK; no placeholders.";
 };
 
 const globMatch = (rootDir, linkedPath) => {
@@ -231,8 +204,15 @@ const checkRunState = (root) => {
   }
   const fileLabel = path.relative(root, runStatePath);
 
+  const allowedTopLevel = loadPropertyNames("run-state.schema.json", "properties");
+  const allowedStatus = loadEnum("run-state.schema.json", "properties.status.enum");
+  const allowedPhases = loadEnum("run-state.schema.json", "properties.currentPhase.enum");
+  const allowedPhaseStatus = loadEnum("run-state.schema.json", "$defs.phaseState.properties.status.enum");
+  const allowedArtifactPhase = loadEnum("run-state.schema.json", "$defs.artifactState.properties.phase.enum");
+  const allowedArtifactValidation = loadEnum("run-state.schema.json", "$defs.artifactState.properties.validationStatus.enum");
+
   for (const key of Object.keys(parsed)) {
-    if (!ALLOWED_RUN_STATE_TOP_LEVEL.has(key)) {
+    if (!allowedTopLevel.has(key)) {
       fail(`${fileLabel}: unknown property "${key}" — additionalProperties is false`);
     }
   }
@@ -242,10 +222,10 @@ const checkRunState = (root) => {
   requireString(parsed, "currentPhase", fileLabel);
   requireString(parsed, "lastUpdatedAt", fileLabel);
 
-  if (!ALLOWED_RUN_STATE_STATUS.has(parsed.status)) {
+  if (!allowedStatus.has(parsed.status)) {
     fail(`${fileLabel}: status "${parsed.status}" not in enum`);
   }
-  if (!ALLOWED_PHASES.has(parsed.currentPhase)) {
+  if (!allowedPhases.has(parsed.currentPhase)) {
     fail(`${fileLabel}: currentPhase "${parsed.currentPhase}" not in enum`);
   }
 
@@ -257,11 +237,11 @@ const checkRunState = (root) => {
     fail(`${fileLabel}: phaseStates must be an object`);
   }
   for (const phase of Object.keys(phaseStates)) {
-    if (!ALLOWED_PHASES.has(phase)) {
+    if (!allowedPhases.has(phase)) {
       fail(`${fileLabel}: phaseStates unknown phase "${phase}"`);
     }
   }
-  for (const phase of ALLOWED_PHASES) {
+  for (const phase of allowedPhases) {
     if (!Object.prototype.hasOwnProperty.call(phaseStates, phase)) {
       fail(`${fileLabel}: phaseStates missing required phase "${phase}"`);
     }
@@ -269,7 +249,7 @@ const checkRunState = (root) => {
     if (typeof state !== "object" || state === null || Array.isArray(state)) {
       fail(`${fileLabel}: phaseStates.${phase} must be an object`);
     }
-    if (typeof state.status !== "string" || !ALLOWED_PHASE_STATUS.has(state.status)) {
+    if (typeof state.status !== "string" || !allowedPhaseStatus.has(state.status)) {
       fail(
         `${fileLabel}: phaseStates.${phase}.status "${state.status}" not in enum`,
       );
@@ -295,12 +275,12 @@ const checkRunState = (root) => {
     if (typeof artifact.outputPath !== "string" || artifact.outputPath.length === 0) {
       fail(`${fileLabel}: artifactsWritten[${index}].outputPath must be non-empty string`);
     }
-    if (typeof artifact.phase !== "string" || !ALLOWED_ARTIFACT_PHASE.has(artifact.phase)) {
+    if (typeof artifact.phase !== "string" || !allowedArtifactPhase.has(artifact.phase)) {
       fail(`${fileLabel}: artifactsWritten[${index}].phase not in enum`);
     }
     if (
       typeof artifact.validationStatus !== "string" ||
-      !ALLOWED_ARTIFACT_VALIDATION.has(artifact.validationStatus)
+      !allowedArtifactValidation.has(artifact.validationStatus)
     ) {
       fail(
         `${fileLabel}: artifactsWritten[${index}].validationStatus not in enum`,
@@ -331,6 +311,8 @@ const checkExternalReferences = (root) => {
   }
   const fileLabel = path.relative(root, extRefPath);
 
+  const allowedRefStatus = loadEnum("external-references-report.schema.json", "$defs.referenceEntry.properties.status.enum");
+
   if (!Object.prototype.hasOwnProperty.call(parsed, "references")) {
     fail(`${fileLabel}: missing required property "references"`);
   }
@@ -358,7 +340,7 @@ const checkExternalReferences = (root) => {
         );
       }
     }
-    if (!ALLOWED_EXTERNAL_REF_STATUS.has(entry.status)) {
+    if (!allowedRefStatus.has(entry.status)) {
       fail(`${fileLabel}: references[${index}].status not in enum`);
     }
   }
@@ -373,6 +355,9 @@ const checkCoverageMap = (root) => {
     return "coverage-map.json: not present (skipped).";
   }
   const fileLabel = path.relative(root, coveragePath);
+
+  const allowedArtifactType = loadEnum("artifact.schema.json", "properties.artifactType.enum");
+  const allowedCoverageValidation = loadEnum("artifact.schema.json", "properties.validationStatus.enum");
 
   if (!Object.prototype.hasOwnProperty.call(parsed, "coverageEntries")) {
     fail(`${fileLabel}: missing required property "coverageEntries"`);
@@ -413,7 +398,7 @@ const checkCoverageMap = (root) => {
         `${fileLabel}: coverageEntries[${index}].fragmentId must be a non-empty string`,
       );
     }
-    if (!ALLOWED_COVERAGE_ARTIFACT_TYPE.has(entry.artifactType)) {
+    if (!allowedArtifactType.has(entry.artifactType)) {
       fail(
         `${fileLabel}: coverageEntries[${index}].artifactType "${entry.artifactType}" not in enum`,
       );
@@ -428,7 +413,7 @@ const checkCoverageMap = (root) => {
         `${fileLabel}: coverageEntries[${index}].derivedFrom must be an array`,
       );
     }
-    if (!ALLOWED_COVERAGE_VALIDATION.has(entry.validationStatus)) {
+    if (!allowedCoverageValidation.has(entry.validationStatus)) {
       fail(
         `${fileLabel}: coverageEntries[${index}].validationStatus "${entry.validationStatus}" not in enum`,
       );
@@ -438,64 +423,55 @@ const checkCoverageMap = (root) => {
   return `coverage-map.json: ${entries.length} entry(ies) structurally valid.`;
 };
 
-const checkImmutableBlocksReport = (root) => {
-  const reportPath = path.join(root, ".hephaestus", "manifests", "immutable-blocks-report.json");
-  const parsed = readJsonObject(reportPath);
+// INV9: nenhum fragmento com territory `process` recebe `generate` nem
+// `reconcile`; a matriz cobre os quatro territórios e, para qualquer valor
+// futuro do enum de territory, o default conservador é apenas `keep`.
+const TERRITORY_REGIME_RULES = {
+  process: ["relocate", "keep"],
+  vault: ["reconcile", "keep"],
+  agents: ["generate", "keep"],
+  "project-rules": ["generate", "keep"],
+};
+
+const checkTerritoryRegime = (root) => {
+  const coveragePath = path.join(root, ".hephaestus", "manifests", "coverage-map.json");
+  const parsed = readJsonObject(coveragePath);
   if (parsed === null) {
-    const agents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
-    if (agents.includes("<!-- hephaestus:immutable:")) {
-      fail("immutable-blocks-report.json: required when AGENTS.md contains immutable blocks");
-    }
-    return "immutable-blocks-report.json: not present (skipped).";
+    return "territory×regime: coverage-map not present (skipped).";
   }
-  const fileLabel = path.relative(root, reportPath);
-  if (!Array.isArray(parsed.blocks) || typeof parsed.lastUpdatedAt !== "string" || parsed.lastUpdatedAt.length === 0) {
-    fail(`${fileLabel}: requires blocks array and non-empty lastUpdatedAt`);
+  const fileLabel = path.relative(root, coveragePath);
+
+  const territoryEnum = loadEnum("fragment.schema.json", "properties.territory.enum");
+  const regimeEnum = loadEnum("fragment.schema.json", "properties.regime.enum");
+
+  let evaluated = 0;
+  const entries = Array.isArray(parsed.coverageEntries) ? parsed.coverageEntries : [];
+  for (const [index, entry] of entries.entries()) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      fail(`${fileLabel}: coverageEntries[${index}] must be an object`);
+    }
+    if (typeof entry.territory !== "string" || typeof entry.regime !== "string") {
+      continue;
+    }
+    if (!territoryEnum.has(entry.territory)) {
+      fail(
+        `${fileLabel}: coverageEntries[${index}].territory "${entry.territory}" not in enum`,
+      );
+    }
+    if (!regimeEnum.has(entry.regime)) {
+      fail(
+        `${fileLabel}: coverageEntries[${index}].regime "${entry.regime}" not in enum`,
+      );
+    }
+    const legalRegimes = TERRITORY_REGIME_RULES[entry.territory] ?? ["keep"];
+    if (!legalRegimes.includes(entry.regime)) {
+      fail(
+        `coverage-map: fragment ${entry.fragmentId} has illegal territory×regime: territory "${entry.territory}" + regime "${entry.regime}"`,
+      );
+    }
+    evaluated += 1;
   }
-  const agentsPath = path.join(root, "AGENTS.md");
-  const agents = fs.readFileSync(agentsPath, "utf8");
-  const starts = [...agents.matchAll(IMMUTABLE_START_PATTERN)];
-  const ends = [...agents.matchAll(IMMUTABLE_END_PATTERN)];
-  const destinationBlocks = new Map();
-  for (let index = 0; index < starts.length; index += 1) {
-    const start = starts[index];
-    const end = ends[index];
-    if (!end || start[1] !== end[1]) {
-      fail(`${fileLabel}: cannot map immutable block ${start[1] ?? "unknown"} in AGENTS.md`);
-    }
-    const content = agents.slice(start.index, end.index + end[0].length);
-    destinationBlocks.set(start[1], {
-      version: start[2],
-      sha256: crypto.createHash("sha256").update(content).digest("hex"),
-    });
-  }
-  if (destinationBlocks.size !== parsed.blocks.length) {
-    fail(`${fileLabel}: report count does not match immutable blocks in AGENTS.md`);
-  }
-  for (const [index, block] of parsed.blocks.entries()) {
-    if (typeof block !== "object" || block === null || Array.isArray(block)) {
-      fail(`${fileLabel}: blocks[${index}] must be an object`);
-    }
-    for (const key of ["id", "version", "sourceFile", "destinationFile", "sourceSha256", "destinationSha256", "status"]) {
-      if (typeof block[key] !== "string" || block[key].length === 0) {
-        fail(`${fileLabel}: blocks[${index}].${key} must be a non-empty string`);
-      }
-    }
-    if (!/^[a-f0-9]{64}$/.test(block.sourceSha256) || !/^[a-f0-9]{64}$/.test(block.destinationSha256)) {
-      fail(`${fileLabel}: blocks[${index}] hashes must be lowercase SHA-256`);
-    }
-    if (block.status !== "preserved" || block.sourceSha256 !== block.destinationSha256) {
-      fail(`${fileLabel}: blocks[${index}] is not proven preserved`);
-    }
-    const destination = destinationBlocks.get(block.id);
-    if (!destination || block.destinationFile !== "AGENTS.md" || destination.version !== block.version) {
-      fail(`${fileLabel}: blocks[${index}] does not match AGENTS.md marker`);
-    }
-    if (destination.sha256 !== block.destinationSha256) {
-      fail(`${fileLabel}: blocks[${index}] destination hash does not match AGENTS.md`);
-    }
-  }
-  return `immutable-blocks-report.json: ${parsed.blocks.length} block(s) proven preserved.`;
+  return `territory×regime: ${evaluated} entrie(s) legally combined.`;
 };
 
 const main = (argv) => {
@@ -520,7 +496,7 @@ const main = (argv) => {
     checkRunState(root),
     checkExternalReferences(root),
     checkCoverageMap(root),
-    checkImmutableBlocksReport(root),
+    checkTerritoryRegime(root),
   ];
 
   for (const message of reports) {

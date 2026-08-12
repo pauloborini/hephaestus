@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Routing",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fragmentId",
+    "territory",
+    "regime",
+    "destinationPath",
+    "confidence",
+    "decidedBy",
+    "evidence",
+    "needsSplit"
+  ],
+  "properties": {
+    "fragmentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "territory": {
+      "type": "string",
+      "enum": ["agents", "project-rules", "vault", "process"]
+    },
+    "regime": {
+      "type": "string",
+      "enum": ["keep", "generate", "reconcile", "relocate"]
+    },
+    "destinationPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "decidedBy": {
+      "type": "string",
+      "enum": ["keep", "state", "catalog", "detector", "llm", "human"]
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "needsSplit": {
+      "type": "boolean"
+    }
+  }
+}
