@@ -81,6 +81,9 @@ const printUsage = () => {
       "  - territory x regime legality per coverage entry",
       "  - .hephaestus/ gitignored (CN12) and absent from the git index",
       "  - .hephaestus/plan.json contract (origin tracing; INV7)",
+      "  - snapshot coverage: every byte belongs to a fragment or declared ignored region (INV5)",
+      "  - keep bytes: routing keep fragments copied byte by byte (INV2)",
+      "  - residue gate: llm residue degrading destinations require degraded verdict + nominal list (D26)",
       "  - verify(applied): disk hash vs .hephaestus/staging-manifest.json (D27)",
       "",
       "Exit 0 on full pass, exit 1 on first failing check.",
@@ -113,6 +116,19 @@ const readJsonObject = (filePath) => {
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     fail(`${path.relative(process.cwd(), filePath)}: expected JSON object at root`);
+  }
+  return parsed;
+};
+
+const readJsonValue = (filePath) => {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    fail(`${path.relative(process.cwd(), filePath)}: invalid JSON (${error.message})`);
   }
   return parsed;
 };
@@ -233,6 +249,15 @@ const checkRunState = (root) => {
   }
   if (parsed.mode !== undefined && !allowedModes.has(parsed.mode)) {
     fail(`${fileLabel}: mode "${parsed.mode}" not in enum`);
+  }
+  if (parsed.llmDecidedRatio !== undefined) {
+    if (
+      typeof parsed.llmDecidedRatio !== "number" ||
+      parsed.llmDecidedRatio < 0 ||
+      parsed.llmDecidedRatio > 1
+    ) {
+      fail(`${fileLabel}: llmDecidedRatio must be a number in [0, 1] (D29 — métrica efêmera, nunca no state versionado)`);
+    }
   }
   if (!allowedPhases.has(parsed.currentPhase)) {
     fail(`${fileLabel}: currentPhase "${parsed.currentPhase}" not in enum`);
@@ -650,6 +675,223 @@ const checkAppliedHashes = (root, manifestPath) => {
   return `verify(applied): ${parsed.artifacts.length} artefato(s) with disk hash equal to staging-manifest.`;
 };
 
+// INV5 / AC-3.1.2 (D21): cobertura de 100% do snapshot — todo byte pertence a
+// um fragmento (provenance do fragments.json) ou a uma região ignorada
+// declarada (snapshot.json:ignoredRegions). Gap reprova nomeando o arquivo e
+// o offset; provenance fora do snapshot também reprova.
+const checkCoverage = (root) => {
+  const snapshotPath = path.join(root, ".hephaestus", "manifests", "snapshot.json");
+  const snapshot = readJsonObject(snapshotPath);
+  if (snapshot === null) {
+    return "coverage: snapshot.json not present (skipped).";
+  }
+  const fragmentsPath = path.join(root, ".hephaestus", "manifests", "fragments.json");
+  const fragments = readJsonValue(fragmentsPath);
+  if (fragments === null) {
+    fail("coverage: fragments.json not present — snapshot coverage cannot be proven (INV5)");
+  }
+  const files = Array.isArray(snapshot.files) ? snapshot.files : [];
+  const ignored = Array.isArray(snapshot.ignoredRegions) ? snapshot.ignoredRegions : [];
+  const fragmentList = Array.isArray(fragments) ? fragments : [];
+  if (!Array.isArray(snapshot.files)) {
+    fail(`${path.relative(root, snapshotPath)}: missing "files" array`);
+  }
+  const fileIndex = new Set();
+  for (const [index, file] of files.entries()) {
+    if (typeof file !== "object" || file === null || Array.isArray(file)) {
+      fail(`${path.relative(root, snapshotPath)}: files[${index}] must be an object`);
+    }
+    if (typeof file.path !== "string" || file.path.length === 0) {
+      fail(`${path.relative(root, snapshotPath)}: files[${index}] missing path`);
+    }
+    if (typeof file.size !== "number" || file.size < 0) {
+      fail(`${path.relative(root, snapshotPath)}: files[${index}] (${file.path}) missing size`);
+    }
+    fileIndex.add(file.path);
+  }
+
+  // intervalos cobertos por arquivo (fragmentos + regiões ignoradas)
+  const rangesByFile = new Map();
+  const addRange = (filePath, startOffset, endOffset) => {
+    if (!rangesByFile.has(filePath)) rangesByFile.set(filePath, []);
+    rangesByFile.get(filePath).push({ startOffset, endOffset });
+  };
+  for (const [index, fragment] of fragmentList.entries()) {
+    if (typeof fragment !== "object" || fragment === null || Array.isArray(fragment)) {
+      fail(`fragments.json: entry ${index} must be an object`);
+    }
+    const provenance = Array.isArray(fragment.provenance) ? fragment.provenance : [];
+    for (const prov of provenance) {
+      if (typeof prov !== "object" || prov === null || typeof prov.sourcePath !== "string") {
+        fail(`fragments.json: ${fragment.fragmentId} — provenance sem sourcePath`);
+      }
+      if (!fileIndex.has(prov.sourcePath)) {
+        fail(
+          `coverage: fragmento ${fragment.fragmentId} tem provenance ${prov.sourcePath} fora do snapshot (INV5)`,
+        );
+      }
+      addRange(prov.sourcePath, prov.startOffset, prov.endOffset);
+    }
+  }
+  for (const [index, region] of ignored.entries()) {
+    if (typeof region !== "object" || region === null || typeof region.path !== "string") {
+      fail(`${path.relative(root, snapshotPath)}: ignoredRegions[${index}] must have a path`);
+    }
+    if (!fileIndex.has(region.path)) {
+      fail(`coverage: região ignorada ${region.path} fora do snapshot (INV5)`);
+    }
+    addRange(region.path, region.startOffset, region.endOffset);
+  }
+
+  for (const file of files) {
+    const ranges = (rangesByFile.get(file.path) ?? [])
+      .filter((r) => r.endOffset >= r.startOffset)
+      .sort((a, b) => a.startOffset - b.startOffset || a.endOffset - b.endOffset);
+    let cursor = 0;
+    for (const range of ranges) {
+      if (range.startOffset > cursor) {
+        fail(
+          `coverage: ${file.path} byte ${cursor} não pertence a fragmento nem região ignorada declarada (INV5)`,
+        );
+      }
+      if (range.endOffset > cursor) cursor = range.endOffset;
+    }
+    if (cursor < file.size) {
+      fail(
+        `coverage: ${file.path} bytes ${cursor}..${file.size - 1} não cobertos por fragmento nem região ignorada declarada (INV5)`,
+      );
+    }
+  }
+  return `coverage: ${files.length} arquivo(s) do snapshot com 100% dos bytes cobertos (INV5).`;
+};
+
+// INV2 / AC-3.2.1 (D16): regra do não-toque. Para cada entrada `regime: keep`
+// do routing.json, o sha256 do conteúdo de origem REGISTRADO (rawText do
+// fragmento, a fonte congelada em fragments.json — o staging não contém a
+// fonte do usuário) deve ser igual ao sha256 do range correspondente no
+// artefato de destino — cópia byte a byte, nunca regeneração.
+const sha256Buffer = (buffer) => createHash("sha256").update(buffer).digest("hex");
+
+const readRange = (root, filePath, startOffset, endOffset) => {
+  const abs = path.join(root, filePath);
+  if (!fs.existsSync(abs)) return null;
+  const buffer = fs.readFileSync(abs);
+  if (startOffset > buffer.length || endOffset > buffer.length) return null;
+  return buffer.subarray(startOffset, endOffset);
+};
+
+const checkKeepBytes = (root) => {
+  const routingPath = path.join(root, ".hephaestus", "manifests", "routing.json");
+  const routing = readJsonValue(routingPath);
+  if (routing === null) {
+    return "keep bytes: routing.json not present (skipped).";
+  }
+  const entries = Array.isArray(routing) ? routing : routing.entries;
+  if (!Array.isArray(entries)) {
+    fail(`${path.relative(root, routingPath)}: missing "entries" array`);
+  }
+  const fragmentsPath = path.join(root, ".hephaestus", "manifests", "fragments.json");
+  const fragments = readJsonValue(fragmentsPath);
+  if (fragments === null) {
+    fail("keep bytes: fragments.json not present — keep bytes cannot be proven (INV2)");
+  }
+  const fragmentIndex = new Map(
+    (Array.isArray(fragments) ? fragments : []).map((fragment) => [fragment.fragmentId, fragment]),
+  );
+  let keepCount = 0;
+  for (const entry of entries) {
+    if (entry.regime !== "keep") continue;
+    keepCount += 1;
+    const fragment = fragmentIndex.get(entry.fragmentId);
+    if (!fragment) {
+      fail(`keep bytes: fragmento ${entry.fragmentId} sem correspondente em fragments.json`);
+    }
+    const sourceHash = sha256Buffer(Buffer.from(fragment.rawText ?? "", "utf8"));
+    const provenance = Array.isArray(fragment.provenance) ? fragment.provenance : [];
+    for (const prov of provenance) {
+      const destBytes = readRange(root, entry.destinationPath, prov.startOffset, prov.endOffset);
+      if (destBytes === null) {
+        fail(
+          `keep bytes: fragmento ${entry.fragmentId} — destino ${entry.destinationPath} ausente/incompleto no disco`,
+        );
+      }
+      const destHash = sha256Buffer(destBytes);
+      if (sourceHash !== destHash) {
+        fail(
+          `keep bytes: fragmento ${entry.fragmentId} — hash de origem ${sourceHash} != hash de destino ${destHash} (regra do não-toque violada, INV2)`,
+        );
+      }
+    }
+  }
+  return `keep bytes: ${keepCount} fragmento(s) keep com cópia byte a byte comprovada (INV2).`;
+};
+
+// D26 / AC-3.3.1 e AC-3.3.2: gate qualitativo de resíduo. Entrada
+// `decidedBy: llm` cujo destinationPath é arquivo NOVO em
+// `_app-vault/docs/decisions/` (vira DEC-NNN nova) ou em
+// `project-rules/rules/` (regra nova) é DEGRADANTE — o veredito exigido do
+// report.md é `degraded-but-usable` e cada degradante aparece nominalmente no
+// relatório. Resíduo em reference/index/.app-work não degrada. `llmDecidedRatio`
+// é sempre reportado. O critério é o tipo de destino, nunca o volume.
+const RESIDUE_DEGRADING_PREFIXES = ["_app-vault/docs/decisions/", "project-rules/rules/"];
+
+const checkResidueGate = (root) => {
+  const routingPath = path.join(root, ".hephaestus", "manifests", "routing.json");
+  const routing = readJsonValue(routingPath);
+  if (routing === null) {
+    return "resíduo: routing.json not present (skipped).";
+  }
+  const entries = Array.isArray(routing) ? routing : routing.entries;
+  if (!Array.isArray(entries)) {
+    fail(`${path.relative(root, routingPath)}: missing "entries" array`);
+  }
+  const reportPath = path.join(root, ".hephaestus", "report.md");
+  if (!fs.existsSync(reportPath)) {
+    return "resíduo: report.md not present (skipped — closeout ainda não rodou).";
+  }
+  const report = fs.readFileSync(reportPath, "utf8");
+
+  const verdictMatch = report.match(/(?:^|\n)\s*(ready|degraded-but-usable|needs-followup)\s*(?:\n|$)/);
+  if (!verdictMatch) {
+    fail("report.md: veredito (ready/degraded-but-usable/needs-followup) ausente");
+  }
+  const verdict = verdictMatch[1];
+
+  if (!/llmDecidedRatio:\s*(?:1(?:\.0+)?|0(?:\.\d+)?|\.\d+)/.test(report)) {
+    fail("report.md: llmDecidedRatio ausente — a proporção de resíduo é sempre reportada (D26)");
+  }
+
+  const degrading = [];
+  const nonDegrading = [];
+  for (const entry of entries) {
+    if (entry.decidedBy !== "llm") continue;
+    const hitsPrefix = RESIDUE_DEGRADING_PREFIXES.some((prefix) =>
+      entry.destinationPath.startsWith(prefix),
+    );
+    if (hitsPrefix && !fs.existsSync(path.join(root, entry.destinationPath))) {
+      degrading.push(entry);
+    } else {
+      nonDegrading.push(entry);
+    }
+  }
+
+  if (degrading.length > 0) {
+    if (verdict !== "degraded-but-usable") {
+      fail(
+        `report.md: veredito "${verdict}" incompatível com ${degrading.length} entrada(s) degradante(s) decidida(s) pela LLM (D26) — exige degraded-but-usable`,
+      );
+    }
+    for (const entry of degrading) {
+      if (!report.includes(entry.fragmentId)) {
+        fail(
+          `report.md: entrada degradante ${entry.fragmentId} (${entry.destinationPath}) ausente da lista nominal do resíduo (D26)`,
+        );
+      }
+    }
+  }
+  return `resíduo: ${degrading.length} degradante(s), ${nonDegrading.length} não-degradante(s), veredito ${verdict} coerente.`;
+};
+
 const main = (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     printUsage();
@@ -675,6 +917,9 @@ const main = (argv) => {
     checkTerritoryRegime(root),
     checkEphemeralIgnored(root),
     checkPlanContract(root),
+    checkCoverage(root),
+    checkKeepBytes(root),
+    checkResidueGate(root),
     checkAppliedHashes(root, path.join(root, ".hephaestus", "staging-manifest.json")),
   ];
 

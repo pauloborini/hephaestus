@@ -42,6 +42,11 @@
       "type": "string",
       "enum": ["adopt", "maintain"]
     },
+    "llmDecidedRatio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
     "phaseStates": {
       "type": "object",
       "additionalProperties": false,
