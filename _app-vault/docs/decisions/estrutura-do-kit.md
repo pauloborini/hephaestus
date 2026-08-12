@@ -17,6 +17,15 @@ Versão pública do kit = inteiro positivo monotônico (`1`, `2`, `3`…). Fonte
 Pasta interna do zip continua fixa `hephaestus/` (sem `N` no nome). Próxima release = `N+1`
 sempre — sem semver, sem patch/minor.
 
+### DEC-004 — Adopt materializa decisões canônicas na mesma execução
+
+Modo `adopt` só fecha completo quando regras de produto encontradas (inclusive sob alias
+`.app-vault/` / `_app-vault/` fora de `docs/decisions/`, `DECISOES_*`, headings `### D\d+`,
+seções “Decisões fechadas”) viram `### DEC-NNN` em `docs/decisions/` na mesma execução.
+Não-toque não se aplica a path sob o root do vault fora da lista fechada de SCHEMA §2.
+Alias de root não isenta promoção. Scaffold vazio de `docs/decisions/` com material de decisão
+ainda vivo = adoção incompleta (`needs-followup`).
+
 ## Histórico
 
 - 2026-08-11 — DEC-001 removida. Era: blocos delimitados por `hephaestus:immutable` preservados

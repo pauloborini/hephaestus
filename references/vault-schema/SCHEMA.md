@@ -53,6 +53,13 @@ _app-vault/                 # VERDADE VIGENTE — visível, buscável
 **Toda pasta de `_app-vault/` é vigente.** Sem exceção: o que envelheceu sai do vault — foi o que
 tirou de lá `archive/` e `_private/`. O que resta é vigente por construção, não por vigilância.
 
+**Presença sob o root do vault não é formato canônico.** Path `_app-vault/docs/features/`,
+`docs/platform/`, `DECISOES_*` fora de `docs/decisions/`, etc. está **fora** desta lista: na
+adoção (`/hephaestus` modo `adopt`) e na checagem de integridade do `maintain`, esse material é
+**reclassificado** (decisão → `docs/decisions/` como `### DEC-NNN`; spec técnica → `specs/`;
+processo/casca → `.app-work/`). Não-toque (cópia byte a byte) só vale para paths **já** listados
+acima no formato certo — ver `prompts/route.md` nível 1 e DEC-004.
+
 O vault não é espelhado fora do projeto.
 
 ### 2.1 Fronteira

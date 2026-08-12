@@ -217,3 +217,70 @@ test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino il
   // a cascata nunca pergunta: perguntas nascem enfileiradas
   assert.match(route, /nunca/i);
 });
+
+test("DEC-004: DECISOES_* sob vault legado não é keep — promove a docs/decisions/", () => {
+  const tmp = mkdtemp("hep-dec004-");
+  const src =
+    ".app-vault/docs/features/checkin/DECISOES_CHECKIN.md";
+  const raw = `# Check-in — Decisões
+
+## 2. Decisões fechadas
+
+### D1 · Modelo de confiança no prestador
+
+O profissional deve registrar a sessão unilateralmente.
+`;
+  fs.mkdirSync(path.join(tmp, path.dirname(src)), { recursive: true });
+  fs.writeFileSync(path.join(tmp, src), raw);
+  const fragments = [
+    {
+      fragmentId: "frag-decisoes",
+      rawText: raw,
+      territory: "vault",
+      regime: "reconcile",
+      confidence: 0.9,
+      ambiguity: "low",
+      provenance: [
+        {
+          sourcePath: src,
+          startOffset: 0,
+          endOffset: Buffer.byteLength(raw, "utf8"),
+        },
+      ],
+    },
+  ];
+  const { routing } = buildRouting(tmp, { fragments });
+  assert.equal(routing.length, 1);
+  assert.equal(routing[0].destinationPath, "_app-vault/docs/decisions/checkin.md");
+  assert.equal(routing[0].regime, "reconcile");
+  assert.notEqual(routing[0].decidedBy, "keep");
+});
+
+test("DEC-004: architecture.md sob docs/features/ não é keep no vault", () => {
+  const tmp = mkdtemp("hep-feat-arch-");
+  const src = "_app-vault/docs/features/auth/architecture.md";
+  const raw = `# Auth architecture\n\nCamadas do módulo.\n`;
+  fs.mkdirSync(path.join(tmp, path.dirname(src)), { recursive: true });
+  fs.writeFileSync(path.join(tmp, src), raw);
+  const fragments = [
+    {
+      fragmentId: "frag-arch-feat",
+      rawText: raw,
+      territory: "vault",
+      regime: "keep",
+      confidence: 0.9,
+      ambiguity: "low",
+      provenance: [
+        {
+          sourcePath: src,
+          startOffset: 0,
+          endOffset: Buffer.byteLength(raw, "utf8"),
+        },
+      ],
+    },
+  ];
+  const { routing } = buildRouting(tmp, { fragments });
+  assert.equal(routing.length, 1);
+  assert.match(routing[0].destinationPath, /^\.app-work\/archive\//);
+  assert.notEqual(routing[0].regime, "keep");
+});

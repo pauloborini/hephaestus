@@ -290,7 +290,14 @@ export const reconcileVault = ({ fragments, routing, repoRoot, now }) => {
     return domainState.get(domain);
   };
 
-  const vaultRoutes = routing.filter((e) => e.territory === "vault");
+  const vaultRoutes = routing.filter((e) => {
+    if (e.territory !== "vault") return false;
+    const dest = e.destinationPath ?? "";
+    return (
+      dest.includes("/docs/decisions/") &&
+      dest.endsWith(".md")
+    );
+  });
   for (const route of vaultRoutes) {
     const fragment = fragments.find((f) => f.fragmentId === route.fragmentId);
     const rawText = fragment?.rawText ?? "";

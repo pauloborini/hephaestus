@@ -12,6 +12,7 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 - conferir o estado de `.hephaestus/manifests/external-references-report.json` quando existir; pendência por referência externa sem internalização registrada;
 - revisar `AGENTS.md` e `project-rules/` para detectar regras que deveriam ter ido para `project-rules/rules/*` mas ficaram no `AGENTS.md`, ou árvore final inflada com arquivos vazios;
 - revisar os quatro territórios do pacote — `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` — conferindo que cada um recebeu só o que o plano determinou, sem vazamento de valor de regra entre territórios;
+- em `mode: adopt`, conferir adoção completa do vault: `INDEX.md` presente; `docs/decisions/` com cláusulas `### DEC-NNN` coerentes com o `identity-map.json` quando a discover marcou material de decisão; **nenhuma** pasta sob o vault fora da lista fechada §2 restante no disco; scaffold-only de `docs/decisions/` com fontes de decisão ainda vivas (ou só movidas a `.app-work/` sem promoção) ⇒ pendência **bloqueante** e veredito `needs-followup` (não `ready`, não “degraded aceitável”);
 - **nunca alterar `AGENTS.md`, `project-rules/`, `_app-vault/` nem `.app-work/` durante o closeout** — o closeout revisa e aponta; correções voltam para `apply` na próxima execução;
 - conferir `.hephaestus/manifests/routing.json`: entradas `decidedBy: llm` cujo destino é arquivo novo em `_app-vault/docs/decisions/` ou em `project-rules/rules/` são **degradantes** (D26) e entram na lista nominal do relatório; entradas de resíduo em `project-rules/reference/`, `project-rules/index/` ou `.app-work/` não degradam;
 - reportar `llmDecidedRatio` (proporção de fragmentos decididos pela LLM) **sempre, sem teto** — o critério de degradação é o tipo de destino, nunca o volume;
@@ -20,9 +21,9 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 
 ## Veredito
 
-- `ready` — sem entrada degradante e sem pendência bloqueante;
-- `degraded-but-usable` — há entrada degradante (lista nominal obrigatória) ou pendência controlada; o pacote é utilizável com ressalvas;
-- `needs-followup` — pendência bloqueante em aberto (ex.: fila de entrevista não drenada); o run não é dado como concluído.
+- `ready` — sem entrada degradante e sem pendência bloqueante; em `adopt`, vault canônico completo (decisões materializadas quando havia fonte);
+- `degraded-but-usable` — há entrada degradante (lista nominal obrigatória) ou pendência controlada; o pacote é utilizável com ressalvas; **não** use este veredito para “decisions/ vazio na primeira adoção” quando havia material de decisão — isso é `needs-followup`;
+- `needs-followup` — pendência bloqueante em aberto (ex.: fila de entrevista não drenada; adoção incompleta do vault: decisões legadas não promovidas a `DEC-NNN`); o run não é dado como concluído.
 
 ## Saída mínima
 
