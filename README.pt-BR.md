@@ -4,7 +4,7 @@
 
 > Nome grego deste projeto no umbrella `greek-stack`.
 
-Kit repo-native para transformar regras cruas do projeto em um pacote fragmentado, canônico e mais operacional para uso com LLM.
+Kit de comando único, `/hephaestus`, que governa os quatro territórios documentais de um repositório — `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` — numa execução e numa única transação de escrita.
 
 Este `README.md` é para pessoas.
 O [SKILL.md](SKILL.md) é para a LLM. Referência operacional: [COMMANDS.pt-BR.md](COMMANDS.pt-BR.md).
@@ -18,13 +18,15 @@ O kit Hephaestus existe para reduzir improviso quando um agente precisa trabalha
 - docs e specs heterogêneas;
 - convenções pouco operacionais para contexto mínimo.
 
-Em vez de tratar essas fontes como contrato cru de runtime, o kit orienta a LLM a:
+Em vez de tratar essas fontes como contrato cru de runtime, o kit roda um fluxo de **13 fases** que:
 
-1. descobrir as fontes;
-2. fragmentar o material;
-3. classificar por papel operacional;
-4. sintetizar uma estrutura canônica;
-5. validar a saída antes de concluir.
+1. descobre as fontes (varredura integral em `adopt`, só drift em `maintain`);
+2. fragmenta o material com identidade estável;
+3. roteia cada fragmento para um dos quatro territórios, com evidência;
+4. reconcilia decisões sem renumerar IDs;
+5. pergunta uma única vez por execução, em lote, só sobre ambiguidade genuína;
+6. monta um plano aprovável antes de qualquer escrita;
+7. grava tudo numa transação única, com verificação de hash depois da escrita.
 
 Ele também permite retomada confiável quando a execução for interrompida no meio do processo.
 
@@ -39,7 +41,9 @@ A estrutura gerada é sempre a mesma; o que muda é o conteúdo, preenchido pela
 - `project-rules/rules/*` → regras obrigatórias (architecture, operational, domain, error handling, auth, security, ui);
 - `project-rules/reference/*` → apoio, exemplos e contratos longos;
 - `project-rules/contracts/*` → contratos externos (ex.: OpenAPI), quando existirem;
-- `.hephaestus/manifests/` → checkpoint do processo de geração (retomada), não parte da estrutura canônica.
+- `_app-vault/` → decisões de produto (`DEC-NNN`) e specs;
+- `.app-work/` → processo (estado, issues, guias) — nunca insumo de regra;
+- `.hephaestus/manifests/` → checkpoint do processo de geração (retomada), efêmero e gitignored.
 
 Exemplo: num projeto Flutter, a LLM preenche os gates de `operational_rules.md` com `flutter analyze`/`melos run ...`; num projeto TypeScript, com `tsc`/`eslint`. A estrutura das pastas não muda.
 
@@ -53,15 +57,19 @@ Ele existe para reorganizar, consolidar e validar o que já veio das fontes do p
 - `prompts/`
   - instruções curtas por fase
 - `templates/`
-  - estrutura canônica de saída (`AGENTS.md.template` + `project-rules/`)
+  - estrutura canônica de saída (`AGENTS.md.template` + `project-rules/` + `vault/`)
 - `references/`
   - referências neutras e exemplos de forma
+- `catalog/`
+  - catálogo base de roteamento e catálogo de drift
 - `schemas/`
-  - contratos mínimos para fragmentos e artefatos
+  - contratos mínimos para fragmentos, estado e artefatos
 - `manifests/`
-  - política de nomenclatura e metadados do kit
+  - política de nomenclatura e metadados do kit (`packExcludes` é a lista final de exclusão do pacote)
 - `scripts/validate-skill-kit.mjs`
   - validador estrutural do kit (roda também no publish)
+- `scripts/pack-release.mjs`
+  - gera o zip de release com raiz `hephaestus/`
 
 ## Para Quem É
 
@@ -69,7 +77,7 @@ Use este kit quando você quer:
 
 - organizar melhor as instruções de um projeto;
 - distribuir uma skill com estrutura previsível;
-- trabalhar por clone ou `.zip`;
+- instalar por `.zip` na pasta de skills;
 - deixar claro o que o humano faz e o que a LLM faz.
 
 Não use este kit esperando:
@@ -85,6 +93,7 @@ Quando o fluxo é bem executado, o resultado esperado é:
 
 - um `AGENTS.md` enxuto e centralizador;
 - uma pasta `project-rules/` que concentra as regras do projeto;
+- decisões de produto em `_app-vault/` com identidade estável (`DEC-NNN`);
 - regras distribuídas por papel operacional, em vez de ficarem misturadas;
 - relatório explícito quando `project-rules/` ainda depender de arquivos externos;
 - checkpoint suficiente para retomada após interrupção.
@@ -103,86 +112,63 @@ Na validação intermediária, a LLM também pode classificar o pacote como:
 
 ## Instalação
 
-Você pode usar o kit de duas formas:
+O produto é distribuído como zip de release com raiz fixa `hephaestus/`.
 
-### Opção 1: Clone
+### Gerar o zip
 
-Clone o repositório do kit e mantenha a pasta disponível para consulta.
+Na raiz do repositório do kit:
 
-### Opção 2: Zip
-
-Baixe o `.zip`, extraia a pasta e deixe esse conteúdo acessível no ambiente em que a LLM vai operar.
-
-### Procedimento recomendado de instalação
-
-1. Baixe o repositório por clone ou `.zip`.
-2. Se vier do GitHub por `.zip`, a pasta extraída normalmente terá um nome como:
-
-```text
-hephaestus-main/
+```bash
+node scripts/pack-release.mjs
 ```
 
-3. Renomeie para algo limpo, por exemplo:
+Gera `hephaestus-<version>.zip`. Para ver o que vai no arquivo sem escrever nada:
 
-```text
-hephaestus/
+```bash
+node scripts/pack-release.mjs --dry-run
 ```
 
-4. Coloque essa pasta dentro do workspace do projeto onde a LLM vai trabalhar.
+### Instalar na pasta de skills
 
-Exemplo:
+Descompacte o zip na pasta de skills do seu ambiente:
 
 ```text
-workspace-do-usuario/
+skills/
   hephaestus/
 ```
 
-ou:
+Toda entrada do zip é prefixada com a pasta fixa `hephaestus/` — sem versão no nome da pasta — então descompactar uma versão nova por cima de uma instalação existente **sobrescreve** em vez de acumular. O zip nunca contém `_app-vault/`, `.app-work/`, `COMMANDS*.md` nem artefatos de desenvolvimento; a lista final de exclusão vive em `manifests/kit-manifest.json:packExcludes`.
 
-```text
-meu-projeto/
-  hephaestus/
-```
+### Usar
 
-5. No chat da LLM, aponte para `hephaestus/SKILL.md` usando o prompt pronto abaixo.
+No repositório alvo, rode `/hephaestus`. Dois modos internos são decididos pela presença de `.app-work/hephaestus-state.json`:
 
-Para o uso atual do kit, prefira deixá-lo dentro do projeto alvo em vez de instalar globalmente numa pasta geral de skills do editor.
+- `adopt` — state ausente: varredura integral e adoção dos quatro territórios;
+- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`).
 
 ## O Que Você Precisa Entregar Para A LLM
 
 O kit funciona melhor quando o usuário entrega ou aponta claramente:
 
-- o conjunto de fontes que devem ser reorganizadas;
 - o objetivo do trabalho;
 - se a LLM deve apenas analisar ou já aplicar a reorganização;
 - se existem restrições de escopo para o pacote final.
-
-Exemplos de fontes comuns:
-
-- `AGENTS.md`
-- docs internas
-- specs
-- `_docs/`
-- `CLAUDE.md`
-- `.cursorrules`
-- regras soltas em Markdown
-- convenções de projeto
 
 Se você não apontar fontes, a LLM ainda pode descobrir parte do material, mas o processo fica mais sujeito a lacunas.
 
 ## O Que O Humano Deve Fazer
 
-1. Garantir que esta pasta esteja disponível no ambiente em que a LLM vai operar.
+1. Garantir que a pasta `hephaestus/` esteja disponível na pasta de skills do ambiente.
 2. Ler este `README.md` para entender o fluxo.
-3. Apontar a LLM para [SKILL.md](SKILL.md).
-4. Fornecer as fontes cruas do projeto alvo.
+3. Rodar `/hephaestus` no repositório alvo e responder o lote único de perguntas, se houver.
+4. Ler e aprovar o plano (`.hephaestus/plan.md`) antes de qualquer escrita.
 5. Revisar o resultado quando a validação terminar em `degraded` ou quando o fechamento indicar `needs-followup`.
 6. Se a execução for interrompida, pedir retomada a partir do último checkpoint validado.
 
 ## O Que A LLM Deve Fazer
 
 1. Ler [SKILL.md](SKILL.md).
-2. Seguir as fases na ordem definida.
+2. Seguir as 13 fases na ordem definida.
 3. Ler apenas os prompts, templates, references e schemas necessários para a fase atual.
 4. Gerar uma saída canônica, pequena e neutra, adaptada ao framework real do repositório.
 5. Bloquear a conclusão quando o contrato mínimo falhar.
@@ -190,20 +176,16 @@ Se você não apontar fontes, a LLM ainda pode descobrir parte do material, mas 
 
 ## Prompt Pronto Para Colar
 
-Depois de posicionar a pasta `hephaestus/` dentro do projeto, cole isto no chat da LLM:
+Depois de instalar a skill, cole isto no chat da LLM:
 
 ```text
-Use a skill em `./hephaestus/SKILL.md` como procedimento principal para este trabalho.
-
-Leia primeiro o `README.md` e depois o `SKILL.md` dentro de `./hephaestus/`.
-
-Quero que você use o kit Hephaestus para analisar e reorganizar as regras e instruções deste projeto seguindo o fluxo:
-discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review
+Rode /hephaestus neste repositório.
 
 Objetivo deste trabalho:
 - consolidar as regras do projeto em um pacote mais operacional;
 - manter `project-rules/` como fonte canônica das regras;
-- deixar `AGENTS.md` apenas como dono do workflow, da precedência e do roteamento.
+- deixar `AGENTS.md` apenas como dono do workflow, da precedência e do roteamento;
+- manter decisões de produto em `_app-vault/` com identidade estável.
 
 Não improvise a árvore final.
 Use os prompts, templates, references, schemas e manifests do kit apenas quando necessários para a fase atual.
@@ -222,13 +204,15 @@ Mantenha `.hephaestus/manifests/run-state.json` atualizado durante o processo pa
 - fases `validated`;
 - fases `failed`.
 
-Antes de sintetizar os arquivos finais, produza um mapa de cobertura simples relacionando:
+Antes de aplicar, produza um mapa de cobertura simples relacionando:
 - fragmento ou regra de origem;
-- classificação operacional;
+- roteamento (território e regime);
 - arquivo de destino;
 - pendência, conflito ou baixa confiança, se houver.
 
 Se houver ambiguidade relevante, conflito entre fontes ou falta de material suficiente, explicite isso em vez de forçar uma estrutura artificial.
+
+Me mostre o plano (`.hephaestus/plan.md`) antes de qualquer escrita e aguarde minha aprovação.
 
 Se a execução cair no meio, quero poder retomar a partir da última fase `validated`, sem confiar em fase apenas `in_progress` ou só `produced`.
 
@@ -236,11 +220,9 @@ No fechamento, eu quero:
 - pendências restantes;
 - decisão recomendada para cada pendência relevante;
 - classificação final do resultado como `ready`, `degraded-but-usable` ou `needs-followup`;
-- confirmação de que `AGENTS.md` e `project-rules/` ficaram realmente utilizáveis;
+- confirmação de que `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` ficaram realmente utilizáveis;
 - aviso explícito sobre referências externas encontradas em `project-rules/`.
 ```
-
-Se a pasta estiver em outro caminho dentro do projeto, ajuste apenas o path no prompt.
 
 ## Prompt De Fechamento Após O Processo
 
@@ -259,6 +241,7 @@ Agora faça o fechamento do kit Hephaestus sobre o que você acabou de gerar.
    - `AGENTS.md` não contém regras que deveriam estar em `project-rules/rules/*`;
    - as regras necessárias já estão distribuídas na pasta `project-rules/`;
    - os índices em `project-rules/index/*` apontam apenas para regras e referências existentes;
+   - decisões de produto estão em `_app-vault/` com identidade estável;
    - dependências externas citadas por arquivos em `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`;
    - o mapa de cobertura mostra destino para as regras relevantes das fontes originais;
    - não ficaram categorias vazias, artificiais ou redundantes;
@@ -299,7 +282,9 @@ project-rules/
   rules/
   reference/
   contracts/   (opcional)
-.hephaestus/     (checkpoint do processo; opcional no pacote final)
+_app-vault/       (decisões de produto e specs)
+.app-work/        (processo: estado, issues, guias)
+.hephaestus/      (checkpoint do processo; efêmero, gitignored)
   manifests/
 ```
 
@@ -324,11 +309,11 @@ Também é esperado que, no fim, a LLM:
 
 ## Fluxo Recomendado de Uso
 
-1. humano posiciona o kit;
-2. agente lê `SKILL.md`;
-3. agente lê as fontes do projeto alvo;
-4. agente executa `discover -> snapshot -> fragment -> classify -> synthesize -> validate -> export/apply -> closeout-review`;
-5. agente faz uma revisão final de pendências e consistência;
+1. humano instala o zip na pasta de skills (`skills/hephaestus/`);
+2. humano roda `/hephaestus` no repositório alvo;
+3. LLM executa as 13 fases na ordem do `SKILL.md`;
+4. humano responde o lote único de perguntas, se houver;
+5. humano aprova o plano antes de qualquer escrita;
 6. humano revisa o pacote final quando necessário.
 
 ## Como Saber Se Está Funcionando
@@ -338,7 +323,7 @@ Você está usando o kit corretamente quando:
 - o agente usa `SKILL.md` como procedimento;
 - o agente consulta prompts, templates e references conforme a fase;
 - o agente não tenta improvisar a árvore final;
-- o pacote gerado tem `AGENTS.md` e categorias coerentes;
+- o pacote gerado tem `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` coerentes;
 - o agente informa pendências abertas em vez de escondê-las;
 - o agente recomenda a melhor decisão quando sobra ambiguidade real;
 - o resultado fica mais utilizável do que as fontes cruas originais.
@@ -352,6 +337,7 @@ Você está usando o kit corretamente quando:
 - categorias sem material suficiente devem ser omitidas;
 - referências externas dentro de `project-rules/` não devem ser escondidas; devem ser reportadas;
 - templates e references existem para reduzir deriva, não para serem copiados cegamente;
+- a lista final de exclusão do pacote distribuível vive em `manifests/kit-manifest.json:packExcludes`; nenhuma exclusão de conteúdo hard-coded em script;
 - `README.md` é para o humano, `SKILL.md` é para a LLM.
 
 ## Licença

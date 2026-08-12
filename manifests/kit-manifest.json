@@ -1,9 +1,17 @@
 {
   "name": "hephaestus",
   "version": "0.3.0",
-  "distributionMode": "clone-or-zip",
+  "distributionMode": "zip-release",
   "packExcludes": [
-    "scripts/__tests__"
+    "_app-vault",
+    ".app-work",
+    "COMMANDS.md",
+    "COMMANDS.pt-BR.md",
+    "scripts/__tests__",
+    "scripts/publish-hephaestus.sh",
+    ".gitignore",
+    ".gitkeep",
+    ".DS_Store"
   ],
   "requiredFiles": [
     "README.md",

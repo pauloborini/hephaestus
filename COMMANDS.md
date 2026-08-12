@@ -38,6 +38,15 @@ node scripts/validate-package.mjs /path/to/generated-package
 
 Checks the generated `AGENTS.md`, rule indexes, manifests, coverage map, and external-reference report. It exits non-zero on the first invalid contract.
 
+## Build the release zip
+
+```bash
+node scripts/pack-release.mjs --dry-run
+node scripts/pack-release.mjs
+```
+
+The first command lists the entries that would go into the archive without writing anything. The second writes `hephaestus-<version>.zip` at the repository root: every entry is prefixed with the fixed folder `hephaestus/` (no version in the folder name, so unpacking over an existing install overwrites instead of accumulating), `LICENSE` is included, and the final exclusion list comes from `manifests/kit-manifest.json:packExcludes` — the same data the publisher consumes.
+
 ## Publish the public kit — maintainers only
 
 ```bash

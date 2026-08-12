@@ -38,6 +38,15 @@ node scripts/validate-package.mjs /caminho/para/pacote-gerado
 
 Verifica `AGENTS.md`, índices de regras, manifests, mapa de cobertura e relatório de referências externas. Sai com erro no primeiro contrato inválido.
 
+## Gerar o zip de release
+
+```bash
+node scripts/pack-release.mjs --dry-run
+node scripts/pack-release.mjs
+```
+
+O primeiro comando lista as entradas que iriam para o arquivo sem escrever nada. O segundo escreve `hephaestus-<version>.zip` na raiz do repositório: toda entrada é prefixada com a pasta fixa `hephaestus/` (sem versão no nome da pasta, então descompactar por cima de uma instalação existente sobrescreve em vez de acumular), `LICENSE` é incluída, e a lista final de exclusão vem de `manifests/kit-manifest.json:packExcludes` — o mesmo dado consumido pelo publicador.
+
 ## Publicar o kit público — apenas mantenedores
 
 ```bash
