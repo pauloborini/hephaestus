@@ -8,7 +8,7 @@ scope: Kit Hephaestus — decisões de produto e contrato do kit
 
 ## Domínios
 
-- [estrutura-do-kit](docs/decisions/estrutura-do-kit.md) — contratos de preservação, done/ mês-semana e validação do kit
+- [estrutura-do-kit](docs/decisions/estrutura-do-kit.md) — contratos de preservação, done/ mês-semana, versionamento do kit e validação
 
 ## Features válidas
 

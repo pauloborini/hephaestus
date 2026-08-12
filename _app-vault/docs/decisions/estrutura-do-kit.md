@@ -10,6 +10,13 @@ data = momento em que o guide entra em `done/` (ou é reorganizado). Path já se
 (não-toque); flat sob `done/` migra. A raiz da lista fechada continua `done/` — só muda o nesting.
 Catálogo mantém destino `.app-work/done/`; a cascata expande para o path da semana.
 
+### DEC-003 — Versão do kit distribuível é inteiro monotônico
+
+Versão pública do kit = inteiro positivo monotônico (`1`, `2`, `3`…). Fonte canônica:
+`manifests/kit-manifest.json:version`. Tag Git anotada `vN`. Artefato `hephaestus-N.zip`.
+Pasta interna do zip continua fixa `hephaestus/` (sem `N` no nome). Próxima release = `N+1`
+sempre — sem semver, sem patch/minor.
+
 ## Histórico
 
 - 2026-08-11 — DEC-001 removida. Era: blocos delimitados por `hephaestus:immutable` preservados

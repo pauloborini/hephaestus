@@ -47,6 +47,8 @@ node scripts/pack-release.mjs
 
 The first command lists the entries that would go into the archive without writing anything. The second writes `hephaestus-<version>.zip` at the repository root: every entry is prefixed with the fixed folder `hephaestus/` (no version in the folder name, so unpacking over an existing install overwrites instead of accumulating), `LICENSE` is included, and the final exclusion list comes from `manifests/kit-manifest.json:packExcludes` — the same data the publisher consumes.
 
+Version is the integer in `manifests/kit-manifest.json:version` (`DEC-003`). Full maintainer release runbook (tag, GitHub Release, asset upload): [RELEASE.md](RELEASE.md) / [RELEASE.pt-BR.md](RELEASE.pt-BR.md).
+
 ## Publish the public kit — maintainers only
 
 ```bash
