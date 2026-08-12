@@ -164,6 +164,27 @@
       "reason": "fonte de verdade"
     },
     {
+      "pattern": "DECISOES_* / decisões fechadas / ### D\\d+ / DEC legado fora de docs/decisions/",
+      "destination": "_app-vault/docs/decisions/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "adoção completa: promover a ### DEC-NNN; ID legado não congela numeração; domínio = feature/pasta pai"
+    },
+    {
+      "pattern": "dossiê de feature no vault (`docs/features/*/architecture.md` ou flow/contracts/security.md)",
+      "destination": ".app-work/archive/features/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "pasta fora de SCHEMA §2; casca arquiva; DECISOES_* sobe via detector (não este pattern)"
+    },
+    {
+      "pattern": "docs/platform / docs/releases / docs de ops no vault fora de decisions|TEMPLATES|specs",
+      "destination": ".app-work/archive/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "fora da lista fechada §2; não é verdade de produto canônica"
+    },
+    {
       "pattern": "contratos de produto/arquitetura vigentes (`*_contract.md`, `BASELINE_OPERACIONAL_*`)",
       "destination": null,
       "confidence": "alta",

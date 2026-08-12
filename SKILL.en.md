@@ -39,8 +39,8 @@ One run governs the four documentary territories of the repository in a single w
 
 Two internal modes, decided by the presence of `.app-work/hephaestus-state.json`:
 
-- `adopt` — state absent: full scan and adoption of the four territories;
-- `maintain` — state present: reduced scope, only drift and other tools' artifacts (`catalog/drift-catalog.json`).
+- `adopt` — state absent: **full adoption** of the four territories into the canonical package. Scaffolding folders or “keep”ing content already under a vault root is not enough: product rules found (including under `.app-vault/` / `_app-vault/` outside `docs/decisions/`, `### D\d+` headings, `DECISOES_*`, “Closed decisions” sections, ADRs/specs with observable norms) **become `### DEC-NNN` in `_app-vault/docs/decisions/`** in the same run; vault paths outside the closed list in `references/vault-schema/SCHEMA.md` §2 are reclassified (process → `.app-work/`, spec → `specs/`, decision → `docs/decisions/`); `INDEX.md` is derived from materialized `Afeta:` fields. Empty `docs/decisions/` scaffold while decision material still lives outside the canonical form = incomplete adoption — closeout `needs-followup`, never `ready`;
+- `maintain` — state present: reduced scope, only drift and other tools' artifacts (`catalog/drift-catalog.json`). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form — being under the vault root does **not** imply canonical.
 
 Every run follows the 13-phase pipeline above.
 
@@ -145,9 +145,9 @@ Output: routing per fragment (`territory`, `regime`, `destinationPath`, `decided
 
 Read [prompts/reconcile.md](prompts/reconcile.md).
 
-Matches decisions by `DEC-NNN` and by similarity; detects value conflicts and duplication across territories.
+Identity engine: match by `DEC-NNN` and by similarity; **mint `create` (max+1) when there is no match** — including first adoption (empty inventory). Detects value conflicts and duplication across territories. In `adopt`, a decision candidate routed to `docs/decisions/` never ends as `keep` without a `decId`.
 
-Output: reconciled decision inventory with preserved identity.
+Output: reconciled/minted decision inventory with preserved identity (`identity-map.json` with `decId` on every `docs/decisions/` destination).
 
 ### 7. Interview
 
@@ -240,7 +240,7 @@ The phase prompts are currently maintained in Portuguese; they are normative det
 
 ## When to block
 
-Block completion when `AGENTS.md` is missing; classification is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree is dirty; or the backup is incomplete in the `apply` phase.
+Block completion when `AGENTS.md` is missing; classification is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree is dirty; the backup is incomplete in the `apply` phase; or, in `adopt`, decision sources existed and `docs/decisions/` remains scaffold-only / without matching `### DEC-NNN` in the identity map.
 
 ## Mandatory closeout
 

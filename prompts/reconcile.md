@@ -2,7 +2,9 @@
 
 ## Objetivo
 
-Dar ao pipeline o motor de identidade de decisão: **reconciliar**, nunca gerar. `DEC-NNN` é cunhado por `max+1`, alterado in-place e nunca reusado (D17). Decisão existente com valor novo mantém o ID e ganha nota inline; decisão sem a quem casar nasce com ID novo; remoção é rara e só após checagem de citações pendentes. Prosa reescrita é recuperável; `DEC-NNN` reusado não é — a citação em comentário de código passa a apontar para outra regra e nada acusa.
+Dar ao pipeline o motor de identidade de decisão: **reconciliar e, quando preciso, cunhar**. “Nunca gerar” significa **nunca inventar regra que a fonte não enuncia** — não significa deixar `docs/decisions/` vazio. `DEC-NNN` é cunhado por `max+1`, alterado in-place e nunca reusado (D17). Decisão existente com valor novo mantém o ID e ganha nota inline; decisão sem a quem casar **nasce com ID novo (`create`)** — inclusive quando `inventoriedMax = 0` (projeto verde ou vault legado sem cláusulas canônicas). Remoção é rara e só após checagem de citações pendentes. Prosa reescrita é recuperável; `DEC-NNN` reusado não é.
+
+Em `mode: adopt`, candidato a decisão já roteado para `_app-vault/docs/decisions/**` (ou alias) **obrigatoriamente** sai com `action ∈ {create, amend, keep, remove}` e `decId` preenchido. Evidência do tipo “keep pending interview/catalog” / “no canonical decisions/” é **bug de fase** — proibida.
 
 ## Entradas
 
@@ -23,15 +25,17 @@ Antes de cunhar qualquer ID novo, inventariar o maior `DEC-NNN` do repositório:
 
 ## Identidade
 
-Para cada fragmento roteado com território `vault`, casar nesta ordem e decidir `action ∈ {keep, amend, create, remove}`:
+Processar **somente** fragmentos cujo `destinationPath` cai em `docs/decisions/` (após normalizar alias `.app-vault/` → `_app-vault/`). Destinos vault que não são decisão (`INDEX.md`, `docs/TEMPLATES/**`, `specs/**`) registram `action: keep` com `decId: null` e **não** entram na cunhagem.
 
-1. **Por `DEC-NNN` explícito** — fragmento cujo texto já é heading `### DEC-NNN — <regra>` (ID congelado pela cascata, nível 1): o ID é o do heading, nunca outro.
-2. **Por similaridade de enunciado** — fragmento candidato que enuncia a mesma regra de uma cláusula viva (mesmo domínio e mesmo valor): casa com a cláusula existente.
-3. Sem a quem casar → `create` com `max+1` sobre o inventário (nunca reusar número, inclusive de decisão removida).
+Para cada fragmento roteado para `docs/decisions/`, casar nesta ordem e decidir `action ∈ {keep, amend, create, remove}`:
+
+1. **Por `DEC-NNN` explícito canônico** — fragmento cujo texto já é heading `### DEC-NNN — <regra>` (em-dash; ID congelado pela cascata, nível 1): o ID é o do heading, nunca outro.
+2. **Por similaridade de enunciado** — fragmento candidato (inclui legado `### D\d+`, `DEC-01` sem em-dash, corpo de `DECISOES_*`) que enuncia a mesma regra de uma cláusula viva (mesmo domínio e mesmo valor): casa com a cláusula existente. **ID legado não congela numeração** — se não houver cláusula viva casada, cai no passo 3.
+3. Sem a quem casar → `create` com `max+1` sobre o inventário (nunca reusar número, inclusive de decisão removida). Inventário vazio ⇒ primeira cunhagem `DEC-001`, depois sequencial.
 
 Decisão por caso:
 
-- `keep` — enunciado idêntico ao da cláusula viva; nada é escrito;
+- `keep` — enunciado idêntico ao da cláusula viva; nada é escrito; **`decId` permanece preenchido**;
 - `amend` — o **valor** mudou: o ID permanece (`SCHEMA.md` §4.1: "o valor muda, a DEC-NNN permanece"), o enunciado sob o heading é substituído e a nota inline é acrescentada logo abaixo, no formato fixo:
   `_Alterado <data> — era: <valor antigo>. Motivo: <motivo>._`
   - notas novas empilham **acima** da anterior (mais recente primeiro);
@@ -67,17 +71,20 @@ Perguntas nascem **enfileiradas** — esta fase nunca pergunta (D22). Tudo que p
 
 ## Gate
 
-- todo fragmento de território `vault` sai com `action` decidida e `decId` — nunca em silêncio;
-- `identity-map.json` registra `inventoriedMax` e uma entrada por fragmento (`fragmentId`, `decId`, `action`, `domain`, `matchedId` — o ID pré-existente casado, `null` para `create` — e `evidence`);
+- todo fragmento com destino em `docs/decisions/` sai com `action` decidida e `decId` **não nulo** — nunca em silêncio e nunca “pending”;
+- fragmento vault fora de `docs/decisions/` (INDEX / TEMPLATES / specs) sai com `action: keep` e `decId: null`;
+- `identity-map.json` registra `inventoriedMax` e uma entrada por fragmento processado (`fragmentId`, `decId`, `action`, `domain`, `matchedId` — o ID pré-existente casado, `null` para `create` — e `evidence`);
 - nenhum ID é renumerado, reusado ou presente ao mesmo tempo como cláusula viva e em `## Histórico` (INV3);
 - `scripts/validate-package.mjs` roda `checkDecIdentity` sobre o pacote (`identity-map.json` + `_app-vault/docs/decisions/**`);
-- fragmento com origem em `.app-work/` nunca vira `DEC-NNN` (D19/INV9): regra que só existe lá é lacuna a promover, nunca insumo — se um fragmento de `.app-work/` chegou aqui como candidato a decisão, é bug de roteamento, não decisão.
+- fragmento com origem em `.app-work/` nunca vira `DEC-NNN` (D19/INV9): regra que só existe lá é lacuna a promover, nunca insumo — se um fragmento de `.app-work/` chegou aqui como candidato a decisão, é bug de roteamento, não decisão;
+- em `adopt`, se a cascata roteou ≥1 candidato a `docs/decisions/` e o mapa fecha com zero `create`/`amend`/`keep` com `decId`, a fase marca `failed`.
 
 ## Bloqueia se
 
 - remoção de `DEC-NNN` com citação pendente não resolvida — bloqueia **com a lista das citações** (arquivo + linha), incluindo as de `.app-work/`;
 - inventário que registra `create` com ID menor ou igual ao `max` inventariado — cunhagem reusaria ID existente;
-- fragmento de território `vault` sem ação decidida ao fim da fase.
+- fragmento com destino em `docs/decisions/` sem `action`/`decId` ao fim da fase;
+- evidência “keep pending” / “no canonical decisions” em entrada de `docs/decisions/`.
 
 ## Escreve no repositório
 
@@ -88,4 +95,4 @@ Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` e 
 - `.hephaestus/manifests/identity-map.json` — `inventoriedMax` + uma entrada por fragmento (`fragmentId`, `decId`, `action`, `domain`, `matchedId`, `evidence`), consumido por `plan` (Plano 02) e por `compose`;
 - `.hephaestus/manifests/conflicts.json` — divergências de valor entre fontes registradas para a entrevista (`questionKey`, fontes, valores), nunca resolvidas aqui;
 - `.hephaestus/manifests/coverage-map.json` — entradas de decisão (território `vault`) com destino em `_app-vault/docs/decisions/**`; as demais entradas entram na composição (`compose`);
-- checkpoint da fase: ao iniciar, marcar `reconcile` como `in_progress`; ao concluir, `produced`; marcar `validated` quando todo fragmento de território `vault` estiver decidido com `decId` e o gate `checkDecIdentity` verde; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
+- checkpoint da fase: ao iniciar, marcar `reconcile` como `in_progress`; ao concluir, `produced`; marcar `validated` quando todo fragmento com destino em `docs/decisions/` estiver decidido com `decId` e o gate `checkDecIdentity` verde; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).

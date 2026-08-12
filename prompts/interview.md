@@ -15,7 +15,8 @@ Dreno único da fila de perguntas: interromper o usuário **uma vez por execuç�
 - **Dedupe por `questionKey`**: fragmentos idênticos por hash já foram unificados em `fragment`, e perguntas com o mesmo `questionKey` são uma só — a fila entra aqui já deduplicada, e a fase confere antes de perguntar;
 - **Agrupar por eixo de decisão, não por arquivo**: todas as perguntas do mesmo eixo (ex.: destino de ADR aceito) são apresentadas juntas, num lote;
 - **Reuso**: resposta anterior com o mesmo `questionKey` (gravada em `answers`) é consultada e **nunca** reperguntada;
-- **Teto por execução**: se a fila estourar o teto, o problema é a qualidade da cascata, não a ambiguidade — emitir `degraded` com diagnóstico em vez de metralhar o usuário.
+- **Teto por execução**: se a fila estourar o teto, o problema é a qualidade da cascata, não a ambiguidade — emitir `degraded` com diagnóstico em vez de metralhar o usuário;
+- **Alias de vault ≠ isentar promoção**: pergunta sobre root `.app-vault/` vs `_app-vault/` só decide o **nome do root**. Opções **não** podem oferecer “manter `docs/features|platform|…` como estão” como adoção completa — pastas fora da lista fechada §2 continuam a ser reclassificadas/promovidas na mesma execução (DEC-004). Resposta de alias com `operationHint: keep-alias` grava overlay de path; **não** congela conteúdo ilegítimo.
 
 ## Saídas
 

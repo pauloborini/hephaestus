@@ -25,7 +25,18 @@ Calcular o destino do fragmento a partir da **classificação estrutural** (dete
 
 A decisão é por **posição**, nunca por comparação com um snapshot de execução anterior: `.hephaestus/` é efêmero (D6) e uma máquina nova não pode depender de estado persistido para preservar a edição humana feita no lugar certo.
 
-Fragmento cujo texto já é um heading `### DEC-NNN` decide território `vault` com o ID **congelado** (a mecânica de cunhagem e reconciliação in-place é da fase `reconcile`, Plano 04).
+**Não-toque no vault ≠ “está sob o root do vault”.** Só é keep por posição quando a origem já está na **lista fechada** de `references/vault-schema/SCHEMA.md` §2, no formato canônico:
+
+- `_app-vault/INDEX.md` (ou alias `.app-vault/INDEX.md`);
+- `_app-vault/docs/decisions/**` — cláusulas já no heading `### DEC-NNN — …`;
+- `_app-vault/docs/TEMPLATES/**`;
+- `_app-vault/specs/**`.
+
+Alias do projeto: `.app-vault/` ≡ `_app-vault/` para classificação; o `destinationPath` emitido usa o alias declarado no overlay/state quando houver, senão `_app-vault/`.
+
+Path sob o root do vault **fora** dessa lista (`docs/features/`, `docs/platform/`, `docs/releases/`, `archive/`, `_private/`, dossiês, `DECISOES_*`, etc.) **não** é keep por posição — a cascata continua (catálogo → detectores → LLM/pergunta). Em `adopt`, esse material é reclassificado na mesma execução; em `maintain`, a integridade do vault (discover item 5) também o inventaria como drift estrutural.
+
+Fragmento cujo texto já é um heading canônico `### DEC-NNN — <regra>` (em-dash) decide território `vault` com o ID **congelado** (cunhagem e reconciliação in-place na fase `reconcile`). Headings legados (`### D1`, `### DEC-01` sem em-dash, “Decisões fechadas”) **não** congelam ID — são candidatos a cunhagem.
 
 ### Nível 2 — respostas de escopo do projeto
 
@@ -51,9 +62,11 @@ Classificação estrutural determinística (a mesma usada no nível 1), nesta or
 - regra de domínio enterrada no contrato do agente — origem `AGENTS.md` legado (com seção de regra, ex. `## Regra de domínio`) ou arquivo de regras de agente de outra ferramenta (os globs vigiados de `catalog/drift-catalog.json`) + verbo deôntico ⇒ regra → `project-rules/rules/`;
 - origem em `.app-work/done/` **já** no nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/` ⇒ destino é a própria origem — não-toque (DEC-002);
 - origem em `.app-work/done/` **flat** (legado, fora do nesting) ⇒ expandir para a semana do run (DEC-002) — relocate, nunca keep;
-- origem já em território canônico (`AGENTS.md`, `project-rules/`, `_app-vault/`, `.app-work/` fora do caso flat de `done/`) ⇒ destino é a própria origem — regra do não-toque: o conteúdo adotado fica no lugar, e uma rodada de `maintain` sem drift não reclassifica o que já está no território certo (INV2/INV11/CN2), mesmo quando o texto menciona `openapi`, `DEC-NNN` ou verbos deônticos;
+- origem já na lista fechada canônica (§2 + nível 1 acima: `AGENTS.md`, `project-rules/**` já no lugar, vault só `INDEX`/`docs/decisions`/`docs/TEMPLATES`/`specs`, `.app-work/` fora do flat de `done/`) ⇒ destino é a própria origem — não-toque (INV2/INV11/CN2); **proibido** tratar `_app-vault/**` ou `.app-vault/**` inteiro como canônico;
+- candidato a decisão legado — path `DECISOES_*`, heading `### D\d+`, `### DEC-\d+` sem em-dash canônico, ou seção “Decisões fechadas” / “Closed decisions” ⇒ `_app-vault/docs/decisions/<dominio>.md` (`<dominio>` = slug da feature/pasta pai ou stem normalizado), `regime: reconcile` — **obrigatório em `adopt`**; ID legado não congela numeração;
 - OpenAPI/JSON-Schema (texto com `openapi` ou `json-schema`) ⇒ contrato → `project-rules/contracts/`;
-- heading + verbo deôntico + valor numérico ⇒ candidato a decisão → `_app-vault/docs/decisions/`;
+- heading + verbo deôntico + valor numérico (norma de produto observável) ⇒ candidato a decisão → `_app-vault/docs/decisions/<dominio>.md`, `regime: reconcile`;
+- path sob vault fora da lista fechada §2 que **não** é candidato a decisão nem spec técnica ⇒ `.app-work/archive/` (preservar sufixo relativo) — casca/dossiê não é verdade vigente;
 - tabela tipo→arquivo ⇒ índice → `project-rules/index/`;
 - bloco de código sem norma associada ⇒ referência → `project-rules/reference/`.
 

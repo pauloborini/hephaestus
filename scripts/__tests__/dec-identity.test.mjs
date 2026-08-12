@@ -498,3 +498,27 @@ test("AC-4.1.2: inventoryDecisions varre arquivos e histórico — estrutura mí
   assert.ok(inventory.historico.includes("DEC-007"));
   assert.equal(inventory.clauses.length, 1);
 });
+
+test("DEC-004: legado ### D1 sob features vira create DEC-001 (não keep sem decId)", () => {
+  const repo = mkdtemp("hep-legacy-d1-");
+  const fragment = fragmentOf(
+    "### D1 · Modelo de confiança\n\nO profissional deve registrar a sessão.\n",
+    ".app-vault/docs/features/checkin/DECISOES_CHECKIN.md",
+  );
+  const { identityMap, decisions } = reconcileVault({
+    fragments: [fragment],
+    routing: [
+      vaultRoute(fragment, "_app-vault/docs/decisions/checkin.md"),
+    ],
+    repoRoot: repo,
+    now: NOW,
+  });
+  assert.equal(identityMap.entries.length, 1);
+  assert.equal(identityMap.entries[0].action, "create");
+  assert.equal(identityMap.entries[0].decId, "DEC-001");
+  assert.ok(decisions.has("_app-vault/docs/decisions/checkin.md"));
+  assert.match(
+    decisions.get("_app-vault/docs/decisions/checkin.md"),
+    /### DEC-001/,
+  );
+});
