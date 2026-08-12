@@ -40,7 +40,7 @@ O objetivo é preservar todas as regras relevantes em fragmentos menores, rastre
 
 ## Escreve no repositório
 
-Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored).
+Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored) e o ledger `.hephaestus/manifests/fragments.json` (efêmero, gitignored).
 
 ## Saída Mínima Por Fragmento
 
@@ -49,5 +49,10 @@ Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (e
 - localização aproximada;
 - texto preservado ou síntese fiel;
 - tipo estrutural inicial: seção, regra, checklist, exemplo, tabela, preferência, metadado ou desconhecido;
-- observações de conflito, duplicidade ou ambiguidade.
+- observações de conflito, duplicidade ou ambiguidade;
+- indicação se o fragmento precisa ser quebrado novamente (`needsSplit`), registrada como campo de observação — fragmento misto marcado `needsSplit` não dividido bloqueia a fase `route`;
 - atualização do checkpoint da fase.
+
+## Saída agregada
+
+`.hephaestus/manifests/fragments.json` — um objeto por fragmento (`fragmentId`, `rawText`, `territory` e `regime` estimados pela estrutura, `confidence`, `ambiguity`, `provenance[]` com `sourcePath`/`startOffset`/`endOffset`), válido pelo `schemas/fragment.schema.json` — consumido por `route` (cascata) e pelos gates `checkCoverage`/`checkKeepBytes` do validador.
