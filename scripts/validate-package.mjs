@@ -1276,6 +1276,14 @@ const checkKeepBytes = (root) => {
 // report.md é `degraded-but-usable` e cada degradante aparece nominalmente no
 // relatório. Resíduo em reference/index/.app-work não degrada. `llmDecidedRatio`
 // é sempre reportado. O critério é o tipo de destino, nunca o volume.
+//
+// "Vira DEC-NNN nova / regra nova" é avaliado pela AÇÃO DE CRIAÇÃO da
+// execução, não pela ausência do arquivo no pacote: o compose materializa o
+// destino (o arquivo novo existe no staging/applied), e a novidade é registrada
+// no `identity-map.json` (`action: create` para decisões) e no regime
+// (`generate` para regras). Sem o identity-map (fixtures de teste), o fallback
+// é o regime `reconcile`/`generate` em decisions/. Um `amend` de DEC existente
+// não é DEC nova e não degrada.
 const RESIDUE_DEGRADING_PREFIXES = ["_app-vault/docs/decisions/", "project-rules/rules/"];
 
 const checkResidueGate = (root) => {
@@ -1304,14 +1312,35 @@ const checkResidueGate = (root) => {
     fail("report.md: llmDecidedRatio ausente — a proporção de resíduo é sempre reportada (D26)");
   }
 
+  // Ação de criação por fragmento: `identity-map.json` registra `action`
+  // (create = DEC nova; amend/keep = DEC existente). Sem o mapa (fixture de
+  // teste antigo), o fallback é o regime de criação em decisions/.
+  const identityMap = readJsonValue(path.join(root, ".hephaestus", "manifests", "identity-map.json"));
+  const actionByFragment = new Map();
+  if (identityMap && Array.isArray(identityMap.entries)) {
+    for (const entry of identityMap.entries) {
+      if (entry && typeof entry.fragmentId === "string" && typeof entry.action === "string") {
+        actionByFragment.set(entry.fragmentId, entry.action);
+      }
+    }
+  }
+
   const degrading = [];
   const nonDegrading = [];
   for (const entry of entries) {
     if (entry.decidedBy !== "llm") continue;
-    const hitsPrefix = RESIDUE_DEGRADING_PREFIXES.some((prefix) =>
-      entry.destinationPath.startsWith(prefix),
-    );
-    if (hitsPrefix && !fs.existsSync(path.join(root, entry.destinationPath))) {
+    let isNewDestination = false;
+    if (entry.destinationPath.startsWith("_app-vault/docs/decisions/")) {
+      // DEC nova: action create no identity-map; fallback = regime de criação.
+      const action = actionByFragment.get(entry.fragmentId);
+      isNewDestination =
+        action === "create" ||
+        (action === undefined && (entry.regime === "reconcile" || entry.regime === "generate"));
+    } else if (entry.destinationPath.startsWith("project-rules/rules/")) {
+      // Regra nova em rules/: arquivo criado por generate (regra existente é keep).
+      isNewDestination = entry.regime === "generate";
+    }
+    if (isNewDestination) {
       degrading.push(entry);
     } else {
       nonDegrading.push(entry);

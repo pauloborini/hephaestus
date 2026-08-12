@@ -29,12 +29,13 @@ else
 fi
 
 # Lista final de exclusão do rsync: `packExcludes` do manifesto (dado único,
-# VC4) + `.git` (exclusão própria do publicador). Nenhuma exclusão de conteúdo
-# vive literalmente aqui — duas listas parciais reproduzem o vazamento que
+# VC4) + `.git` e o artefato de saída do empacotador (`hephaestus-*.zip`),
+# exclusões próprias do publicador. Nenhuma exclusão de conteúdo vive
+# literalmente aqui — duas listas parciais reproduzem o vazamento que
 # originou ISSUE-002.
 PACK_EXCLUDES=("${(@f)$(node -e 'const fs=require("node:fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write((m.packExcludes||[]).join("\n"));' "${SOURCE_DIR}/manifests/kit-manifest.json")}")
 RSYNC_EXCLUDES=()
-for entry in "${PACK_EXCLUDES[@]}" ".git"; do
+for entry in "${PACK_EXCLUDES[@]}" ".git" "hephaestus-*.zip"; do
   RSYNC_EXCLUDES+=("--exclude=${entry}")
 done
 

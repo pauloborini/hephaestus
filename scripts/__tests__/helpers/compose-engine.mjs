@@ -379,7 +379,38 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
   );
 
   // report.md: veredito coerente com o gate de resíduo (D26) e pendências.
+  // Degradante = `decidedBy: llm` cujo destino vira DEC-NNN nova (action
+  // `create` no identity-map) ou regra nova em rules/ (regime `generate`) —
+  // mesma semântica do `checkResidueGate` do validador. A materialização do
+  // destino pelo compose NÃO desativa a degradação: é a ação de criação da
+  // execução que define "vira DEC nova / regra nova" (CN5).
   const llmEntries = routing.filter((e) => e.decidedBy === "llm");
+  const actionByFragment = new Map();
+  for (const entry of identityMap.entries) {
+    actionByFragment.set(entry.fragmentId, entry.action);
+  }
+  const isDegrading = (entry) => {
+    if (entry.destinationPath.startsWith("_app-vault/docs/decisions/")) {
+      const action = actionByFragment.get(entry.fragmentId);
+      return (
+        action === "create" ||
+        (action === undefined && (entry.regime === "reconcile" || entry.regime === "generate"))
+      );
+    }
+    if (entry.destinationPath.startsWith("project-rules/rules/")) {
+      return entry.regime === "generate";
+    }
+    return false;
+  };
+  const residueLabel = (entry) => {
+    if (entry.destinationPath.startsWith("_app-vault/docs/decisions/")) {
+      return "destino que vira DEC-NNN nova — degrada";
+    }
+    if (entry.destinationPath.startsWith("project-rules/rules/")) {
+      return "regra nova em rules/ — degrada";
+    }
+    return "destino de referência/processo — não degrada";
+  };
   const reportLines = [
     "# Relatório de fechamento",
     "",
@@ -395,11 +426,7 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
     "",
     "## Resíduo decidido pela LLM",
     ...(llmEntries.length > 0
-      ? llmEntries.map((e) => {
-          const src = srcByFragment.get(e.fragmentId);
-          const materialized = files.has(destOf(e, src ?? ""));
-          return `- ${e.fragmentId} → ${e.destinationPath} (${materialized ? "destino materializado no pacote — não degrada" : "destino não materializado"})`;
-        })
+      ? llmEntries.map((e) => `- ${e.fragmentId} → ${e.destinationPath} (${residueLabel(e)})`)
       : ["- nenhum"]),
     "",
     "## Métricas",
@@ -416,7 +443,11 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
     "- run-state.json: fases 13/13 validada.",
     "",
     "## Veredito",
-    questions.length > 0 ? "needs-followup" : "ready",
+    llmEntries.some(isDegrading)
+      ? "degraded-but-usable"
+      : questions.length > 0
+        ? "needs-followup"
+        : "ready",
     "",
   ];
   files.set(".hephaestus/report.md", reportLines.join("\n"));
