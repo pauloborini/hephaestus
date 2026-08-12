@@ -91,31 +91,59 @@ const isTable = (text) => /^\|.*\|$/m.test(text);
 
 // Destino calculado pela classificação estrutural (nível 1 usa este destino
 // para decidir keep por posição; o nível 4 o usa para decidir por detector).
-export const structuralDestination = (fragment) => {
+//
+// Ordem dos detectores (Plano 06, CN2/AC-6.1.2): a extração de regra de
+// agente e o reconhecimento de origem canônica vêm ANTES dos detectores de
+// conteúdo (openapi, candidato a decisão). Sem essa ordem, um repositório
+// adotado não é estável sob a cascata — o `domain_rules.md` gerado no Plano 04
+// cita `DEC-NNN` e "deve" (dispararia "candidato a decisão"), o `index/README`
+// cita `openapi.yaml` (dispararia "contrato") e o `AGENTS.md` gerado contém
+// "Workflow obrigatório" (dispararia "candidato a decisão" por "obrigatori") —
+// e a rodada de maintain reclassificaria conteúdo no lugar certo, violando
+// INV2/INV11. A distinção AGENTS.md legado (adot, regra enterrada — seção
+// "## Regra de domínio") vs adotado (maintain, contrato sem regra) é feita
+// pelo marcador textual da seção de regra, a mesma proxy do golden do Plano 03.
+//
+// Regras de agente de outras ferramentas (globs de `catalog/drift-catalog.json`,
+// Plano 06): o conteúdo é contrato do agente como o AGENTS.md legado — a
+// recentralização de drift (CN2) depende de a cascata tratar essas origens
+// como regra de domínio, não como arquivo a preservar ou a perguntar.
+const AGENT_RULE_SOURCES = [".cursor/rules/", ".cursorrules", ".windsurfrules", ".clinerules"];
+const isAgentRuleSource = (src) =>
+  AGENT_RULE_SOURCES.some((glob) => src === glob || src.startsWith(glob));
+
+const isCanonicalSource = (src) =>
+  src === "AGENTS.md" ||
+  src.startsWith("project-rules/") ||
+  src.startsWith("_app-vault/") ||
+  src.startsWith(".app-work/");
+
+const structuralDestination = (fragment) => {
   const src = fragment.provenance[0].sourcePath;
   const base = path.basename(src);
   const stem = base.replace(/\.(md|yaml|yml|json|openapi\.json)$/i, "");
   const text = normalizeText(fragment.rawText);
 
+  // regra de domínio enterrada no contrato do agente (arquivo de regra de
+  // agente de terceiros — drift vigiado — ou AGENTS.md legado com seção de
+  // regra) + verbo deôntico ⇒ sai para project-rules
+  if (isAgentRuleSource(src) && DEONTIC.test(text)) {
+    return "project-rules/rules/domain_rules.md";
+  }
+  if (src === "AGENTS.md" && DEONTIC.test(text) && text.includes("regra de dominio")) {
+    return "project-rules/rules/domain_rules.md";
+  }
+  // origem já em território canônico ⇒ destino é a própria origem (não-toque):
+  // conteúdo adotado fica no lugar — rodada de maintain sem drift é keep
+  if (isCanonicalSource(src)) {
+    return src;
+  }
   if (text.includes("openapi") || src.endsWith(".openapi.json")) {
     return `project-rules/contracts/${base}`;
   }
   // heading + verbo deôntico + valor numérico ⇒ candidato a decisão
   if (hasHeading(text) && DEONTIC.test(text) && hasNumber(text)) {
     return "_app-vault/docs/decisions/produto.md";
-  }
-  // regra de domínio enterrada no AGENTS.md legado ⇒ sai para project-rules
-  if (src === "AGENTS.md" && DEONTIC.test(text)) {
-    return "project-rules/rules/domain_rules.md";
-  }
-  // origem já em território canônico ⇒ destino é a própria origem
-  if (
-    src === "AGENTS.md" ||
-    src.startsWith("project-rules/") ||
-    src.startsWith("_app-vault/") ||
-    src.startsWith(".app-work/")
-  ) {
-    return src;
   }
   // tabela tipo→arquivo ⇒ índice
   if ((src.includes("index") || text.includes("indice")) && isTable(text)) {

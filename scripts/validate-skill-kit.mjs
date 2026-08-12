@@ -231,7 +231,9 @@ for (const [index, entry] of routingCatalog.entries.entries()) {
   }
 }
 
-// Catálogo de drift: lista de paths/globs vigiados em maintain.
+// Catálogo de drift: lista de paths/globs vigiados em maintain, com a
+// ferramenta de origem e a data/ref de inclusão por entrada (D28). Cada
+// entrada é objeto {glob, tool, since} — glob de arquivo ou pasta vigiada.
 const driftCatalogPath = path.join(rootDir, "catalog", "drift-catalog.json");
 let driftCatalog;
 try {
@@ -249,8 +251,20 @@ if (
   fail("catalog/drift-catalog.json must declare a non-empty artifacts array");
 }
 for (const [index, artifact] of driftCatalog.artifacts.entries()) {
-  if (typeof artifact !== "string" || artifact.length === 0) {
-    fail(`catalog/drift-catalog.json: artifacts[${index}] must be a non-empty path`);
+  if (
+    typeof artifact !== "object" ||
+    artifact === null ||
+    Array.isArray(artifact) ||
+    typeof artifact.glob !== "string" ||
+    artifact.glob.length === 0
+  ) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] must have a non-empty glob`);
+  }
+  if (typeof artifact.tool !== "string" || artifact.tool.length === 0) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] (${artifact.glob}) must have a tool`);
+  }
+  if (typeof artifact.since !== "string" || artifact.since.length === 0) {
+    fail(`catalog/drift-catalog.json: artifacts[${index}] (${artifact.glob}) must have a since`);
   }
 }
 

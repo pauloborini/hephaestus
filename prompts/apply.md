@@ -30,6 +30,16 @@ Sim — única fase que escreve no repositório. Exceção declarada de INV1: `i
 
 Os artefatos gravados são **exatamente** os do `staging-manifest.json` — a lista inteira, nunca um subconjunto. Cada artefato gravado e cada backup são registrados em `artifactsWritten` do run-state (`outputPath`, `phase: apply`, `validationStatus: valid`).
 
+## Cunhagem de ISSUE-NNN
+
+Defeito detectado nas fases anteriores chega aqui **enfileirado** com `findingSignature`; a cunhagem acontece em `apply` porque é escrita (INV1). Semântica **upsert de linha** em `.app-work/issues/INDEX.md` — cria linha nova (`create`) ou atualiza estado de linha existente (`amend`), preservando todas as demais linhas e seções; nunca `overwrite` do arquivo e nunca remoção (protocolo de `.app-work/issues/README.md`: linha nunca é deletada).
+
+- inventariar o maior `ISSUE-NNN` percorrendo as **três** seções de `.app-work/issues/INDEX.md` — Abertos, Em verificação e Fechados — e o campo `Próximo ID livre`; cunhar `max+1`; **ID nunca é reusado** — varredura só da seção Abertos reusaria ID de issue encerrada (ID é imortal pelo protocolo);
+- `findingSignature = sha256(tipo do achado + path normalizado + enunciado normalizado)` — assinatura estável: reformular a prosa do achado não muda a assinatura, e a rodada seguinte não reabre a mesma issue;
+- antes de cunhar, procurar a assinatura entre as issues já registradas (marcador `<!-- findingSignature: <hex> -->` na linha) — presente ⇒ **não cunha** e não altera a linha existente (dedupe);
+- linha nova entra na seção Abertos com os campos do protocolo (`.app-work/issues/README.md:14-24`: ID, Sev, Feature, Tela, Problema → Esperado, Origem, Estado) + o marcador da assinatura; o contador `Próximo ID livre` é incrementado;
+- `INDEX.md` ausente ou contador inconsistente: usar o `max` das três tabelas e reportar a inconsistência como pendência, sem bloquear.
+
 ## Bloqueia se
 
 - backup incompleto — bloqueia antes do primeiro byte;

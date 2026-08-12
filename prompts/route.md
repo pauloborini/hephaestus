@@ -41,11 +41,12 @@ Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, bas
 
 ### Nível 4 — detectores sintáticos
 
-Classificação estrutural determinística (a mesma usada no nível 1):
+Classificação estrutural determinística (a mesma usada no nível 1), nesta ordem:
 
+- regra de domínio enterrada no contrato do agente — origem `AGENTS.md` legado (com seção de regra, ex. `## Regra de domínio`) ou arquivo de regras de agente de outra ferramenta (os globs vigiados de `catalog/drift-catalog.json`) + verbo deôntico ⇒ regra → `project-rules/rules/`;
+- origem já em território canônico (`AGENTS.md`, `project-rules/`, `_app-vault/`, `.app-work/`) ⇒ destino é a própria origem — regra do não-toque: o conteúdo adotado fica no lugar, e uma rodada de `maintain` sem drift não reclassifica o que já está no território certo (INV2/INV11/CN2), mesmo quando o texto menciona `openapi`, `DEC-NNN` ou verbos deônticos;
 - OpenAPI/JSON-Schema (texto com `openapi` ou `json-schema`) ⇒ contrato → `project-rules/contracts/`;
 - heading + verbo deôntico + valor numérico ⇒ candidato a decisão → `_app-vault/docs/decisions/`;
-- regra de domínio enterrada no `AGENTS.md` legado (origem `AGENTS.md` + verbo deôntico) ⇒ regra → `project-rules/rules/`;
 - tabela tipo→arquivo ⇒ índice → `project-rules/index/`;
 - bloco de código sem norma associada ⇒ referência → `project-rules/reference/`.
 
