@@ -39,6 +39,19 @@ Durante o processo, a execução deve manter checkpoint em `.hephaestus/manifest
 
 Esse arquivo é obrigatório sempre que houver trabalho multi-etapa, para permitir retomada confiável após interrupção. Ele é mecanismo do processo; não faz parte da estrutura canônica do pacote gerado. O diretório `.hephaestus/` é 100% efêmero e gitignored: staging, backup, run-state e ledgers de execução vivem lá, e a linha `.hephaestus/` no `.gitignore` do alvo é garantida pela fase `apply`.
 
+## Estado do projeto
+
+Além do checkpoint efêmero, a execução consulta e grava o estado **versionado** do projeto em `.app-work/hephaestus-state.json` (nome em minúsculo — o gate do validador reprova variante em caixa alta). Ele é editável à mão e dividido em **quatro blocos** (D29), cada um com dono de leitura distinto:
+
+| Bloco | Lido por | Conteúdo |
+|-------|----------|----------|
+| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versões e identidade do último run |
+| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional |
+| `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana com `answer` estruturada, `scope` (`this-run`/`this-project`/`promote-to-catalog`) e `sourceEvidence` |
+| `shield` | `route` (antes do nível 1) e `compose` | blindagem opt-in de conteúdo de terceiros: lista de `{ path, selector }`, vazia por default |
+
+O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui — um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` é a única fase que grava o state, fora da transação: o rollback de `verify(applied)` nunca reverte as respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
+
 ## Regra central
 
 Você não deve improvisar a árvore final livremente.

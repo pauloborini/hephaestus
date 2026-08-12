@@ -40,6 +40,10 @@ Materializar o scaffold de processo conforme a lista fechada de `references/vaul
 - apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `done/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
 - fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
 
+## Blindagem (shield)
+
+Conteúdo declarado no bloco `shield` do state (`{ path, selector }`) **vence a estrutura canônica**: o artefato blindado é composto byte a byte do que está no repositório e o template se adapta em volta dele. Adaptação impossível sem alterar os bytes do bloco ⇒ registrar pendência e enfileirar pergunta — nunca "melhorar" o bloco. Conteúdo de terceiros **não** coberto pela lista `shield` é fonte como qualquer outra: reabsorvido e reescrito no padrão (D9), e a remoção aparece no `plan.md` antes de aplicar.
+
 ## Regras
 
 - começar por `AGENTS.md`;

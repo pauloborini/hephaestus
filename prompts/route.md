@@ -17,7 +17,7 @@ Para cada fragmento, percorrer os níveis na ordem e **parar no primeiro que dec
 
 ### Bloco `shield` (precede o nível 1)
 
-Antes do nível 1, consultar o bloco `shield` do state (implementado no Plano 05; aqui ausência = vazio). Fragmento cujo caminho de origem casa com a blindagem declarada decide `regime: keep`, `decidedBy: keep` — a blindagem declarada vence qualquer outro nível. Conteúdo blindado nunca passa pela síntese.
+Antes do nível 1, consultar o bloco `shield` do state. Fragmento cujo caminho de origem casa `path` (+ `selector` de seção, quando declarado) de uma entrada é marcado `regime: keep` com `decidedBy: state` — a blindagem declarada vence qualquer outro nível, e o conteúdo blindado nunca passa pela síntese. Ausência do bloco = lista vazia: nada é blindado e todo conteúdo é reabsorvido (D9).
 
 ### Nível 1 — não-toque e identidade
 
@@ -29,7 +29,7 @@ Fragmento cujo texto já é um heading `### DEC-NNN` decide território `vault` 
 
 ### Nível 2 — respostas de escopo do projeto
 
-Consultar `answers[questionKey]` do state (implementado no Plano 05; aqui a cascata já lê o bloco, tratando ausência como "sem match"). Match é **vinculante** (D22): divergir da resposta é violação de gate, não opinião. Decide `decidedBy: state`.
+Consultar `answers[questionKey]` do state, com `questionKey = sha256(contexto normalizado)` — o **mesmo** contexto usado ao enfileirar (origem do fragmento + o que falta decidir), nunca o texto da pergunta: reformular a prosa não muda a chave (D22). Resposta gravada com destino decide o fragmento: `decidedBy: state`, `destinationPath` o da resposta. Match é **vinculante** (D22): divergir da resposta é violação de gate, não opinião. Ausência de match = sem resposta.
 
 ### Nível 3 — catálogo
 
@@ -57,7 +57,22 @@ Só o que sobrou dos níveis 1-4, com confiança explícita (`confidence` numér
 
 ## Fila de perguntas
 
-Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22). Cada pergunta registra `questionKey = sha256(contexto normalizado)` (contexto: origem do fragmento + o que falta decidir) e o `fragmentId`. A fila é gravada em `.hephaestus/manifests/questions.json` e drenada por `interview` (Plano 05) num único lote.
+Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22). Cada pergunta registra `questionKey = sha256(contexto normalizado)` (contexto: origem do fragmento + o que falta decidir) e o `fragmentId`. A fila é gravada em `.hephaestus/manifests/questions.json` e drenada por `interview` num único lote.
+
+**Justifica pergunta** (lista fechada — nada além disto enfileira na cascata):
+
+- nível 5 abaixo do limiar de confiança (a LLM não decide);
+- catálogo sem match, ou match com `destination: null` ou `confidence: baixa`;
+- conflito de valor entre fontes para a mesma regra (tratado em `reconcile`);
+- remoção de `DEC-NNN` com citação pendente (tratado em `reconcile`);
+- remoção de conteúdo de terceiros fora da lista `shield` (tratado em `reconcile`/`plan`).
+
+**Nunca pergunta** (lista fechada — decidir em silêncio, com evidência):
+
+- rota com match alto (catálogo `confidence: alta` com destino concreto) — o nível 3 decide;
+- decisão por não-toque (nível 1), identidade congelada (`### DEC-NNN`) ou detector (nível 4) — decidem antes;
+- nome de arquivo e ordem de seções — detalhe local, nunca ambiguidade genuína;
+- nada já respondido com `scope: this-project` — a resposta é vinculante e reusada por `questionKey`.
 
 ## Gate
 

@@ -26,6 +26,16 @@ export const fragmentIdOf = (rawText) =>
     .update(normalizeText(rawText).replace(/\s+/g, " ").trim())
     .digest("hex");
 
+// Chave estável de pergunta/resposta (D22): sha256 do CONTEXTO normalizado —
+// origem do fragmento + o que falta decidir — nunca do texto literal da
+// pergunta. A mesma ambiguidade reaparece com a mesma identidade a cada
+// execução, e reformular a prosa da pergunta não gera chave nova (AC-5.2.4).
+export const questionKeyOf = (context) =>
+  createHash("sha256").update(normalizeText(context)).digest("hex");
+
+// Contexto de roteamento de um fragmento: origem + destino em aberto.
+export const routingQuestionContext = (sourcePath) => `route:${sourcePath}`;
+
 const sha256Hex = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 // --- Destinos legais (lista fechada: AGENTS.md + project-rules/ +
@@ -163,9 +173,12 @@ const routeFragment = (fragment, ctx) => {
   const src = fragment.provenance[0].sourcePath;
   const fragmentId = fragment.fragmentId;
 
-  // Bloco shield do state precede o nível 1 (Plano 05 implementa o bloco;
-  // aqui ausência = vazio). Blindagem declarada vence e decide keep.
-  for (const shieldPath of ctx.shield) {
+  // Bloco shield do state precede o nível 1 (Plano 05): blindagem declarada
+  // (path + selector opcional) vence e decide keep com decidedBy: state — a
+  // decisão vem da declaração no estado, não de posição. Ausência = vazio.
+  for (const entry of ctx.shield) {
+    const shieldPath = typeof entry === "string" ? entry : entry.path;
+    if (!shieldPath) continue;
     if (src === shieldPath || src.startsWith(`${shieldPath}/`)) {
       return {
         entry: {
@@ -174,7 +187,7 @@ const routeFragment = (fragment, ctx) => {
           regime: "keep",
           destinationPath: src,
           confidence: 1,
-          decidedBy: "keep",
+          decidedBy: "state",
           evidence: `shield: blindagem declarada no state (${shieldPath})`,
           needsSplit: false,
         },
@@ -201,11 +214,15 @@ const routeFragment = (fragment, ctx) => {
     };
   }
 
-  // Nível 2 — respostas de escopo do projeto (bloco answers). Vinculante
-  // (D22): divergir do catálogo é violação, não opinião. Ausência = sem match.
-  const answer = ctx.answers[fragmentId];
-  if (answer && typeof answer.destinationPath === "string") {
-    const destinationPath = answer.destinationPath;
+  // Nível 2 — respostas de escopo do projeto (bloco answers do state).
+  // Match por questionKey = sha256(contexto normalizado) — o MESMO contexto
+  // usado ao enfileirar (AC-5.2.4: reformular o texto da pergunta não muda a
+  // chave). Vinculante (D22): divergir do catálogo é violação, não opinião;
+  // decide decidedBy: state. Ausência = sem match.
+  const questionKey = questionKeyOf(routingQuestionContext(src));
+  const answer = ctx.answers[questionKey];
+  if (answer && typeof answer.answer?.destinationPath === "string") {
+    const destinationPath = answer.answer.destinationPath;
     if (!isLegalDestination(destinationPath)) {
       throw new Error(
         `routing: fragmento ${fragmentId} — resposta de projeto com destino ilegal "${destinationPath}"`,
@@ -219,7 +236,7 @@ const routeFragment = (fragment, ctx) => {
         destinationPath,
         confidence: 1,
         decidedBy: "state",
-        evidence: `resposta de escopo do projeto (questionKey ${answer.questionKey ?? "?"})`,
+        evidence: `resposta de escopo do projeto (questionKey ${questionKey})`,
         needsSplit: false,
       },
     };
@@ -382,7 +399,7 @@ export const buildRouting = (root, options = {}) => {
     const result = routeFragment(fragment, ctx);
     if (result.question) {
       questions.push({
-        questionKey: fragmentIdOf(`question:${result.question.sourcePath}`),
+        questionKey: questionKeyOf(routingQuestionContext(result.question.sourcePath)),
         fragmentId: result.question.fragmentId,
         sourcePath: result.question.sourcePath,
       });
