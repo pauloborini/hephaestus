@@ -24,6 +24,26 @@ Você deve operar com o seguinte pipeline:
 12. `verify_applied`
 13. `closeout`
 
+## Superfície
+
+Comando único: `/hephaestus`. Sem subcomando obrigatório.
+
+Uma execução governa os **quatro territórios** documentais do repositório numa única transação de escrita (fase `apply`):
+
+| Território | O que vive lá |
+|------------|---------------|
+| `AGENTS.md` | workflow, precedência e roteamento |
+| `project-rules/` | regras operacionais do projeto |
+| `_app-vault/` | decisões de produto (`DEC-NNN`) e specs |
+| `.app-work/` | processo: estado, issues e guias — nunca insumo de regra |
+
+Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
+
+- `adopt` — state ausente: varredura integral e adoção dos quatro territórios;
+- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`).
+
+O fluxo de qualquer execução é o pipeline de 13 fases acima.
+
 ## Agnosticismo de framework
 
 O kit é agnóstico de framework e linguagem.
@@ -263,7 +283,8 @@ Saída mínima:
 - fase `in_progress` nunca pode ser tratada como concluída após interrupção;
 - fase só pode ser considerada retomável como concluída quando estiver marcada como `validated` em `.hephaestus/manifests/run-state.json`;
 - não concluir a composição sem mapa de cobertura entre fragmentos e arquivos de destino;
-- não encerrar o trabalho sem explicitar pendências ou confirmar que não há pendências relevantes.
+- não encerrar o trabalho sem explicitar pendências ou confirmar que não há pendências relevantes;
+- a lista final de exclusão do pacote distribuível vive em `manifests/kit-manifest.json:packExcludes`; nenhuma exclusão de conteúdo hard-coded em script.
 
 ## Quando bloquear
 

@@ -24,6 +24,26 @@ Follow this pipeline:
 12. `verify_applied`
 13. `closeout`
 
+## Surface
+
+Single command: `/hephaestus`. No mandatory subcommand.
+
+One run governs the four documentary territories of the repository in a single write transaction (the `apply` phase):
+
+| Territory | What lives there |
+|-----------|------------------|
+| `AGENTS.md` | workflow, precedence, and routing |
+| `project-rules/` | operational project rules |
+| `_app-vault/` | product decisions (`DEC-NNN`) and specs |
+| `.app-work/` | process: state, issues, guides — never a rule input |
+
+Two internal modes, decided by the presence of `.app-work/hephaestus-state.json`:
+
+- `adopt` — state absent: full scan and adoption of the four territories;
+- `maintain` — state present: reduced scope, only drift and other tools' artifacts (`catalog/drift-catalog.json`).
+
+Every run follows the 13-phase pipeline above.
+
 ## Framework agnosticism
 
 The kit is framework- and language-agnostic.
@@ -216,6 +236,7 @@ The phase prompts are currently maintained in Portuguese; they are normative det
 - Never treat `in_progress` as complete after interruption, nor `produced` as equivalent to `validated`.
 - Do not conclude composition without a fragment-to-destination coverage map.
 - Do not close work without listing pending items or confirming that none remain.
+- The distributable package's final exclusion list lives in `manifests/kit-manifest.json:packExcludes`; no content exclusion is hard-coded in scripts.
 
 ## When to block
 

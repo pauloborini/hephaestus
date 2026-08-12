@@ -28,14 +28,17 @@ else
   gh repo clone "${REPO_SLUG}" "${TMP_DIR}"
 fi
 
-rsync -a --delete \
-  --exclude '.git' \
-  --exclude '.gitkeep' \
-  --exclude '.gitignore' \
-  --exclude '.DS_Store' \
-  --exclude 'scripts/publish-hephaestus.sh' \
-  --exclude '.app-work' \
-  "${SOURCE_DIR}/" "${TMP_DIR}/"
+# Lista final de exclusão do rsync: `packExcludes` do manifesto (dado único,
+# VC4) + `.git` (exclusão própria do publicador). Nenhuma exclusão de conteúdo
+# vive literalmente aqui — duas listas parciais reproduzem o vazamento que
+# originou ISSUE-002.
+PACK_EXCLUDES=("${(@f)$(node -e 'const fs=require("node:fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write((m.packExcludes||[]).join("\n"));' "${SOURCE_DIR}/manifests/kit-manifest.json")}")
+RSYNC_EXCLUDES=()
+for entry in "${PACK_EXCLUDES[@]}" ".git"; do
+  RSYNC_EXCLUDES+=("--exclude=${entry}")
+done
+
+rsync -a --delete "${RSYNC_EXCLUDES[@]}" "${SOURCE_DIR}/" "${TMP_DIR}/"
 
 node "${TMP_DIR}/scripts/validate-skill-kit.mjs" "${TMP_DIR}"
 

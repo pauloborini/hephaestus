@@ -30,8 +30,19 @@ if (!Array.isArray(manifest.requiredFiles) || manifest.requiredFiles.length === 
   fail("kit-manifest.json must declare requiredFiles");
 }
 
+// Arquivos em `packExcludes` existem na árvore de desenvolvimento mas não
+// viajam no zip nem no repositório público (VC4) — a checagem de
+// `requiredFiles` vale para o kit distribuído, então entradas excluídas
+// deixam de ser obrigatórias aqui.
+const packExcludes = Array.isArray(manifest.packExcludes) ? manifest.packExcludes : [];
+const isPackExcluded = (relativePath) => {
+  return packExcludes.some((entry) => {
+    return relativePath === entry || relativePath.startsWith(`${entry}/`);
+  });
+};
+
 const missingFiles = manifest.requiredFiles.filter((relativePath) => {
-  return !fs.existsSync(path.join(rootDir, relativePath));
+  return !isPackExcluded(relativePath) && !fs.existsSync(path.join(rootDir, relativePath));
 });
 
 if (missingFiles.length > 0) {
