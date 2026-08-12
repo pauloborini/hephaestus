@@ -5,18 +5,15 @@
   "additionalProperties": false,
   "required": [
     "fragmentId",
-    "sourcePath",
     "rawText",
-    "operationalRoleCandidate",
+    "territory",
+    "regime",
     "confidence",
-    "ambiguity"
+    "ambiguity",
+    "provenance"
   ],
   "properties": {
     "fragmentId": {
-      "type": "string",
-      "minLength": 1
-    },
-    "sourcePath": {
       "type": "string",
       "minLength": 1
     },
@@ -24,9 +21,13 @@
       "type": "string",
       "minLength": 1
     },
-    "operationalRoleCandidate": {
+    "territory": {
       "type": "string",
-      "enum": ["index", "rules", "reference", "manifest", "unknown"]
+      "enum": ["agents", "project-rules", "vault", "process"]
+    },
+    "regime": {
+      "type": "string",
+      "enum": ["keep", "generate", "reconcile", "relocate"]
     },
     "confidence": {
       "type": "number",
@@ -40,6 +41,29 @@
     "structuralType": {
       "type": "string",
       "enum": ["seção", "regra", "checklist", "exemplo", "tabela", "preferência", "metadado", "desconhecido"]
+    },
+    "provenance": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourcePath", "startOffset", "endOffset"],
+        "properties": {
+          "sourcePath": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startOffset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "endOffset": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
     }
   }
 }

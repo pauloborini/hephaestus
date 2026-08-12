@@ -1,0 +1,112 @@
+{
+  "_provenance": {
+    "fixture": "scripts/__tests__/fixtures/repo-desorganizado",
+    "capturedAt": "2026-08-12",
+    "command": "node scripts/__tests__/capture-golden-routing.mjs",
+    "generatedBy": "routing-engine.mjs (níveis 1-4 determinísticos, catálogo real) + resíduo da LLM congelado (S9); done/ expandido DEC-002",
+    "fragmentCount": 11
+  },
+  "entries": [
+    {
+      "fragmentId": "16eb2f05c6b497fe5afbb5836b7d71148fc1032f2978fae7f25c5f2e9377fa06",
+      "territory": "project-rules",
+      "regime": "generate",
+      "destinationPath": "project-rules/rules/domain_rules.md",
+      "confidence": 0.8,
+      "decidedBy": "detector",
+      "evidence": "detector sintático acionado (AGENTS.md)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "e74f52baff9cef9b4734f8caedf4c62c66398ede8cabf5064f589e4d006ed804",
+      "territory": "project-rules",
+      "regime": "generate",
+      "destinationPath": "project-rules/contracts/openapi.yaml",
+      "confidence": 0.8,
+      "decidedBy": "detector",
+      "evidence": "detector sintático acionado (docs/api/openapi.yaml)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "201d5b306f57a0e0296823880dff76d6a31800a84d546f771ee8aac50851cb39",
+      "territory": "process",
+      "regime": "relocate",
+      "destinationPath": ".app-work/references/",
+      "confidence": 1,
+      "decidedBy": "catalog",
+      "evidence": "catálogo: pattern \"clones OSS / análise competitiva em `archive/` do vault\" (5 termo(s) casados)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "07b5260ae6b262d88b4f7e8f7c1c964aa3b73c6d84f35b3fa4f594051ac4c4fe",
+      "territory": "process",
+      "regime": "relocate",
+      "destinationPath": ".app-work/brainstorming/",
+      "confidence": 1,
+      "decidedBy": "catalog",
+      "evidence": "catálogo: pattern \"brainstorms (`docs/brainstorming/`, equivalentes)\" (3 termo(s) casados)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "b2293353ae6d014316c6c69d2a60034c0fb566b0908448da13d972917e95836c",
+      "territory": "project-rules",
+      "regime": "generate",
+      "destinationPath": "project-rules/reference/snippet.md",
+      "confidence": 0.8,
+      "decidedBy": "detector",
+      "evidence": "detector sintático acionado (docs/exemplos/snippet.md)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "76c5682760e58a8ccd389bae6abafeef2a0d0d9f28175687c8acf1f307da56f3",
+      "territory": "process",
+      "regime": "relocate",
+      "destinationPath": ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/",
+      "confidence": 1,
+      "decidedBy": "catalog",
+      "evidence": "catálogo: pattern \"guides executados/concluídos — arquivo único ou pack `*_GUIDE/`\" (5 termo(s) casados)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "251b8831a9fdc41ac40af5fa142285276ed93f23633c678371221a83a65b3350",
+      "territory": "vault",
+      "regime": "reconcile",
+      "destinationPath": "_app-vault/docs/decisions/ideias.md",
+      "confidence": 0.9,
+      "decidedBy": "llm",
+      "evidence": "resíduo decidido pela LLM (destino congelado no golden)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "9f9687d44d67aa785c3524b23bf361c03989b2f500e7328531f9c99ea646f48f",
+      "territory": "project-rules",
+      "regime": "generate",
+      "destinationPath": "project-rules/reference/notas.md",
+      "confidence": 0.8,
+      "decidedBy": "llm",
+      "evidence": "resíduo decidido pela LLM (destino congelado no golden)",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "daf09d783ba53ddab74001e1de3bfad27631dcbb4f5e7da9d470553ff940c0cf",
+      "territory": "project-rules",
+      "regime": "keep",
+      "destinationPath": "project-rules/rules/architecture_rules.md",
+      "confidence": 1,
+      "decidedBy": "keep",
+      "evidence": "destino calculado == origem atual (project-rules/rules/architecture_rules.md) — cópia byte a byte",
+      "needsSplit": false
+    },
+    {
+      "fragmentId": "8f031cccf3bf7687557731826a3220779db386090b0bab716165a0018df39aed",
+      "territory": "vault",
+      "regime": "reconcile",
+      "destinationPath": "_app-vault/docs/decisions/produto.md",
+      "confidence": 0.8,
+      "decidedBy": "detector",
+      "evidence": "detector sintático acionado (README.md)",
+      "needsSplit": false
+    }
+  ],
+  "questionCount": 1
+}

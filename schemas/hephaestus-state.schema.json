@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Project State",
+  "description": "Estado versionado do projeto: .app-work/hephaestus-state.json (nome em minúsculo, D7). Quatro blocos (D29): meta lido por preflight; routing por preflight e route; answers por route e interview; shield por route e compose. Sem métricas — telemetria (ex. llmDecidedRatio) vive em .hephaestus/, nunca aqui (D29). Campo de topo que o schema não conhece é ignorado e o necessário reperguntado, nunca migrado (D4): por isso a tolerância é declarada no nível de topo (additionalProperties true) e o fechamento (additionalProperties false) vale dentro de cada bloco conhecido.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "packVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lastRunAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lastRunId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "overlay": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/catalogEntry"
+          }
+        },
+        "forbiddenPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "answers": {
+      "type": "object",
+      "description": "Mapa questionKey (sha256 do contexto normalizado) -> resposta humana de escopo do projeto (D22). Chaves estáveis: derivam do contexto, nunca do texto da pergunta.",
+      "additionalProperties": {
+        "$ref": "#/$defs/answer"
+      }
+    },
+    "shield": {
+      "type": "array",
+      "description": "Blindagem opt-in de conteúdo de terceiros (D9): path + seletor de seção. Vazia por default — todo conteúdo é reabsorvido até ser declarado.",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/shieldEntry"
+      }
+    }
+  },
+  "$defs": {
+    "catalogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern", "destination", "confidence"],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destination": {
+          "type": ["string", "null"]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["alta", "baixa"]
+        },
+        "since": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["answer", "scope", "sourceEvidence"],
+      "properties": {
+        "answer": {
+          "type": "object",
+          "description": "Resposta estruturada (a forma varia por tipo de pergunta; para pergunta de destino, carrega destinationPath)."
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["this-run", "this-project", "promote-to-catalog"]
+        },
+        "sourceEvidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answeredAt": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "shieldEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "selector": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
