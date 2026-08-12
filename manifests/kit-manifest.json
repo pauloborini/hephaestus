@@ -21,6 +21,7 @@
     "prompts/snapshot.md",
     "prompts/fragment.md",
     "prompts/route.md",
+    "prompts/reconcile.md",
     "prompts/plan.md",
     "prompts/compose.md",
     "prompts/validate.md",
