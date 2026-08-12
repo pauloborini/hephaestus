@@ -52,6 +52,7 @@ if (missingFiles.length > 0) {
 const publicDocumentationPairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
+  ["RELEASE.md", "RELEASE.pt-BR.md"],
   ["SKILL.en.md", "SKILL.md"],
 ];
 

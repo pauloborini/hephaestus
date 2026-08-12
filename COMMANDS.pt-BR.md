@@ -47,6 +47,8 @@ node scripts/pack-release.mjs
 
 O primeiro comando lista as entradas que iriam para o arquivo sem escrever nada. O segundo escreve `hephaestus-<version>.zip` na raiz do repositório: toda entrada é prefixada com a pasta fixa `hephaestus/` (sem versão no nome da pasta, então descompactar por cima de uma instalação existente sobrescreve em vez de acumular), `LICENSE` é incluída, e a lista final de exclusão vem de `manifests/kit-manifest.json:packExcludes` — o mesmo dado consumido pelo publicador.
 
+Versão = inteiro em `manifests/kit-manifest.json:version` (`DEC-003`). Runbook completo do mantenedor (tag, GitHub Release, upload do asset): [RELEASE.pt-BR.md](RELEASE.pt-BR.md) / [RELEASE.md](RELEASE.md).
+
 ## Publicar o kit público — apenas mantenedores
 
 ```bash
