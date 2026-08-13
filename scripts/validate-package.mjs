@@ -62,6 +62,13 @@ const PLACEHOLDER_PATTERN = /<preencher[^>]*>|<[^>]*preencher[^>]*>/i;
 
 const AGENTS_HEADER_PATTERN = /^# .+— contrato do agente/m;
 
+// Âncora dupla (SCHEMA.md §8): o AGENTS.md gerado aponta os dois mapas —
+// `_app-vault/INDEX.md` (produto/decisão) e `.app-work/INDEX.md` (processo) —
+// e declara a proibição de `.app-work/` como insumo de regra.
+const AGENTS_ANCHOR_PATTERN = /_app-vault\/INDEX\.md/;
+const AGENTS_PROCESS_ANCHOR_PATTERN = /\.app-work\/INDEX\.md/;
+const AGENTS_PROCESS_BAN_PATTERN = /\.app-work\/[^\n]*nunca insumo de regra/i;
+
 const fail = (message, exitCode = 1) => {
   console.error(`Validation failed: ${message}`);
   process.exit(exitCode);
@@ -149,7 +156,16 @@ const checkAgents = (root) => {
   if (PLACEHOLDER_PATTERN.test(contents)) {
     fail("AGENTS.md: contains placeholder (`<...>` / `<preencher...>`) — must be replaced");
   }
-  return "AGENTS.md header OK; no placeholders.";
+  if (!AGENTS_ANCHOR_PATTERN.test(contents)) {
+    fail("AGENTS.md: must anchor the vault map (`_app-vault/INDEX.md`) — padrão de âncora dupla (SCHEMA.md §8)");
+  }
+  if (!AGENTS_PROCESS_ANCHOR_PATTERN.test(contents)) {
+    fail("AGENTS.md: must anchor the process map (`.app-work/INDEX.md`) — padrão de âncora dupla (SCHEMA.md §8)");
+  }
+  if (!AGENTS_PROCESS_BAN_PATTERN.test(contents)) {
+    fail("AGENTS.md: must state that `.app-work/` is never a rule input (nunca insumo de regra) — SCHEMA.md §8");
+  }
+  return "AGENTS.md header OK; no placeholders; dual anchors present.";
 };
 
 const globMatch = (rootDir, linkedPath) => {

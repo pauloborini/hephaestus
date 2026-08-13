@@ -1,5 +1,5 @@
 // AC-1.5.1, AC-1.5.2 e AC-1.5.3: o catálogo base de roteamento é a conversão
-// fiel da Tabela vigente de ROUTING_DEFAULTS.md, com destinos legais.
+// fiel do catálogo vivo `catalog/routing-defaults.json`, com destinos legais.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";

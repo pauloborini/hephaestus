@@ -11,10 +11,10 @@
     },
     {
       "pattern": "guides executados/concluídos — arquivo único ou pack `*_GUIDE/`",
-      "destination": ".app-work/done/",
+      "destination": ".app-work/archive/guides/",
       "confidence": "alta",
       "since": "D29+Argus",
-      "reason": "todo guide executado vai a done; a cascata expande `.app-work/done/` para `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo/` (DEC-002, data civil do run, semana ISO seg–dom)"
+      "reason": "todo guide executado vai ao espelho; a cascata expande `.app-work/archive/guides/` para `.app-work/archive/guides/<NOME>_GUIDE|arquivo/` (DEC-002)"
     },
     {
       "pattern": "brainstorms (`docs/brainstorming/`, equivalentes)",

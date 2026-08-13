@@ -1,9 +1,9 @@
 {
   "_provenance": {
     "fixture": "scripts/__tests__/fixtures/repo-desorganizado",
-    "capturedAt": "2026-08-12",
+    "capturedAt": "2026-08-13",
     "command": "node scripts/__tests__/capture-golden-routing.mjs",
-    "generatedBy": "routing-engine.mjs (níveis 1-4 determinísticos, catálogo real) + resíduo da LLM congelado (S9); done/ expandido DEC-002",
+    "generatedBy": "routing-engine.mjs (níveis 1-4 determinísticos, catálogo real) + resíduo da LLM congelado (S9); espelho do archive DEC-002",
     "fragmentCount": 11
   },
   "entries": [
@@ -61,7 +61,7 @@
       "fragmentId": "76c5682760e58a8ccd389bae6abafeef2a0d0d9f28175687c8acf1f307da56f3",
       "territory": "process",
       "regime": "relocate",
-      "destinationPath": ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/",
+      "destinationPath": ".app-work/archive/guides/XPTO_GUIDE/",
       "confidence": 1,
       "decidedBy": "catalog",
       "evidence": "catálogo: pattern \"guides executados/concluídos — arquivo único ou pack `*_GUIDE/`\" (5 termo(s) casados)",

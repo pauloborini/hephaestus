@@ -16,7 +16,7 @@ O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo 
   4. docs, specs e READMEs novos ou alterados fora dos territórios canônicos;
   5. integridade do vault: `INDEX.md` derivável dos campos `Afeta:` das decisões, `DEC-NNN` sem colisão nem reuso (cláusulas vivas + `## Histórico`), pasta fora da lista fechada de `references/vault-schema/SCHEMA.md` §2;
   6. candidatos a decisão pendentes nas seções `Candidatos a decisão` dos `LEDGER.md` dos guides em `.app-work/guides/`;
-  7. guides flat sob `.app-work/done/` (fora do nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/`) — inventariar como fonte a reorganizar para a semana do run (DEC-002).
+  7. guia concluído fora do espelho (legado sob `.app-work/done/` ou flat sob `.app-work/archive/guides/`) — inventariar como fonte a reorganizar no espelho (DEC-002).
 
 ## Regras
 

@@ -44,25 +44,23 @@ Consultar `answers[questionKey]` do state, com `questionKey = sha256(contexto no
 
 ### Nível 3 — catálogo
 
-Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, base do pack depois. **Ordenar as entradas por especificidade decrescente do `pattern` antes de procurar match** — match mais específico vence o genérico (regra de `ROUTING_DEFAULTS.md`: clones OSS em `archive/` → `references/`, não `archive/`). Um único termo genérico em comum (ex.: `docs`, presente no path de quase todo fragmento) não é match.
+Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, base do pack depois (`catalog/routing-defaults.json`). **Ordenar as entradas por especificidade decrescente do `pattern` antes de procurar match** — match mais específico vence o genérico (ex.: clones OSS em `archive/` → `references/`, não `archive/`). Um único termo genérico em comum (ex.: `docs`, presente no path de quase todo fragmento) não é match.
 
 - entrada com `destination: null` **nunca decide** — enfileira pergunta;
 - entrada com `confidence: baixa` **nunca decide** — enfileira pergunta;
 - entrada com `confidence: alta` e destino concreto decide `decidedBy: catalog`;
-- destino `.app-work/done/` (raiz do catálogo) **não** é o path final: expandir para
-  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (pack) ou
-  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/` (arquivo solto) — semana ISO
-  (segunda–domingo), pasta do mês = mês da segunda, data = data civil do run
-  (DEC-002). O `destinationPath` emitido é o path expandido (termina em `/`).
+- destino `.app-work/archive/guides/` (raiz do catálogo) **não** é o path final: expandir para
+  `.app-work/archive/guides/<NOME>_GUIDE/` (pack) ou `.app-work/archive/guides/` (arquivo solto) —
+  espelho do archive (DEC-002). O `destinationPath` emitido é o path expandido (termina em `/`).
 
 ### Nível 4 — detectores sintáticos
 
 Classificação estrutural determinística (a mesma usada no nível 1), nesta ordem:
 
 - regra de domínio enterrada no contrato do agente — origem `AGENTS.md` legado (com seção de regra, ex. `## Regra de domínio`) ou arquivo de regras de agente de outra ferramenta (os globs vigiados de `catalog/drift-catalog.json`) + verbo deôntico ⇒ regra → `project-rules/rules/`;
-- origem em `.app-work/done/` **já** no nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/` ⇒ destino é a própria origem — não-toque (DEC-002);
-- origem em `.app-work/done/` **flat** (legado, fora do nesting) ⇒ expandir para a semana do run (DEC-002) — relocate, nunca keep;
-- origem já na lista fechada canônica (§2 + nível 1 acima: `AGENTS.md`, `project-rules/**` já no lugar, vault só `INDEX`/`docs/decisions`/`docs/TEMPLATES`/`specs`, `.app-work/` fora do flat de `done/`) ⇒ destino é a própria origem — não-toque (INV2/INV11/CN2); **proibido** tratar `_app-vault/**` ou `.app-vault/**` inteiro como canônico;
+- origem em `.app-work/archive/guides/` (espelho) ⇒ destino é a própria origem — não-toque (DEC-002);
+- origem legada em `.app-work/done/` (removido da lista fechada) ⇒ relocate para `.app-work/archive/guides/<NOME>_GUIDE|arquivo/` (DEC-002) — migração, nunca keep;
+- origem já na lista fechada canônica (§2 + nível 1 acima: `AGENTS.md`, `project-rules/**` já no lugar, vault só `INDEX`/`docs/decisions`/`docs/TEMPLATES`/`specs`, `.app-work/` fora do legado `done/`) ⇒ destino é a própria origem — não-toque (INV2/INV11/CN2); **proibido** tratar `_app-vault/**` ou `.app-vault/**` inteiro como canônico;
 - candidato a decisão legado — path `DECISOES_*`, heading `### D\d+`, `### DEC-\d+` sem em-dash canônico, ou seção “Decisões fechadas” / “Closed decisions” ⇒ `_app-vault/docs/decisions/<dominio>.md` (`<dominio>` = slug da feature/pasta pai ou stem normalizado), `regime: reconcile` — **obrigatório em `adopt`**; ID legado não congela numeração;
 - OpenAPI/JSON-Schema (texto com `openapi` ou `json-schema`) ⇒ contrato → `project-rules/contracts/`;
 - heading + verbo deôntico + valor numérico (norma de produto observável) ⇒ candidato a decisão → `_app-vault/docs/decisions/<dominio>.md`, `regime: reconcile`;
