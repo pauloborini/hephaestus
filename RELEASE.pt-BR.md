@@ -113,3 +113,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v1`.
 - Artefato: `hephaestus-1.zip`.
 - Conteúdo: estado pós-trilha `HEPHAESTUS_V1` (pipeline 13 fases, zip-release, DEC-002/003).
+
+## Segunda release (v2)
+
+- Versão manifesto: `"2"`.
+- Tag: `v2`.
+- Artefato: `hephaestus-2.zip`.
+- Conteúdo: DEC-004 (adopt materializa `DEC-NNN` canônico na mesma execução); DEC-002 espelho do archive (`.app-work/done/` removido; concluídos vão para `archive/`).
