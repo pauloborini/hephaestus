@@ -67,7 +67,7 @@ const VAULT_CLOSED = new Set(["INDEX.md", "docs", "specs"]);
 const DOCS_CLOSED = new Set(["decisions", "TEMPLATES"]);
 const APP_WORK_CLOSED = new Set([
   ".gitignore", "guides", "brainstorming", "prd", "references",
-  "private", "issues", "done", "archive",
+  "private", "issues", "archive",
 ]);
 
 export const checkVaultIntegrity = (root) => {

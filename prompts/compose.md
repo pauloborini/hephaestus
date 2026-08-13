@@ -29,6 +29,7 @@ Materializar as decisões reconciliadas (`identity-map.json` da fase `reconcile`
 
 - `_app-vault/docs/decisions/<dominio>.md` — um arquivo por domínio de produto, instanciado de `templates/vault/DECISION_TEMPLATE.md` com os comentários removidos: heading `### DEC-NNN — <regra>` com o ID cunhado/alterado pelo `reconcile`, enunciado vigente e notas inline preservadas; `Afeta:` logo após o título, acima da primeira cláusula, com features em kebab-case do vocabulário do projeto;
 - `_app-vault/INDEX.md` — instanciado de `templates/vault/INDEX_TEMPLATE.md`: `## Domínios` com um ponteiro por arquivo de `docs/decisions/`; lista de features válidas declarada **acima** de `## Por feature`; `## Por feature` **derivado** dos campos `Afeta:` de todos os arquivos — nunca escrito à mão; divergindo, `Afeta:` é a verdade e o índice é corrigido (`SCHEMA.md` §7);
+- `_app-vault/docs/TEMPLATES/README.md` — materializado (papel da pasta), porque `docs/TEMPLATES/` é obrigatório pela lista fechada (§2) e ancorado pelo `AGENTS.md`; conteúdo próprio do projeto já existente na pasta é preservado como `keep` (nível 1 do `route`);
 - remoções decididas pelo `reconcile` ganham a linha em `## Histórico` no fim do arquivo do domínio — o ID continua imortal ao inventário de numeração;
 - nada de `.app-work/` é indexado no `INDEX.md` — indexá-lo o torna descobrível e desfaz a separação (`SCHEMA.md` §3).
 
@@ -37,8 +38,9 @@ Materializar as decisões reconciliadas (`identity-map.json` da fase `reconcile`
 Materializar o scaffold de processo conforme a lista fechada de `references/vault-schema/SCHEMA.md` §2:
 
 - `.app-work/.gitignore` — **mesmo em projeto verde**, versionado, com as linhas `references/` e `private/` (e `issues/` quando o repositório for público);
-- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `done/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
-- sob `done/`, materializar o nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo` do `destinationPath` já expandido pela cascata (DEC-002) — não achatar na raiz de `done/`;
+- `.app-work/INDEX.md` — mapa do processo, instanciado de `templates/appwork/INDEX_TEMPLATE.md` (mesmo padrão do vault: ponteiro, não conteúdo): pastas da lista fechada com o papel de cada uma + regras de ouro do processo; criado **sempre**, mesmo em projeto verde — é a âncora que o `AGENTS.md` aponta, nunca pode faltar;
+- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
+- sob `archive/`, materializar o espelho do `destinationPath` já expandido pela cascata: `archive/guides/<NOME>_GUIDE|arquivo` (DEC-002) — não achatar na raiz de `archive/`;
 - fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
 
 ## Blindagem (shield)
@@ -51,7 +53,7 @@ Conteúdo declarado no bloco `shield` do state (`{ path, selector }`) **vence a 
 - usar `templates/AGENTS.md.template` como base operacional do `AGENTS.md`;
 - preencher o cabeçalho com o nome real do projeto e o contrato do agente no stack real (ex.: "Atue como engenheiro Flutter sênior. Preserve arquitetura feature-first, contratos explícitos..."); nunca deixar o cabeçalho genérico do template no arquivo final;
 - manter `## Workflow obrigatório`, `## Precedência interna` e as regras universais base idênticos ao template (protocolo fixo, igual em todos os projetos); preencher somente os pontos marcados como `<preencher na síntese>`: gates da validação, tipos de teste, estrutura do repositório e regras universais específicas do projeto;
-- preencher a seção de estrutura do repositório e documentação com a realidade do projeto: apps/packages/pastas e seus papéis (ou a raiz única do app), os componentes de `project-rules/` gerados (índices, regras, referências, contratos) e onde vivem os docs de produto — todo componente existente de `project-rules/` deve ser alcançável pela precedência interna ou referenciado nessa seção;
+- preencher a seção de estrutura do repositório e documentação com a realidade do projeto: apps/packages/pastas e seus papéis (ou a raiz única do app) e os componentes de `project-rules/` gerados (índices, regras, referências, contratos) — todo componente existente de `project-rules/` deve ser alcançável pela precedência interna ou referenciado nessa seção; as âncoras de produto e processo são **fixas** do template (`_app-vault/INDEX.md` e `.app-work/INDEX.md`, com responsabilidades e a proibição de `.app-work/` como insumo): preencher somente o que é do projeto, nunca listar pastas internas do vault/processo no `AGENTS.md` — cada pasta tem seu próprio índice/README;
 - não adicionar frontmatter de cliente (ex.: `description`/`alwaysApply`) ao `AGENTS.md` gerado; as ferramentas leem `AGENTS.md` por padrão;
 - manter `AGENTS.md` focado em workflow, precedência, triagem e validação;
 - garantir que a triagem tente ler `project-rules/index/<tipo>.md` antes da pré-confirmação;

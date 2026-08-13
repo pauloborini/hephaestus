@@ -1,14 +1,16 @@
 # SCHEMA — Hephaestus
 
-> **Asset absorvido.** Original: `shared/vault-framework/SCHEMA.md`, absorvido pelo kit Hephaestus
-> em 2026-08-12 (trilha `HEPHAESTUS_V1`, Plano 01). Regras de §2, §4, §5, §7 e §8 preservadas
-> integralmente; o vocabulário público segue o padrão do Hephaestus.
+> **Asset canônico do kit.** Vive só dentro do Hephaestus (`references/vault-schema/` +
+> `catalog/routing-defaults.json`). Pacote legado externo de assets de vault foi absorvido em
+> 2026-08-12 (trilha `HEPHAESTUS_V1`, Plano 01) e **descartado** — não consultar, não espelhar e
+> não depender de fonte fora do kit. Regras de §2, §4, §5, §7 e §8 preservadas; vocabulário
+> público segue o padrão do Hephaestus.
 
 Referência operacional das skills de vault. Contém o **quê**; o **porquê** fica na SPEC.
 
-O `AGENTS.md` do projeto **não** cita este arquivo: ele contém somente a âncora imutável do vault.
-O protocolo de leitura/escrita chega pela instrução global (no Hephaestus, a seção de produto do
-`AGENTS.md` é conteúdo gerado pela execução de `/hephaestus` — D8).
+O `AGENTS.md` do projeto **não** cita este arquivo: ele contém somente as âncoras imutáveis do
+vault e do processo. O protocolo de leitura/escrita chega pela instrução global (no Hephaestus,
+as seções de produto e processo do `AGENTS.md` são conteúdo gerado pela execução de `/hephaestus`).
 
 ---
 
@@ -35,6 +37,7 @@ _app-vault/                 # VERDADE VIGENTE — visível, buscável
   specs/                    # especificações técnicas (backend, API contract)
 
 .app-work/                  # PROCESSO — descartável, oculto para busca
+  INDEX.md                  # mapa do processo (§8) — ponteiro, não conteúdo; âncora do AGENTS.md
   .gitignore                # versionado; contém `references/` e `private/`; `issues/` se o repo é público (D43)
   guides/<NOME>_GUIDE/      # packs de execução
   brainstorming/            # caderno de processo
@@ -42,16 +45,21 @@ _app-vault/                 # VERDADE VIGENTE — visível, buscável
   references/               # refs open source de terceiros — SEMPRE gitignored
   private/                  # área privada (sessões, roadmap, research, ops, auditorias) — SEMPRE gitignored
   issues/                   # registro de defeitos — versionado em repo privado; gitignored em repo público (D43)
-  done/                     # guides executados — nesting mês/semana (DEC-002)
-    YYYY-MM/
-      semana-WW_MM-DD_a_MM-DD/
-        <NOME>_GUIDE/       # pack preservado
-        <arquivo>.md        # guide solto (sem pack)
-  archive/                  # o que o usuário quis guardar — sem formato, apagável
+  archive/                  # espelho de concluídos (DEC-002) + depósito livre do usuário
+    guides/<NOME>_GUIDE/    # pack concluído preservado
+    perguntas/<tema>/       # brainstorming fechado
+    prds/                   # PRD aposentado
 ```
 
 **Toda pasta de `_app-vault/` é vigente.** Sem exceção: o que envelheceu sai do vault — foi o que
 tirou de lá `archive/` e `_private/`. O que resta é vigente por construção, não por vigilância.
+
+**Presença sob o root do vault não é formato canônico.** Path `_app-vault/docs/features/`,
+`docs/platform/`, `DECISOES_*` fora de `docs/decisions/`, etc. está **fora** desta lista: na
+adoção (`/hephaestus` modo `adopt`) e na checagem de integridade do `maintain`, esse material é
+**reclassificado** (decisão → `docs/decisions/` como `### DEC-NNN`; spec técnica → `specs/`;
+processo/casca → `.app-work/`). Não-toque (cópia byte a byte) só vale para paths **já** listados
+acima no formato certo — ver `prompts/route.md` nível 1 e DEC-004.
 
 O vault não é espelhado fora do projeto.
 
@@ -75,18 +83,18 @@ acidental ali é indistinguível de regra própria. O ignore viaja com o schema:
 
 ### 2.2 Ciclos
 
-- **Guide** — nasce em `.app-work/guides/`, é executado, vai para
-  `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (ou arquivo solto sob a
-  semana). Semana ISO (segunda–domingo); pasta do mês = mês da segunda da semana; data = momento
-  em que o guide entra em `done/` (ou é reorganizado do flat legado). Path já no nesting é
-  canônico (não-toque); flat sob `done/` migra na próxima execução. Nunca consultado em análise
-  de feature, infraestrutura ou arquitetura.
+- **Guide** — nasce em `.app-work/guides/`, é executado, vai para o **espelho** do archive:
+  `.app-work/archive/guides/<NOME>_GUIDE/` (pack) ou arquivo solto sob `archive/guides/` (DEC-002).
+  Path já no espelho é canônico (não-toque); legado sob `.app-work/done/` migra na próxima
+  execução. Nunca consultado em análise de feature, infraestrutura ou arquitetura.
 - **Brainstorm** — ao fechar, roteia e não permanece como referência viva: produto →
-  `_app-vault/docs/decisions/`; arquitetura/implementação → `project-rules/`.
-- **PRD** — proposta datada, nem sempre cumprida na totalidade. Não é contrato.
-- **Archive** — depósito do usuário: guarda o que ele quiser, sem formato imposto, apagável a
-  qualquer momento. Nenhuma regra do schema depende do que está lá. Distinto de `done/`, que tem
-  conteúdo definido (guides executados no nesting mês/semana).
+  `_app-vault/docs/decisions/`; arquitetura/implementação → `project-rules/`; caderno fechado vai
+  para o espelho `archive/perguntas/<tema>/` (DEC-002).
+- **PRD** — proposta datada, nem sempre cumprida na totalidade. Não é contrato. Aposentado → o
+  espelho `archive/prds/` (DEC-002).
+- **Archive** — espelho de concluídos + depósito do usuário: o que o framework move (concluídos)
+  tem formato definido (`guides/`, `perguntas/`, `prds/` — DEC-002); o resto é depósito livre,
+  sem formato imposto, apagável a qualquer momento. Nenhuma regra do schema depende do que está lá.
 - **Private** — área privada: sessões, roadmap, research, ops, backlog e relatórios de auditoria de
   feature. Sempre gitignored — nunca sobe ao remoto, logo só existe na máquina local. Como todo
   `.app-work/`, é proibida como insumo de regra.
@@ -115,14 +123,14 @@ não hermética.
 
 - `docs/TEMPLATES/` **maiúsculo** (minúsculo passa em macOS e quebra em Linux/CI).
 - Guides: `.app-work/guides/<NOME>_GUIDE/`, `<NOME>` em `MAIUSCULO_COM_UNDERSCORE`.
-  Executados: `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE/` (DEC-002).
+  Executados: `.app-work/archive/guides/<NOME>_GUIDE/` (DEC-002).
 - Decisões: `docs/decisions/<dominio>.md`, kebab-case.
 - Gatilho do framework: `_app-vault/INDEX.md` existe. Sem ele, o agente **não cria** o vault.
 
 ### 2.4 Defaults de roteamento (D42)
 
-Classificação legado → canônico (adoção **e** manutenção) usa `ROUTING_DEFAULTS.md` (mesmo
-diretório deste arquivo). É asset **vivo**: linhas de confiança `alta` evitam reperguntar;
+Classificação legado → canônico (adoção **e** manutenção) usa `catalog/routing-defaults.json`
+(na raiz do kit Hephaestus). É asset **vivo**: linhas de confiança `alta` evitam reperguntar;
 respostas novas a classificação ambígua viram candidatos e só entram na tabela após promoção
 explícita no gate D42 — handoff da adoção (`/hephaestus` modo `adopt`) **ou** fim da correção /
 modalidade roteamento do modo `maintain` (`/hephaestus`). Destino ilegal (fora da §2) é recusado.
@@ -141,6 +149,10 @@ Ponteiro, não conteúdo. Modelo: `INDEX_TEMPLATE.md`.
 - Teto **~100 linhas**. Ultrapassou → o índice virou conteúdo; refatorar.
 - **Nunca entra:** valor vigente de decisão; **qualquer ponteiro para `.app-work/`**; listagem de
   planos/tasks; cópia de PRD ou spec.
+
+O mapa do processo não é este arquivo: é `.app-work/INDEX.md` (§8). A regra "nunca entra" aqui vale
+para o índice do vault; o processo tem o próprio índice — ancorado pelo `AGENTS.md`, nunca como
+insumo de regra.
 
 ---
 
@@ -353,9 +365,10 @@ Backstop é rede de segurança, não caminho principal.
 | **Código** | `project-rules/` | normas de implementação ao codar |
 | **Processo** | `.app-work/` | guide, brainstorm, PRD, references, issues — descartável |
 
-A adoção não mescla os três. O `AGENTS.md` do projeto recebe apenas a seção de produto gerada
-pelo Hephaestus (conteúdo gerado por `/hephaestus` — D8); `.app-work/` **não** é ancorado — é justamente o que não deve ser
-consultado.
+A adoção não mescla os três. O `AGENTS.md` do projeto recebe as âncoras de produto e processo
+geradas pelo Hephaestus: `_app-vault/INDEX.md` (produto/decisão) e `.app-work/INDEX.md`
+(processo). Ancorar é apontar o **mapa** — `.app-work/` continua proibido como insumo de regra:
+a âncora existe para a LLM achar o mapa de organização, não para consultar conteúdo de processo.
 
 **Caso híbrido** (~15% das regras): o **efeito observável pelo usuário final** vai para
 `docs/decisions/`; a **norma de como implementar** vai para `project-rules/`. Duplicar o valor

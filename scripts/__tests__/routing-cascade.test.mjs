@@ -76,7 +76,6 @@ test("AC-3.1.1: níveis 1 a 4 são determinísticos (golden replay)", () => {
   const fragments = buildFragments(fixture);
   const { routing, questions } = buildRouting(fixture, {
     fragments,
-    now: "2026-08-12",
   });
 
   // golden existe com proveniência (fixture, data, comando)
@@ -104,11 +103,11 @@ test("AC-3.1.1: níveis 1 a 4 são determinísticos (golden replay)", () => {
   // ADR aceito (destination null no catálogo) nunca decide: enfileira
   assert.ok(!bySrc(routing, fragments, "docs/adr/0001-formato-pagamentos.md"));
   assert.ok(questions.some((q) => q.sourcePath === "docs/adr/0001-formato-pagamentos.md"));
-  // guia executado → done/YYYY-MM/semana-…/XPTO_GUIDE/ (DEC-002)
+  // guia executado → espelho archive/guides/XPTO_GUIDE/ (DEC-002)
   const guide = bySrc(routing, fragments, "docs/guides/XPTO_GUIDE/GUIDE.md");
   assert.equal(
     guide.destinationPath,
-    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/",
+    ".app-work/archive/guides/XPTO_GUIDE/",
   );
   // resíduo congelado com decidedBy llm (S9)
   const residue = routing.filter((e) => e.decidedBy === "llm");
@@ -216,4 +215,71 @@ test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino il
   assert.match(route, /needsSplit/);
   // a cascata nunca pergunta: perguntas nascem enfileiradas
   assert.match(route, /nunca/i);
+});
+
+test("DEC-004: DECISOES_* sob vault legado não é keep — promove a docs/decisions/", () => {
+  const tmp = mkdtemp("hep-dec004-");
+  const src =
+    ".app-vault/docs/features/checkin/DECISOES_CHECKIN.md";
+  const raw = `# Check-in — Decisões
+
+## 2. Decisões fechadas
+
+### D1 · Modelo de confiança no prestador
+
+O profissional deve registrar a sessão unilateralmente.
+`;
+  fs.mkdirSync(path.join(tmp, path.dirname(src)), { recursive: true });
+  fs.writeFileSync(path.join(tmp, src), raw);
+  const fragments = [
+    {
+      fragmentId: "frag-decisoes",
+      rawText: raw,
+      territory: "vault",
+      regime: "reconcile",
+      confidence: 0.9,
+      ambiguity: "low",
+      provenance: [
+        {
+          sourcePath: src,
+          startOffset: 0,
+          endOffset: Buffer.byteLength(raw, "utf8"),
+        },
+      ],
+    },
+  ];
+  const { routing } = buildRouting(tmp, { fragments });
+  assert.equal(routing.length, 1);
+  assert.equal(routing[0].destinationPath, "_app-vault/docs/decisions/checkin.md");
+  assert.equal(routing[0].regime, "reconcile");
+  assert.notEqual(routing[0].decidedBy, "keep");
+});
+
+test("DEC-004: architecture.md sob docs/features/ não é keep no vault", () => {
+  const tmp = mkdtemp("hep-feat-arch-");
+  const src = "_app-vault/docs/features/auth/architecture.md";
+  const raw = `# Auth architecture\n\nCamadas do módulo.\n`;
+  fs.mkdirSync(path.join(tmp, path.dirname(src)), { recursive: true });
+  fs.writeFileSync(path.join(tmp, src), raw);
+  const fragments = [
+    {
+      fragmentId: "frag-arch-feat",
+      rawText: raw,
+      territory: "vault",
+      regime: "keep",
+      confidence: 0.9,
+      ambiguity: "low",
+      provenance: [
+        {
+          sourcePath: src,
+          startOffset: 0,
+          endOffset: Buffer.byteLength(raw, "utf8"),
+        },
+      ],
+    },
+  ];
+  const { routing } = buildRouting(tmp, { fragments });
+  assert.equal(routing.length, 1);
+  assert.match(routing[0].destinationPath, /^\.app-work\/archive\//);
+  assert.notEqual(routing[0].regime, "keep");
 });

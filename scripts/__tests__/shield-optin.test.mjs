@@ -67,8 +67,8 @@ test("AC-5.3.1: shield por prefixo de pasta blinda todos os arquivos sob ela", (
   runOnce(fixture, shield);
   const guideAbs = path.join(fixture, GUIDE_SRC);
   assert.ok(fs.existsSync(guideAbs), "arquivo sob pasta blindada deve permanecer no lugar");
-  // nada foi movido para .app-work/done/
-  assert.ok(!fs.existsSync(path.join(fixture, ".app-work", "done")));
+  // nada foi movido para o espelho .app-work/archive/guides/
+  assert.ok(!fs.existsSync(path.join(fixture, ".app-work", "archive", "guides")));
 });
 
 test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plano antes de aplicar", () => {
@@ -102,7 +102,7 @@ test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plan
   assert.equal(moveEntry.operation, "move", "remoção/reabsorção é operação move no plano");
   assert.equal(
     moveEntry.artifactPath,
-    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
+    ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
   );
   // após o apply (sem blindagem), o conteúdo saiu da origem
   assert.ok(!fs.existsSync(path.join(fixture, GUIDE_SRC)), "sem shield o guia é reabsorvido");
@@ -111,9 +111,8 @@ test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plan
       path.join(
         fixture,
         ".app-work",
-        "done",
-        "2026-08",
-        "semana-33_08-10_a_08-16",
+        "archive",
+        "guides",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),
@@ -136,9 +135,8 @@ test("AC-5.3.1: o mesmo arquivo fora da lista na execução seguinte é reabsorv
       path.join(
         fixture,
         ".app-work",
-        "done",
-        "2026-08",
-        "semana-33_08-10_a_08-16",
+        "archive",
+        "guides",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),

@@ -29,7 +29,7 @@ const VALID_STATE = {
   },
   answers: {
     [QUESTION_KEY]: {
-      answer: { destinationPath: ".app-work/done/" },
+      answer: { destinationPath: ".app-work/archive/guides/" },
       scope: "this-project",
       sourceEvidence: "docs/brainstorming/tema-x.md",
       answeredAt: "2026-08-12T00:00:00.000Z",
@@ -67,7 +67,7 @@ test("AC-5.1.1: bloco answers malformado reprova com erro 1 nomeando answers", (
     ...VALID_STATE,
     answers: {
       [QUESTION_KEY]: {
-        answer: { destinationPath: ".app-work/done/" },
+        answer: { destinationPath: ".app-work/archive/guides/" },
         scope: "this-project",
         // sourceEvidence ausente — bloco conhecido malformado
       },
