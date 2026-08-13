@@ -24,7 +24,15 @@ export const makeValidPackage = (root) => {
   writeFile(
     root,
     "AGENTS.md",
-    "# Projeto Teste — contrato do agente\n\nConteúdo mínimo de exemplo, sem marcadores.\n",
+    [
+      "# Projeto Teste — contrato do agente",
+      "",
+      "Conteúdo mínimo de exemplo, sem marcadores.",
+      "",
+      "Produto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.",
+      "Processo: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.",
+      "",
+    ].join("\n"),
   );
   writeFile(root, "project-rules/index/README.md", "# Índice do projeto\n");
 

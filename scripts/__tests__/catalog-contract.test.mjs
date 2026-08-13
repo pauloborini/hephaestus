@@ -1,5 +1,5 @@
 // AC-1.5.1, AC-1.5.2 e AC-1.5.3: o catálogo base de roteamento é a conversão
-// fiel da Tabela vigente de ROUTING_DEFAULTS.md, com destinos legais.
+// fiel do catálogo vivo `catalog/routing-defaults.json`, com destinos legais.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -25,9 +25,9 @@ const isLegalDestination = (destination) => {
   return LEGAL_PREFIXES.some((prefix) => destination.startsWith(prefix));
 };
 
-test("AC-1.5.1: toda linha da Tabela vigente virou entrada (33), com as 4 baixas em destination null", () => {
+test("AC-1.5.1: toda linha da Tabela vigente virou entrada (36), com as 4 baixas em destination null", () => {
   assert.equal(Array.isArray(catalog.entries), true);
-  assert.equal(catalog.entries.length, 33);
+  assert.equal(catalog.entries.length, 36);
   const low = catalog.entries.filter((entry) => entry.confidence === "baixa");
   assert.equal(low.length, 4);
   for (const entry of low) {

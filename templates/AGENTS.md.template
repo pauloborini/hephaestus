@@ -69,8 +69,14 @@ Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índic
 
 - <Apps/packages/pastas principais e seus papéis; para repositório de app único, a raiz e as pastas relevantes>.
 - `project-rules/`: <listar os índices, regras, referências e contratos gerados — todo componente existente deve ser alcançável pela precedência interna ou referenciado aqui>.
-- <Docs de produto, quando existirem: onde vivem PRDs, specs, guias e decisões>.
+- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui. Templates: `_app-vault/docs/TEMPLATES/`.
 - Não criar docs de produto em `project-rules/`. `reference/` contém somente exemplo, catálogo ou configuração estrutural acionada por índice.
+
+## Produto
+
+- Verdade vigente só em `_app-vault/docs/decisions/` (cláusulas `### DEC-NNN`). `INDEX.md` é mapa — ponteiro, não conteúdo.
+- `.app-work/` é processo: nunca insumo de regra. Responsabilidades: `_app-vault/` guarda produto/decisão (via `INDEX.md`); `.app-work/` guarda execução/processo (via `INDEX.md`).
+- Pedido que muda produto ou contrato: alterar a cláusula existente (o ID permanece) ou cunhar `max+1`. Não relitigar decisão fechada.
 
 ## Regras universais
 

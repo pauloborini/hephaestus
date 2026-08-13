@@ -52,7 +52,7 @@ test("AC-4.2.2/CN8: cláusula de decisão embutida no AGENTS.md sem ponteiro rep
   writeFile(
     pkg,
     "AGENTS.md",
-    "# Projeto Teste — contrato do agente\n\n### DEC-001 — Cota de export\n\nPlano gratuito: 20 exports/mês.\n",
+    "# Projeto Teste — contrato do agente\n\nProduto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.\nProcesso: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.\n\n### DEC-001 — Cota de export\n\nPlano gratuito: 20 exports/mês.\n",
   );
   const result = runValidator(pkg);
   assert.equal(result.status, 1, result.stdout);

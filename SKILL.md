@@ -39,8 +39,8 @@ Uma execução governa os **quatro territórios** documentais do repositório nu
 
 Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
 
-- `adopt` — state ausente: varredura integral e adoção dos quatro territórios;
-- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`).
+- `adopt` — state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta — closeout `needs-followup`, nunca `ready`;
+- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico — presença sob o root do vault **não** implica canônico.
 
 O fluxo de qualquer execução é o pipeline de 13 fases acima.
 
@@ -174,11 +174,11 @@ Saída mínima:
 
 Leia [prompts/reconcile.md](prompts/reconcile.md).
 
-Casa decisões por `DEC-NNN` e por similaridade; detecta conflito e duplicação de valor entre territórios.
+Motor de identidade: casa por `DEC-NNN` e por similaridade; **cunha `create` (max+1) quando não há a quem casar** — inclusive na primeira adoção (inventário vazio). Detecta conflito e duplicação de valor entre territórios. Em `adopt`, candidato a decisão roteado para `docs/decisions/` nunca termina em `keep` sem `decId`.
 
 Saída mínima:
 
-- inventário de decisões reconciliadas, com identidade preservada.
+- inventário de decisões reconciliadas/cunhadas, com identidade preservada (`identity-map.json` com `decId` em todo destino `docs/decisions/`).
 
 ### 7. Interview
 
@@ -296,7 +296,8 @@ Bloqueie a conclusão quando:
 - houver vazamento de identidade real;
 - o estado de execução estiver corrompido ou inconsistente a ponto de impedir retomada segura;
 - os contratos mínimos dos `schemas/` não forem atendidos;
-- a worktree estiver suja ou o backup estiver incompleto na fase `apply`.
+- a worktree estiver suja ou o backup estiver incompleto na fase `apply`;
+- em `adopt`, houver fonte de decisão de produto (legado ou detector) e `docs/decisions/` permanecer só com scaffold / sem `### DEC-NNN` correspondente no `identity-map`.
 
 ## Fechamento obrigatório
 

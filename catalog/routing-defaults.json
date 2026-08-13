@@ -11,10 +11,10 @@
     },
     {
       "pattern": "guides executados/concluídos — arquivo único ou pack `*_GUIDE/`",
-      "destination": ".app-work/done/",
+      "destination": ".app-work/archive/guides/",
       "confidence": "alta",
       "since": "D29+Argus",
-      "reason": "todo guide executado vai a done; a cascata expande `.app-work/done/` para `.app-work/done/YYYY-MM/semana-WW_MM-DD_a_MM-DD/<NOME>_GUIDE|arquivo/` (DEC-002, data civil do run, semana ISO seg–dom)"
+      "reason": "todo guide executado vai ao espelho; a cascata expande `.app-work/archive/guides/` para `.app-work/archive/guides/<NOME>_GUIDE|arquivo/` (DEC-002)"
     },
     {
       "pattern": "brainstorms (`docs/brainstorming/`, equivalentes)",
@@ -162,6 +162,27 @@
       "confidence": "alta",
       "since": "D12",
       "reason": "fonte de verdade"
+    },
+    {
+      "pattern": "DECISOES_* / decisões fechadas / ### D\\d+ / DEC legado fora de docs/decisions/",
+      "destination": "_app-vault/docs/decisions/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "adoção completa: promover a ### DEC-NNN; ID legado não congela numeração; domínio = feature/pasta pai"
+    },
+    {
+      "pattern": "dossiê de feature no vault (`docs/features/*/architecture.md` ou flow/contracts/security.md)",
+      "destination": ".app-work/archive/features/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "pasta fora de SCHEMA §2; casca arquiva; DECISOES_* sobe via detector (não este pattern)"
+    },
+    {
+      "pattern": "docs/platform / docs/releases / docs de ops no vault fora de decisions|TEMPLATES|specs",
+      "destination": ".app-work/archive/",
+      "confidence": "alta",
+      "since": "DEC-004",
+      "reason": "fora da lista fechada §2; não é verdade de produto canônica"
     },
     {
       "pattern": "contratos de produto/arquitetura vigentes (`*_contract.md`, `BASELINE_OPERACIONAL_*`)",

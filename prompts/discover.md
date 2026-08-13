@@ -8,7 +8,7 @@ Descobrir as fontes cruas do usuário antes de qualquer reorganização.
 
 O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo `mode` do run-state), nunca por heurística sobre estrutura presente:
 
-- `mode: adopt` — varredura integral do repositório: documentos de convenção do agente (`AGENTS.md`, `CLAUDE.md`), specs, docs arquiteturais, guias de workflow, convenções de projeto e os territórios canônicos como fonte (na reexecução, o destino também é input);
+- `mode: adopt` — varredura integral do repositório: documentos de convenção do agente (`AGENTS.md`, `CLAUDE.md`), specs, docs arquiteturais, guias de workflow, convenções de projeto e os territórios canônicos como fonte (na reexecução, o destino também é input). **Obrigatório inventariar e marcar como risco de adoção incompleta:** (a) paths sob `_app-vault/` ou `.app-vault/` fora da lista fechada de `SCHEMA.md` §2; (b) arquivos `DECISOES_*`, seções “Decisões fechadas” / headings `### D\d+` / `### DEC-\d+` sem em-dash canônico **fora** de `docs/decisions/`; (c) ausência de `docs/decisions/` com `### DEC-NNN` quando (a)/(b) existem — a adoção só fecha quando esse material for promovido ou reclassificado na mesma execução;
 - `mode: maintain` — escopo reduzido, guiado por dado: inventariar só o que difere da última execução e o que as outras ferramentas produzem, deixando o resto como fonte inalterada que cai em `keep` pelo nível 1 da cascata (o escopo reduzido diminui o custo, não a corretude — um maintain que varresse tudo produziria o mesmo resultado, só mais devagar):
   1. `AGENTS.md` alterado desde o último run — comparar `mtime`/hash do arquivo contra `meta.lastRunAt` do `.app-work/hephaestus-state.json`;
   2. `CLAUDE.md` presente e divergente do `AGENTS.md` (regra que o contrato do agente não cobre);
@@ -16,7 +16,7 @@ O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo 
   4. docs, specs e READMEs novos ou alterados fora dos territórios canônicos;
   5. integridade do vault: `INDEX.md` derivável dos campos `Afeta:` das decisões, `DEC-NNN` sem colisão nem reuso (cláusulas vivas + `## Histórico`), pasta fora da lista fechada de `references/vault-schema/SCHEMA.md` §2;
   6. candidatos a decisão pendentes nas seções `Candidatos a decisão` dos `LEDGER.md` dos guides em `.app-work/guides/`;
-  7. guides flat sob `.app-work/done/` (fora do nesting `YYYY-MM/semana-WW_MM-DD_a_MM-DD/`) — inventariar como fonte a reorganizar para a semana do run (DEC-002).
+  7. guia concluído fora do espelho (legado sob `.app-work/done/` ou flat sob `.app-work/archive/guides/`) — inventariar como fonte a reorganizar no espelho (DEC-002).
 
 ## Regras
 

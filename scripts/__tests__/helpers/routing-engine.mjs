@@ -15,11 +15,11 @@ import path from "node:path";
 import { REPO_ROOT } from "./fs-utils.mjs";
 import { writeJson } from "./fs-utils.mjs";
 import {
-  isDoneCatalogRoot,
-  isFlatDonePath,
-  isSegmentedDonePath,
-  resolveDoneDestination,
-} from "./done-path.mjs";
+  isArchiveGuideCatalogRoot,
+  isCanonicalArchiveGuidePath,
+  isLegacyDonePath,
+  resolveArchiveGuideDestination,
+} from "./archive-mirror.mjs";
 
 export const normalizeText = (text) =>
   text
@@ -45,30 +45,49 @@ export const routingQuestionContext = (sourcePath) => `route:${sourcePath}`;
 const sha256Hex = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 // --- Destinos legais (lista fechada: AGENTS.md + project-rules/ +
-// _app-vault/** + .app-work/** — SCHEMA.md §2) ---
+// vault root (_app-vault/ ou alias .app-vault/) + .app-work/** — SCHEMA.md §2) ---
+export const normalizeVaultPath = (p) =>
+  typeof p === "string" ? p.replace(/^\.app-vault(?=\/|$)/, "_app-vault") : p;
+
 export const isLegalDestination = (destination) => {
   if (typeof destination !== "string" || destination.length === 0) return false;
   if (destination === "AGENTS.md") return true;
+  const normalized = normalizeVaultPath(destination);
   return (
-    destination.startsWith("project-rules/") ||
-    destination.startsWith("_app-vault/") ||
-    destination.startsWith(".app-work/")
+    normalized.startsWith("project-rules/") ||
+    normalized.startsWith("_app-vault/") ||
+    normalized.startsWith(".app-work/")
   );
 };
 
 const territoryOf = (destination) => {
   if (destination === "AGENTS.md") return "agents";
-  if (destination.startsWith("project-rules/")) return "project-rules";
-  if (destination.startsWith("_app-vault/")) return "vault";
-  if (destination.startsWith(".app-work/")) return "process";
+  const normalized = normalizeVaultPath(destination);
+  if (normalized.startsWith("project-rules/")) return "project-rules";
+  if (normalized.startsWith("_app-vault/")) return "vault";
+  if (normalized.startsWith(".app-work/")) return "process";
   return null;
 };
 
-// Matriz INV9 (mesma do validador): process só relocate/keep; vault só
-// reconcile/keep; agents e project-rules geram.
+// Matriz INV9 (mesma do validador): process só relocate/keep; vault decisions
+// → reconcile; vault INDEX/TEMPLATES/specs e process → keep/relocate; agents
+// e project-rules geram.
+const isDecisionsPath = (destination) => {
+  const n = normalizeVaultPath(destination);
+  return (
+    n.startsWith("_app-vault/docs/decisions/") &&
+    n !== "_app-vault/docs/decisions/" &&
+    n.endsWith(".md")
+  );
+};
+
 const regimeFor = (destination) => {
   const territory = territoryOf(destination);
-  if (territory === "vault") return "reconcile";
+  const n = normalizeVaultPath(destination);
+  if (territory === "vault") {
+    if (n.startsWith("_app-vault/docs/decisions")) return "reconcile";
+    return "keep";
+  }
   if (territory === "process") return "relocate";
   if (territory === "project-rules" || territory === "agents") return "generate";
   return null;
@@ -98,17 +117,13 @@ const isTable = (text) => /^\|.*\|$/m.test(text);
 // Destino calculado pela classificação estrutural (nível 1 usa este destino
 // para decidir keep por posição; o nível 4 o usa para decidir por detector).
 //
-// Ordem dos detectores (Plano 06, CN2/AC-6.1.2): a extração de regra de
-// agente e o reconhecimento de origem canônica vêm ANTES dos detectores de
-// conteúdo (openapi, candidato a decisão). Sem essa ordem, um repositório
-// adotado não é estável sob a cascata — o `domain_rules.md` gerado no Plano 04
-// cita `DEC-NNN` e "deve" (dispararia "candidato a decisão"), o `index/README`
-// cita `openapi.yaml` (dispararia "contrato") e o `AGENTS.md` gerado contém
-// "Workflow obrigatório" (dispararia "candidato a decisão" por "obrigatori") —
-// e a rodada de maintain reclassificaria conteúdo no lugar certo, violando
-// INV2/INV11. A distinção AGENTS.md legado (adot, regra enterrada — seção
-// "## Regra de domínio") vs adotado (maintain, contrato sem regra) é feita
-// pelo marcador textual da seção de regra, a mesma proxy do golden do Plano 03.
+// Ordem dos detectores (Plano 06, CN2/AC-6.1.2 + DEC-004): a extração de
+// regra de agente e o reconhecimento de origem **já na lista fechada §2**
+// vêm ANTES dos detectores de conteúdo (openapi, candidato a decisão). Sem
+// essa ordem, um repositório adotado não é estável sob a cascata. Presença
+// sob `_app-vault/**` ou `.app-vault/**` NÃO é keep — só INDEX / decisions
+// canônicas / TEMPLATES / specs. DECISOES_* e headings ### D\d+ sobem para
+// docs/decisions/ antes do archive de casca.
 //
 // Regras de agente de outras ferramentas (globs de `catalog/drift-catalog.json`,
 // Plano 06): o conteúdo é contrato do agente como o AGENTS.md legado — a
@@ -118,54 +133,127 @@ const AGENT_RULE_SOURCES = [".cursor/rules/", ".cursorrules", ".windsurfrules", 
 const isAgentRuleSource = (src) =>
   AGENT_RULE_SOURCES.some((glob) => src === glob || src.startsWith(glob));
 
-const isCanonicalSource = (src) =>
-  src === "AGENTS.md" ||
-  src.startsWith("project-rules/") ||
-  src.startsWith("_app-vault/") ||
-  src.startsWith(".app-work/");
+// Não-toque (INV2): path já na lista fechada SCHEMA §2 no formato canônico.
+// Presença sob o root do vault NÃO implica canônico (DEC-004).
+const isCanonicalVaultKeep = (src) => {
+  const n = normalizeVaultPath(src);
+  return (
+    n === "_app-vault/INDEX.md" ||
+    n.startsWith("_app-vault/docs/TEMPLATES/") ||
+    n.startsWith("_app-vault/specs/")
+  );
+};
 
-// `now` (YYYY-MM-DD) só importa para expansão de done/ (DEC-002).
-const structuralDestination = (fragment, now) => {
+const isCanonicalDecisionsFile = (src, text) => {
+  const n = normalizeVaultPath(src);
+  return n.startsWith("_app-vault/docs/decisions/") && /^###\s+DEC-\d+\s*—/m.test(text);
+};
+
+const isLegacyDecisionShape = (src, text) => {
+  const base = path.basename(src);
+  if (/^DECISOES_/i.test(base)) return true;
+  if (/^###\s+D\d+\b/m.test(text)) return true;
+  if (/^###\s+DEC-\d+(?!\s*—)/m.test(text)) return true;
+  if (/decis[oõ]es fechadas|closed decisions/i.test(text)) return true;
+  return false;
+};
+
+const domainFromDecisionSource = (src) => {
+  const n = normalizeVaultPath(src);
+  const parts = n.split("/");
+  const base = path.basename(n).replace(/\.md$/i, "");
+  if (/^DECISOES_/i.test(base)) {
+    const featureIdx = parts.indexOf("features");
+    if (featureIdx >= 0 && parts[featureIdx + 1]) {
+      return parts[featureIdx + 1].toLowerCase().replace(/_/g, "-");
+    }
+    return base.replace(/^DECISOES_/i, "").toLowerCase().replace(/_/g, "-") || "produto";
+  }
+  const featureIdx = parts.indexOf("features");
+  if (featureIdx >= 0 && parts[featureIdx + 1]) {
+    return parts[featureIdx + 1].toLowerCase().replace(/_/g, "-");
+  }
+  // README / nomes genéricos de raiz → domínio produto (golden adopt)
+  if (/^(readme|index|agents|claude|home)$/i.test(base)) return "produto";
+  return base.toLowerCase().replace(/_/g, "-") || "produto";
+};
+
+const vaultArchiveDestination = (src) => {
+  const n = normalizeVaultPath(src);
+  const stripped = n.replace(/^_app-vault\//, "");
+  if (stripped.startsWith("docs/features/")) {
+    return `.app-work/archive/features/${stripped.slice("docs/features/".length)}`;
+  }
+  return `.app-work/archive/${stripped}`;
+};
+
+const isVaultRootSource = (src) => normalizeVaultPath(src).startsWith("_app-vault/");
+
+const isCanonicalKeepPath = (src) => {
+  if (src === "AGENTS.md") return true;
+  if (src.startsWith("project-rules/")) return true;
+  if (isCanonicalVaultKeep(src)) return true;
+  if (src.startsWith(".app-work/") && !isLegacyDonePath(src)) return true;
+  return false;
+};
+
+const structuralDestination = (fragment) => {
   const src = fragment.provenance[0].sourcePath;
   const base = path.basename(src);
   const stem = base.replace(/\.(md|yaml|yml|json|openapi\.json)$/i, "");
-  const text = normalizeText(fragment.rawText);
+  const text = fragment.rawText;
+  const textNorm = normalizeText(text);
 
   // regra de domínio enterrada no contrato do agente (arquivo de regra de
   // agente de terceiros — drift vigiado — ou AGENTS.md legado com seção de
   // regra) + verbo deôntico ⇒ sai para project-rules
-  if (isAgentRuleSource(src) && DEONTIC.test(text)) {
+  if (isAgentRuleSource(src) && DEONTIC.test(textNorm)) {
     return "project-rules/rules/domain_rules.md";
   }
-  if (src === "AGENTS.md" && DEONTIC.test(text) && text.includes("regra de dominio")) {
+  if (src === "AGENTS.md" && DEONTIC.test(textNorm) && textNorm.includes("regra de dominio")) {
     return "project-rules/rules/domain_rules.md";
   }
-  // done/ flat (legado) → nesting mês/semana (DEC-002); não é keep
-  if (isFlatDonePath(src)) {
-    return resolveDoneDestination(src, now);
+  // legado .app-work/done/ (removido da lista fechada) → espelho archive/guides/ (DEC-002)
+  if (isLegacyDonePath(src)) {
+    return resolveArchiveGuideDestination(src);
   }
-  // done/ já segmentado → canônico (não-toque)
-  if (isSegmentedDonePath(src)) {
+  // já no espelho archive/guides/ → canônico (não-toque)
+  if (isCanonicalArchiveGuidePath(src)) {
     return src;
   }
-  // origem já em território canônico ⇒ destino é a própria origem (não-toque):
-  // conteúdo adotado fica no lugar — rodada de maintain sem drift é keep
-  if (isCanonicalSource(src)) {
+  // decisões canônicas já em docs/decisions/ → não-toque
+  if (isCanonicalDecisionsFile(src, text)) {
     return src;
   }
-  if (text.includes("openapi") || src.endsWith(".openapi.json")) {
+  // candidato a decisão legado (DECISOES_*, ### D1, etc.) → decisions/
+  if (isLegacyDecisionShape(src, text)) {
+    return `_app-vault/docs/decisions/${domainFromDecisionSource(src)}.md`;
+  }
+  // vault INDEX / TEMPLATES / specs → keep no lugar
+  if (isCanonicalVaultKeep(src)) {
+    return src;
+  }
+  // path sob vault fora da lista fechada §2 → archive (casca)
+  if (isVaultRootSource(src)) {
+    return vaultArchiveDestination(src);
+  }
+  // origem já canônica (project-rules, AGENTS, app-work não-flat)
+  if (isCanonicalKeepPath(src)) {
+    return src;
+  }
+  if (textNorm.includes("openapi") || src.endsWith(".openapi.json")) {
     return `project-rules/contracts/${base}`;
   }
   // heading + verbo deôntico + valor numérico ⇒ candidato a decisão
-  if (hasHeading(text) && DEONTIC.test(text) && hasNumber(text)) {
-    return "_app-vault/docs/decisions/produto.md";
+  if (hasHeading(text) && DEONTIC.test(textNorm) && hasNumber(text)) {
+    return `_app-vault/docs/decisions/${domainFromDecisionSource(src)}.md`;
   }
   // tabela tipo→arquivo ⇒ índice
-  if ((src.includes("index") || text.includes("indice")) && isTable(text)) {
+  if ((src.includes("index") || textNorm.includes("indice")) && isTable(text)) {
     return `project-rules/index/${stem}.md`;
   }
   // bloco de código sem norma associada ⇒ referência
-  if (isCodeBlock(text) && !DEONTIC.test(text)) {
+  if (isCodeBlock(text) && !DEONTIC.test(textNorm)) {
     return `project-rules/reference/${stem}.md`;
   }
   return null;
@@ -212,9 +300,25 @@ export const matchCatalog = (fragment, entries) => {
 
 // --- Cascata: para no primeiro nível que decide ---
 // returns { entry } (decidido) ou { question } (enfileirado).
-const expandDoneDestination = (destinationPath, sourcePath, now) => {
-  if (!isDoneCatalogRoot(destinationPath)) return destinationPath;
-  return resolveDoneDestination(sourcePath, now);
+const expandArchiveGuideDestination = (destinationPath, sourcePath) => {
+  if (!isArchiveGuideCatalogRoot(destinationPath)) return destinationPath;
+  return resolveArchiveGuideDestination(sourcePath);
+};
+
+const expandCatalogDestination = (destination, sourcePath) => {
+  let dest = expandArchiveGuideDestination(destination, sourcePath);
+  const n = normalizeVaultPath(dest);
+  if (n === "_app-vault/docs/decisions" || n === "_app-vault/docs/decisions/") {
+    dest = `_app-vault/docs/decisions/${domainFromDecisionSource(sourcePath)}.md`;
+  }
+  if (dest === ".app-work/archive/features/" || dest === ".app-work/archive/features") {
+    const stripped = normalizeVaultPath(sourcePath).replace(
+      /^_app-vault\/docs\/features\//,
+      "",
+    );
+    dest = `.app-work/archive/features/${stripped}`;
+  }
+  return dest;
 };
 
 const routeFragment = (fragment, ctx) => {
@@ -246,7 +350,7 @@ const routeFragment = (fragment, ctx) => {
   // Nível 1 — não-toque e identidade: destino calculado pela classificação
   // estrutural == origem atual ⇒ keep, decidido por POSIÇÃO (nunca por
   // comparação com execução anterior).
-  const structural = structuralDestination(fragment, ctx.now);
+  const structural = structuralDestination(fragment);
   if (structural !== null && structural === src) {
     return {
       entry: {
@@ -270,10 +374,9 @@ const routeFragment = (fragment, ctx) => {
   const questionKey = questionKeyOf(routingQuestionContext(src));
   const answer = ctx.answers[questionKey];
   if (answer && typeof answer.answer?.destinationPath === "string") {
-    const destinationPath = expandDoneDestination(
+    const destinationPath = expandArchiveGuideDestination(
       answer.answer.destinationPath,
       src,
-      ctx.now,
     );
     if (!isLegalDestination(destinationPath)) {
       throw new Error(
@@ -296,17 +399,19 @@ const routeFragment = (fragment, ctx) => {
 
   // Nível 3 — catálogo: overlay do projeto primeiro, base do pack depois;
   // match mais específico vence o genérico. `destination: null` ou confiança
-  // baixa NUNCA decide: enfileira pergunta. Raiz `.app-work/done/` expande
-  // para nesting mês/semana (DEC-002).
-  const match = matchCatalog(fragment, ctx.catalog);
+  // baixa NUNCA decide: enfileira pergunta. Raiz `.app-work/archive/guides/`
+  // expande para o pack (DEC-002).
+  // DEC-004: candidato a decisão legado (DECISOES_*, ### D\d+) não passa pelo
+  // catálogo de archive — cai no detector de promoção a docs/decisions/.
+  const skipCatalogForLegacyDecision = isLegacyDecisionShape(src, fragment.rawText);
+  const match = skipCatalogForLegacyDecision ? null : matchCatalog(fragment, ctx.catalog);
   if (match !== null) {
     if (match.entry.destination === null || match.entry.confidence === "baixa") {
       return { question: { fragmentId, sourcePath: src } };
     }
-    const destinationPath = expandDoneDestination(
+    const destinationPath = expandCatalogDestination(
       match.entry.destination,
       src,
-      ctx.now,
     );
     if (!isLegalDestination(destinationPath)) {
       throw new Error(
@@ -432,9 +537,7 @@ export const loadCatalog = () =>
   );
 
 // Roda a cascata sobre um fixture: retorna { routing, questions }.
-// options: { fragments, catalog, state, residue, now }
-// `now` (YYYY-MM-DD) fixa a semana ISO de done/ (DEC-002); default = 2026-08-12
-// nos testes — o agente em produção usa a data civil do run.
+// options: { fragments, catalog, state, residue }
 export const buildRouting = (root, options = {}) => {
   const fragments = options.fragments ?? buildFragments(root);
   const catalogBase = options.catalog ?? loadCatalog();
@@ -446,7 +549,6 @@ export const buildRouting = (root, options = {}) => {
     answers: state.answers ?? {},
     shield: state.shield ?? [],
     residue: options.residue ?? DEFAULT_RESIDUE,
-    now: options.now ?? "2026-08-12",
   };
   const routing = [];
   const questions = [];

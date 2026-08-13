@@ -37,7 +37,11 @@ test("AC-2.5.1: artefato adulterado após a escrita reprova nomeando artefato, o
   const pkg = mkdtemp("hep-applied-");
   makeValidPackage(pkg);
   addStagingManifest(pkg);
-  fs.writeFileSync(path.join(pkg, "AGENTS.md"), "# Outro — contrato do agente\n");
+  // adulteração mantém as âncoras (checkAgents passa) — o que falha é o hash
+  fs.writeFileSync(
+    path.join(pkg, "AGENTS.md"),
+    "# Outro — contrato do agente\n\nProduto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.\nProcesso: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.\n",
+  );
 
   const result = runValidator(pkg);
   assert.equal(result.status, 1, result.stdout);
