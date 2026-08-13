@@ -113,3 +113,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v1`.
 - Artifact: `hephaestus-1.zip`.
 - Content: post-`HEPHAESTUS_V1` trail state (13-phase pipeline, zip-release, DEC-002/003).
+
+## Second release (v2)
+
+- Manifest version: `"2"`.
+- Tag: `v2`.
+- Artifact: `hephaestus-2.zip`.
+- Content: DEC-004 (adopt materializes canonical `DEC-NNN` in the same run); DEC-002 archive mirror (`.app-work/done/` removed; completed work moves to `archive/`).
