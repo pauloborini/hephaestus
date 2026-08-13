@@ -76,7 +76,6 @@ test("AC-3.1.1: níveis 1 a 4 são determinísticos (golden replay)", () => {
   const fragments = buildFragments(fixture);
   const { routing, questions } = buildRouting(fixture, {
     fragments,
-    now: "2026-08-12",
   });
 
   // golden existe com proveniência (fixture, data, comando)
@@ -104,11 +103,11 @@ test("AC-3.1.1: níveis 1 a 4 são determinísticos (golden replay)", () => {
   // ADR aceito (destination null no catálogo) nunca decide: enfileira
   assert.ok(!bySrc(routing, fragments, "docs/adr/0001-formato-pagamentos.md"));
   assert.ok(questions.some((q) => q.sourcePath === "docs/adr/0001-formato-pagamentos.md"));
-  // guia executado → done/YYYY-MM/semana-…/XPTO_GUIDE/ (DEC-002)
+  // guia executado → espelho archive/guides/XPTO_GUIDE/ (DEC-002)
   const guide = bySrc(routing, fragments, "docs/guides/XPTO_GUIDE/GUIDE.md");
   assert.equal(
     guide.destinationPath,
-    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/",
+    ".app-work/archive/guides/XPTO_GUIDE/",
   );
   // resíduo congelado com decidedBy llm (S9)
   const residue = routing.filter((e) => e.decidedBy === "llm");

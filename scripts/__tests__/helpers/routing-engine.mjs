@@ -15,11 +15,11 @@ import path from "node:path";
 import { REPO_ROOT } from "./fs-utils.mjs";
 import { writeJson } from "./fs-utils.mjs";
 import {
-  isDoneCatalogRoot,
-  isFlatDonePath,
-  isSegmentedDonePath,
-  resolveDoneDestination,
-} from "./done-path.mjs";
+  isArchiveGuideCatalogRoot,
+  isCanonicalArchiveGuidePath,
+  isLegacyDonePath,
+  resolveArchiveGuideDestination,
+} from "./archive-mirror.mjs";
 
 export const normalizeText = (text) =>
   text
@@ -193,12 +193,11 @@ const isCanonicalKeepPath = (src) => {
   if (src === "AGENTS.md") return true;
   if (src.startsWith("project-rules/")) return true;
   if (isCanonicalVaultKeep(src)) return true;
-  if (src.startsWith(".app-work/") && !isFlatDonePath(src)) return true;
+  if (src.startsWith(".app-work/") && !isLegacyDonePath(src)) return true;
   return false;
 };
 
-// `now` (YYYY-MM-DD) só importa para expansão de done/ (DEC-002).
-const structuralDestination = (fragment, now) => {
+const structuralDestination = (fragment) => {
   const src = fragment.provenance[0].sourcePath;
   const base = path.basename(src);
   const stem = base.replace(/\.(md|yaml|yml|json|openapi\.json)$/i, "");
@@ -214,12 +213,12 @@ const structuralDestination = (fragment, now) => {
   if (src === "AGENTS.md" && DEONTIC.test(textNorm) && textNorm.includes("regra de dominio")) {
     return "project-rules/rules/domain_rules.md";
   }
-  // done/ flat (legado) → nesting mês/semana (DEC-002); não é keep
-  if (isFlatDonePath(src)) {
-    return resolveDoneDestination(src, now);
+  // legado .app-work/done/ (removido da lista fechada) → espelho archive/guides/ (DEC-002)
+  if (isLegacyDonePath(src)) {
+    return resolveArchiveGuideDestination(src);
   }
-  // done/ já segmentado → canônico (não-toque)
-  if (isSegmentedDonePath(src)) {
+  // já no espelho archive/guides/ → canônico (não-toque)
+  if (isCanonicalArchiveGuidePath(src)) {
     return src;
   }
   // decisões canônicas já em docs/decisions/ → não-toque
@@ -301,13 +300,13 @@ export const matchCatalog = (fragment, entries) => {
 
 // --- Cascata: para no primeiro nível que decide ---
 // returns { entry } (decidido) ou { question } (enfileirado).
-const expandDoneDestination = (destinationPath, sourcePath, now) => {
-  if (!isDoneCatalogRoot(destinationPath)) return destinationPath;
-  return resolveDoneDestination(sourcePath, now);
+const expandArchiveGuideDestination = (destinationPath, sourcePath) => {
+  if (!isArchiveGuideCatalogRoot(destinationPath)) return destinationPath;
+  return resolveArchiveGuideDestination(sourcePath);
 };
 
-const expandCatalogDestination = (destination, sourcePath, now) => {
-  let dest = expandDoneDestination(destination, sourcePath, now);
+const expandCatalogDestination = (destination, sourcePath) => {
+  let dest = expandArchiveGuideDestination(destination, sourcePath);
   const n = normalizeVaultPath(dest);
   if (n === "_app-vault/docs/decisions" || n === "_app-vault/docs/decisions/") {
     dest = `_app-vault/docs/decisions/${domainFromDecisionSource(sourcePath)}.md`;
@@ -351,7 +350,7 @@ const routeFragment = (fragment, ctx) => {
   // Nível 1 — não-toque e identidade: destino calculado pela classificação
   // estrutural == origem atual ⇒ keep, decidido por POSIÇÃO (nunca por
   // comparação com execução anterior).
-  const structural = structuralDestination(fragment, ctx.now);
+  const structural = structuralDestination(fragment);
   if (structural !== null && structural === src) {
     return {
       entry: {
@@ -375,10 +374,9 @@ const routeFragment = (fragment, ctx) => {
   const questionKey = questionKeyOf(routingQuestionContext(src));
   const answer = ctx.answers[questionKey];
   if (answer && typeof answer.answer?.destinationPath === "string") {
-    const destinationPath = expandDoneDestination(
+    const destinationPath = expandArchiveGuideDestination(
       answer.answer.destinationPath,
       src,
-      ctx.now,
     );
     if (!isLegalDestination(destinationPath)) {
       throw new Error(
@@ -401,8 +399,8 @@ const routeFragment = (fragment, ctx) => {
 
   // Nível 3 — catálogo: overlay do projeto primeiro, base do pack depois;
   // match mais específico vence o genérico. `destination: null` ou confiança
-  // baixa NUNCA decide: enfileira pergunta. Raiz `.app-work/done/` expande
-  // para nesting mês/semana (DEC-002).
+  // baixa NUNCA decide: enfileira pergunta. Raiz `.app-work/archive/guides/`
+  // expande para o pack (DEC-002).
   // DEC-004: candidato a decisão legado (DECISOES_*, ### D\d+) não passa pelo
   // catálogo de archive — cai no detector de promoção a docs/decisions/.
   const skipCatalogForLegacyDecision = isLegacyDecisionShape(src, fragment.rawText);
@@ -414,7 +412,6 @@ const routeFragment = (fragment, ctx) => {
     const destinationPath = expandCatalogDestination(
       match.entry.destination,
       src,
-      ctx.now,
     );
     if (!isLegalDestination(destinationPath)) {
       throw new Error(
@@ -540,9 +537,7 @@ export const loadCatalog = () =>
   );
 
 // Roda a cascata sobre um fixture: retorna { routing, questions }.
-// options: { fragments, catalog, state, residue, now }
-// `now` (YYYY-MM-DD) fixa a semana ISO de done/ (DEC-002); default = 2026-08-12
-// nos testes — o agente em produção usa a data civil do run.
+// options: { fragments, catalog, state, residue }
 export const buildRouting = (root, options = {}) => {
   const fragments = options.fragments ?? buildFragments(root);
   const catalogBase = options.catalog ?? loadCatalog();
@@ -554,7 +549,6 @@ export const buildRouting = (root, options = {}) => {
     answers: state.answers ?? {},
     shield: state.shield ?? [],
     residue: options.residue ?? DEFAULT_RESIDUE,
-    now: options.now ?? "2026-08-12",
   };
   const routing = [];
   const questions = [];

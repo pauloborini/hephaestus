@@ -2,7 +2,9 @@
 // vazio — o plan.json da segunda passada não contém operação diferente de
 // keep/skip e nenhum DEC-NNN novo é cunhado. Golden replay: a primeira
 // passada é a captura golden-routing-adopt; a segunda roda sobre o estado
-// aplicado (apply simulado movendo origens, bytes preservados).
+// aplicado (apply simulado movendo origens + reconcile simulado completando
+// a adoção — cunha o heading `### DEC-NNN — …` nos destinos de decisão,
+// como a execução real faz na mesma rodada, DEC-004).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -16,6 +18,7 @@ import {
   applyRouting,
   routingToPlan,
 } from "./helpers/routing-engine.mjs";
+import { reconcileVault } from "./helpers/reconcile-engine.mjs";
 
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
 
@@ -38,6 +41,20 @@ test("AC-3.2.2/INV11: segunda passada sobre fonte inalterada produz plan só com
 
   // apply simulado: materializa os destinos movendo as origens (bytes iguais)
   applyRouting(fixture, pass1.routing, fragments1);
+
+  // reconcile simulado (DEC-004): a execução real completa a adoção na mesma
+  // rodada — o reconcile cunha o heading canônico nos destinos de decisão.
+  // Sem esta etapa a passada 2 re-reconciliaria um arquivo que a execução
+  // real deixa canônico (INV11 mede a estabilidade pós-execução).
+  const reconciled = reconcileVault({
+    fragments: fragments1,
+    routing: pass1.routing,
+    repoRoot: fixture,
+    now: "2026-08-13",
+  });
+  for (const [relPath, content] of reconciled.decisions) {
+    fs.writeFileSync(path.join(fixture, relPath), content);
+  }
 
   // passada 2 — fonte inalterada, tudo no lugar: tudo keep
   const pass2 = buildRouting(fixture);

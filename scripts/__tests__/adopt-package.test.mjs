@@ -49,9 +49,8 @@ test("AC-4.3.1/CN1: os quatro territórios existem e estão coerentes", () => {
       path.join(
         FIXTURE,
         ".app-work",
-        "done",
-        "2026-08",
-        "semana-33_08-10_a_08-16",
+        "archive",
+        "guides",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),
@@ -84,7 +83,7 @@ test("AC-4.3.1/CN1: guide e brainstorm foram movidos para .app-work/ sem reescri
     ["docs/brainstorming/tema-x.md", ".app-work/brainstorming/tema-x.md"],
     [
       "docs/guides/XPTO_GUIDE/GUIDE.md",
-      ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
+      ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
     ],
     ["docs/archive/clones-oss/analise-argus.md", ".app-work/references/analise-argus.md"],
   ];
@@ -138,12 +137,12 @@ test("AC-4.3.2/CN1: INDEX.md lista exatamente os domínios existentes e Por feat
 
 test("AC-4.3.3/CN1: scaffold sem pasta fora da lista fechada de SCHEMA.md §2 e .app-work/.gitignore presente", () => {
   // lista fechada = filhos diretos de .app-work e _app-vault — nesting sob
-  // done/ (mês/semana) é conteúdo, não pasta nova da lista (DEC-002)
+  // archive/guides/ (espelho) é conteúdo, não pasta nova da lista (DEC-002)
   const allowedTopLevel = {
     "_app-vault": new Set(["docs", "specs"]),
     "_app-vault/docs": new Set(["decisions", "TEMPLATES"]),
     ".app-work": new Set([
-      "guides", "brainstorming", "prd", "references", "private", "issues", "done", "archive",
+      "guides", "brainstorming", "prd", "references", "private", "issues", "archive",
     ]),
   };
   for (const [relDir, allowed] of Object.entries(allowedTopLevel)) {
@@ -180,7 +179,7 @@ test("AC-4.3.x/CN1: replay do pipeline sobre cópia do fixture reproduz os terri
     ".app-work/.gitignore",
     ".app-work/references/analise-argus.md",
     ".app-work/brainstorming/tema-x.md",
-    ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
+    ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
   ];
   for (const rel of compared) {
     assert.equal(files.get(rel), read(rel), `replay divergiu em ${rel}`);

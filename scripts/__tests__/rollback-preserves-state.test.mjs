@@ -70,8 +70,13 @@ test("AC-5.2.2: verify(applied) falha dispara rollback e o estado permanece inta
   const stateHashBefore = sha256(fs.readFileSync(stateAbs));
 
   // adulterar um artefato da transação após o apply: verify(applied) reprova
-  // e o relatório pede rollback (D27)
-  writeFile(pkg, "AGENTS.md", "# Outro — contrato do agente\n");
+  // e o relatório pede rollback (D27) — a adulteração mantém as âncoras
+  // (checkAgents passa); o que falha é o hash do staging-manifest
+  writeFile(
+    pkg,
+    "AGENTS.md",
+    "# Outro — contrato do agente\n\nProduto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.\nProcesso: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.\n",
+  );
   const failed = runValidator(pkg);
   assert.equal(failed.status, 1, failed.stdout);
   assert.ok(failed.stderr.includes("AGENTS.md"), failed.stderr);
@@ -80,7 +85,15 @@ test("AC-5.2.2: verify(applied) falha dispara rollback e o estado permanece inta
   // rollback simulado (a semântica declarada de apply.md: git + backup/<ts>/,
   // nesta ordem): restaura apenas os artefatos da transação — o state não é
   // tocado porque nunca esteve na transação
-  const originalAgents = "# Projeto Teste — contrato do agente\n\nConteúdo mínimo de exemplo, sem marcadores.\n";
+  const originalAgents = [
+    "# Projeto Teste — contrato do agente",
+    "",
+    "Conteúdo mínimo de exemplo, sem marcadores.",
+    "",
+    "Produto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.",
+    "Processo: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.",
+    "",
+  ].join("\n");
   writeFile(pkg, "AGENTS.md", originalAgents);
 
   const stateAfter = fs.readFileSync(stateAbs);

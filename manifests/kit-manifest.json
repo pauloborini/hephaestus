@@ -66,6 +66,7 @@
     "templates/vault/INDEX_TEMPLATE.md",
     "templates/vault/ISSUES_README_TEMPLATE.md",
     "templates/vault/ISSUES_INDEX_TEMPLATE.md",
+    "templates/appwork/INDEX_TEMPLATE.md",
     "catalog/routing-defaults.json",
     "catalog/drift-catalog.json",
     "schemas/fragment.schema.json",
