@@ -11,9 +11,10 @@ in `_app-vault/docs/decisions/estrutura-do-kit.md`.
 2. Asset `hephaestus-N.zip`.
 3. After unpacking into the skills folder: `skills/hephaestus/` (fixed root, overwrites).
 
-The zip contains the skill, prompts, schemas, templates, catalog, references, LICENSE, and the
-validation scripts needed for `/hephaestus` to run standalone. It does not contain `_app-vault/`,
-`.app-work/`, `COMMANDS*`, `RELEASE*`, tests, or the publisher.
+The zip contains the skill, prompts, schemas, templates, catalog, references, LICENSE, the
+validation scripts needed for `/hephaestus` to run standalone, and the command reference
+(`COMMANDS.md` / `COMMANDS.pt-BR.md`). It does not contain `_app-vault/`, `.app-work/`,
+`RELEASE*`, tests, or the publisher.
 
 ## Version source
 
@@ -120,3 +121,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v2`.
 - Artifact: `hephaestus-2.zip`.
 - Content: DEC-004 (adopt materializes canonical `DEC-NNN` in the same run); DEC-002 archive mirror (`.app-work/done/` removed; completed work moves to `archive/`).
+
+## Third release (v3)
+
+- Manifest version: `"3"`.
+- Tag: `v3`.
+- Artifact: `hephaestus-3.zip`.
+- Content: agent posture and mandatory stop in `AGENTS.md` (Postura, mandatory stop, criteria-before-code, simplicity, surgical change, and invariants inside workflow steps 2 and 3); `CLAUDE.md` as the one-line `@AGENTS.md` bridge with the `checkClaudeBridge` package gate; `COMMANDS*` ships in the zip (removed from `packExcludes`); the documentation-pair gates honor `packExcludes` for fully excluded pairs.

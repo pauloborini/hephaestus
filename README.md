@@ -14,6 +14,7 @@ The generated structure is framework-agnostic:
 
 ```text
 AGENTS.md
+CLAUDE.md           # one-line bridge: `@AGENTS.md`
 project-rules/
   index/
   rules/
@@ -25,7 +26,7 @@ _app-vault/         # product decisions (DEC-NNN) and specs
   manifests/
 ```
 
-`AGENTS.md` owns workflow, precedence, and routing. `project-rules/` owns operational rules. `_app-vault/` owns product decisions. `.app-work/` is process, never a rule input. `.hephaestus/manifests/` is execution state, not a source of project rules.
+`AGENTS.md` owns posture, hard stop, workflow, precedence, and routing; `CLAUDE.md` is only the `@AGENTS.md` bridge, never a parallel contract. `project-rules/` owns operational rules. `_app-vault/` owns product decisions. `.app-work/` is process, never a rule input. `.hephaestus/manifests/` is execution state, not a source of project rules.
 
 ## Install
 
@@ -42,7 +43,7 @@ skills/
   hephaestus/
 ```
 
-Every entry in the zip is prefixed with the fixed folder `hephaestus/` — no version in the folder name — so unpacking an updated release over an existing install overwrites it instead of accumulating. The zip never contains `_app-vault/`, `.app-work/`, `COMMANDS*.md` or development artifacts; the final exclusion list lives in `manifests/kit-manifest.json:packExcludes`.
+Every entry in the zip is prefixed with the fixed folder `hephaestus/` — no version in the folder name — so unpacking an updated release over an existing install overwrites it instead of accumulating. The zip never contains `_app-vault/`, `.app-work/`, the test suite or development artifacts; the final exclusion list lives in `manifests/kit-manifest.json:packExcludes`.
 
 Then run `/hephaestus` inside the target repository. Two internal modes are decided by the presence of `.app-work/hephaestus-state.json`: `adopt` (full scan) when the state is absent, `maintain` (drift-only, driven by `catalog/drift-catalog.json`) when it is present.
 
@@ -68,7 +69,7 @@ Expected closeout states:
 
 ## Commands and validation
 
-See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation, the release zip builder, and the maintainers-only publishing command.
+See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation, the documentation-pair check, the test suite, and the release zip builder.
 
 ## Guardrails
 
