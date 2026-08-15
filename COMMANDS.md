@@ -2,7 +2,7 @@
 
 # Hephaestus — command reference
 
-Run commands from the repository root.
+Run commands from the repository root. The test suite itself does not travel in the release zip (`manifests/kit-manifest.json:packExcludes`), so `node --test` only applies to a checkout of the kit repository; the other commands work from an unpacked install too.
 
 ## Validate the distributable kit
 
@@ -10,13 +10,13 @@ Run commands from the repository root.
 node scripts/validate-skill-kit.mjs
 ```
 
-Validates the kit manifest, naming policy, required files, supported file types, and forbidden references. Pass a path to validate another kit root:
+Validates `requiredFiles`, naming and legacy policy, allowed file types, template link targets, the bilingual documentation pairs, and the routing catalog (a destination outside the four territories fails the kit). Pass a path to validate another kit root:
 
 ```bash
 node scripts/validate-skill-kit.mjs /path/to/hephaestus
 ```
 
-Check that public English/Portuguese document pairs link each other:
+Check that public English/Portuguese document pairs link each other (pairs excluded from the release zip are skipped):
 
 ```bash
 node scripts/check-public-docs.mjs
@@ -28,7 +28,15 @@ node scripts/check-public-docs.mjs
 node --test "scripts/__tests__/**/*.test.mjs"
 ```
 
-Runs the kit's test harness with Node's native test runner (no dependencies). Fixtures and helpers live under `scripts/__tests__/` and are excluded from the distributable package (`manifests/kit-manifest.json:packExcludes`).
+Runs the kit's test harness with Node's native test runner (no dependencies). Fixtures and helpers live under `scripts/__tests__/` and are excluded from the distributable package (`manifests/kit-manifest.json:packExcludes`). Passing the directory (`node --test scripts/__tests__/`) makes the runner treat it as a module and fail before collecting anything.
+
+The routing golden is captured, not hand-written:
+
+```bash
+node scripts/__tests__/capture-golden-routing.mjs
+```
+
+Recapture only when a change to the cascade or the catalog is intentional, and review the golden diff as part of that change — recapturing to clear a red test erases the regression the golden exists to catch.
 
 ## Validate a generated package
 
@@ -36,7 +44,7 @@ Runs the kit's test harness with Node's native test runner (no dependencies). Fi
 node scripts/validate-package.mjs /path/to/generated-package
 ```
 
-Checks the generated `AGENTS.md`, rule indexes, manifests, coverage map, and external-reference report. It exits non-zero on the first invalid contract.
+Runs the package gates against a repository that Hephaestus produced — `AGENTS.md` header and dual anchors, the `CLAUDE.md` bridge, index targets, run state, DEC identity, territory×regime, coverage, keep bytes, residue, and the applied-hash check. Manifests absent from `.hephaestus/` are reported as skipped rather than failing: a package is judged on what it declares. Use `--help` for the full gate list.
 
 ## Build the release zip
 

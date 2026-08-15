@@ -55,8 +55,6 @@ const zipEntryNames = (zipPath) => {
 const EXCLUDED_PREFIXES = [
   "_app-vault",
   ".app-work",
-  "COMMANDS.md",
-  "COMMANDS.pt-BR.md",
   "RELEASE.md",
   "RELEASE.pt-BR.md",
   "scripts/__tests__",
@@ -157,7 +155,14 @@ test("CN7: zip real tem raiz hephaestus, LICENSE, sem artefato de desenvolviment
   assert.ok(fs.existsSync(path.join(skillsDir, "hephaestus", "SKILL.md")), "skills/hephaestus/SKILL.md ausente");
   assert.ok(fs.existsSync(path.join(skillsDir, "hephaestus", "SKILL.en.md")), "skills/hephaestus/SKILL.en.md ausente");
   assert.ok(!fs.existsSync(path.join(skillsDir, "hephaestus-1")), "pasta com versão criada ao descompactar");
-  assert.ok(!fs.existsSync(path.join(skillsDir, "hephaestus", "COMMANDS.md")), "COMMANDS.md vazou para o zip");
+  assert.ok(
+    fs.existsSync(path.join(skillsDir, "hephaestus", "COMMANDS.md")),
+    "COMMANDS.md ausente do zip (publicly documented command reference)",
+  );
+  assert.ok(
+    fs.existsSync(path.join(skillsDir, "hephaestus", "COMMANDS.pt-BR.md")),
+    "COMMANDS.pt-BR.md ausente do zip",
+  );
 });
 
 test("gate: node scripts/pack-release.mjs --dry-run sai 0 no repo real", () => {

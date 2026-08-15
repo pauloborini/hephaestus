@@ -32,7 +32,7 @@ One run governs the four documentary territories of the repository in a single w
 
 | Territory | What lives there |
 |-----------|------------------|
-| `AGENTS.md` | workflow, precedence, and routing |
+| `AGENTS.md` | agent posture, hard stop, workflow, precedence, and routing |
 | `project-rules/` | operational project rules |
 | `_app-vault/` | product decisions (`DEC-NNN`) and specs |
 | `.app-work/` | process: state, issues, guides — never a rule input |
@@ -87,6 +87,7 @@ The final package follows this canonical structure:
 
 ```text
 AGENTS.md
+CLAUDE.md            (one-line bridge: `@AGENTS.md`)
 project-rules/
   index/
   rules/
@@ -97,6 +98,8 @@ project-rules/
 ```
 
 Optional categories may be omitted when source material is insufficient. `AGENTS.md` is mandatory.
+
+`CLAUDE.md` is a bridge, never content: one `@AGENTS.md` line and nothing else. It exists so clients that only read `CLAUDE.md` land on the same contract without maintaining two files. If the project already has a `CLAUDE.md` with its own content, reabsorb that content into `AGENTS.md`/`project-rules/` and reduce the file to the bridge — never leave two live contracts.
 
 ## Fragment contract
 
