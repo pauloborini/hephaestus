@@ -10,7 +10,7 @@ Run commands from the repository root. The test suite itself does not travel in 
 node scripts/validate-skill-kit.mjs
 ```
 
-Validates `requiredFiles`, naming and legacy policy, allowed file types, template link targets, the bilingual documentation pairs, and the routing catalog (a destination outside the four territories fails the kit). Pass a path to validate another kit root:
+Validates `requiredFiles`, naming and legacy policy, allowed file types, template link targets, the bilingual documentation pairs, and the routing catalog (a destination outside the four territories fails the kit). Exits 0 on a full pass, 1 on the first failing check. Pass a path to validate another kit root:
 
 ```bash
 node scripts/validate-skill-kit.mjs /path/to/hephaestus
