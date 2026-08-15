@@ -36,7 +36,8 @@ O kit é agnóstico de framework e linguagem.
 
 A estrutura gerada é sempre a mesma; o que muda é o conteúdo, preenchido pela LLM conforme o stack real do repositório alvo:
 
-- `AGENTS.md` → dono do workflow, precedência e roteamento (mesmo formato para qualquer projeto);
+- `AGENTS.md` → dono da postura, da parada, do workflow, da precedência e do roteamento (mesmo formato para qualquer projeto);
+- `CLAUDE.md` → ponte de uma linha (`@AGENTS.md`), sem conteúdo próprio;
 - `project-rules/index/*` → roteamento por tipo de tarefa;
 - `project-rules/rules/*` → regras obrigatórias (architecture, operational, domain, error handling, auth, security, ui);
 - `project-rules/reference/*` → apoio, exemplos e contratos longos;
@@ -137,7 +138,7 @@ skills/
   hephaestus/
 ```
 
-Toda entrada do zip é prefixada com a pasta fixa `hephaestus/` — sem versão no nome da pasta — então descompactar uma versão nova por cima de uma instalação existente **sobrescreve** em vez de acumular. O zip nunca contém `_app-vault/`, `.app-work/`, `COMMANDS*.md` nem artefatos de desenvolvimento; a lista final de exclusão vive em `manifests/kit-manifest.json:packExcludes`.
+Toda entrada do zip é prefixada com a pasta fixa `hephaestus/` — sem versão no nome da pasta — então descompactar uma versão nova por cima de uma instalação existente **sobrescreve** em vez de acumular. O zip nunca contém `_app-vault/`, `.app-work/`, a suíte de testes nem artefatos de desenvolvimento; a lista final de exclusão vive em `manifests/kit-manifest.json:packExcludes`.
 
 ### Usar
 
@@ -184,7 +185,7 @@ Rode /hephaestus neste repositório.
 Objetivo deste trabalho:
 - consolidar as regras do projeto em um pacote mais operacional;
 - manter `project-rules/` como fonte canônica das regras;
-- deixar `AGENTS.md` apenas como dono do workflow, da precedência e do roteamento;
+- deixar `AGENTS.md` apenas como dono da postura, da parada, do workflow, da precedência e do roteamento;
 - manter decisões de produto em `_app-vault/` com identidade estável.
 
 Não improvise a árvore final.
@@ -192,7 +193,7 @@ Use os prompts, templates, references, schemas e manifests do kit apenas quando 
 
 O kit é agnóstico de framework: detecte o stack deste repositório e preencha gates, checklists e comandos com as ferramentas reais do projeto.
 
-O `AGENTS.md` final deve ser apenas o centralizador do workflow, da precedência e do roteamento.
+O `AGENTS.md` final deve ser apenas o centralizador da postura, da parada, do workflow, da precedência e do roteamento.
 Não coloque regras de domínio, arquitetura, UI, contrato, segurança ou operação diretamente no `AGENTS.md`; coloque essas regras nos arquivos adequados em `project-rules/rules/*`.
 
 Se algum arquivo dentro de `project-rules/` precisar citar material fora dessa pasta, isso pode permanecer quando for parte real do contrato operacional do projeto. Nesse caso, registre essas dependências em `.hephaestus/manifests/external-references-report.json` e me avise explicitamente no fechamento.
@@ -277,6 +278,7 @@ O kit orienta a geração de algo próximo disso:
 
 ```text
 AGENTS.md
+CLAUDE.md    (ponte de uma linha: `@AGENTS.md`)
 project-rules/
   index/
   rules/
@@ -290,8 +292,20 @@ _app-vault/       (decisões de produto e specs)
 
 Nem toda categoria precisa existir sempre.
 `AGENTS.md` é obrigatório.
+`CLAUDE.md` é só a ponte `@AGENTS.md`, nunca contrato paralelo.
 
 ## Verificação
+
+Gates mecânicos, a partir da raiz do kit:
+
+```bash
+node scripts/validate-skill-kit.mjs .   # estrutura, nomenclatura e catálogo
+node scripts/check-public-docs.mjs      # pares de documentação bilíngue
+node --test                             # suíte (scripts/__tests__/)
+```
+
+`node --test` sem argumento: passar o diretório (`node --test scripts/__tests__/`) faz o runner
+tratá-lo como módulo e falhar antes de coletar qualquer teste.
 
 A validação principal, para quem usa o kit, é comportamental:
 
