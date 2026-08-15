@@ -1,12 +1,10 @@
 {
   "name": "hephaestus",
-  "version": "2",
+  "version": "3",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
     ".app-work",
-    "COMMANDS.md",
-    "COMMANDS.pt-BR.md",
     "RELEASE.md",
     "RELEASE.pt-BR.md",
     "scripts/__tests__",

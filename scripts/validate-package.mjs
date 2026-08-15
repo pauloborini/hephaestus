@@ -69,6 +69,10 @@ const AGENTS_ANCHOR_PATTERN = /_app-vault\/INDEX\.md/;
 const AGENTS_PROCESS_ANCHOR_PATTERN = /\.app-work\/INDEX\.md/;
 const AGENTS_PROCESS_BAN_PATTERN = /\.app-work\/[^\n]*nunca insumo de regra/i;
 
+// `CLAUDE.md` é ponte, nunca contrato paralelo: quando existe, contém somente
+// a linha `@AGENTS.md`. Ausente é legal (pacote gerado antes da ponte).
+const CLAUDE_BRIDGE_PATTERN = /^@AGENTS\.md$/;
+
 const fail = (message, exitCode = 1) => {
   console.error(`Validation failed: ${message}`);
   process.exit(exitCode);
@@ -81,6 +85,7 @@ const printUsage = () => {
       "",
       "Validates a generated Hephaestus package:",
       "  - AGENTS.md real header (no placeholder)",
+      "  - CLAUDE.md, when present, is the `@AGENTS.md` bridge only",
       "  - project-rules/index/*.md pointing to existing files",
       "  - .hephaestus/manifests/run-state.json structural shape (no unknown properties)",
       "  - .hephaestus/manifests/external-references-report.json structural shape",
@@ -166,6 +171,18 @@ const checkAgents = (root) => {
     fail("AGENTS.md: must state that `.app-work/` is never a rule input (nunca insumo de regra) — SCHEMA.md §8");
   }
   return "AGENTS.md header OK; no placeholders; dual anchors present.";
+};
+
+const checkClaudeBridge = (root) => {
+  const claudePath = path.join(root, "CLAUDE.md");
+  if (!fs.existsSync(claudePath)) {
+    return "CLAUDE.md absent (bridge optional).";
+  }
+  const contents = fs.readFileSync(claudePath, "utf8").trim();
+  if (!CLAUDE_BRIDGE_PATTERN.test(contents)) {
+    fail("CLAUDE.md: must be the bridge `@AGENTS.md` only — no parallel contract");
+  }
+  return "CLAUDE.md bridge OK.";
 };
 
 const globMatch = (rootDir, linkedPath) => {
@@ -1440,6 +1457,7 @@ const main = (argv) => {
 
   const reports = [
     checkAgents(root),
+    checkClaudeBridge(root),
     checkIndexes(root),
     checkRunState(root),
     checkStateContract(root),

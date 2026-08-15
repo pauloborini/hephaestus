@@ -11,9 +11,10 @@ Runbook do mantenedor. Não viaja no zip do usuário (`packExcludes`). Contrato 
 2. Asset `hephaestus-N.zip`.
 3. Ao descompactar na pasta de skills: `skills/hephaestus/` (raiz fixa, sobrescreve).
 
-O zip contém skill, prompts, schemas, templates, catalog, references, LICENSE e scripts de
-validação necessários para `/hephaestus` funcionar sozinho. Não contém `_app-vault/`,
-`.app-work/`, `COMMANDS*`, `RELEASE*`, testes nem o publicador.
+O zip contém skill, prompts, schemas, templates, catalog, references, LICENSE, os scripts de
+validação necessários para `/hephaestus` funcionar sozinho e a referência de comandos
+(`COMMANDS.md` / `COMMANDS.pt-BR.md`). Não contém `_app-vault/`, `.app-work/`, `RELEASE*`,
+testes nem o publicador.
 
 ## Fonte da versão
 
@@ -120,3 +121,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v2`.
 - Artefato: `hephaestus-2.zip`.
 - Conteúdo: DEC-004 (adopt materializa `DEC-NNN` canônico na mesma execução); DEC-002 espelho do archive (`.app-work/done/` removido; concluídos vão para `archive/`).
+
+## Terceira release (v3)
+
+- Versão manifesto: `"3"`.
+- Tag: `v3`.
+- Artefato: `hephaestus-3.zip`.
+- Conteúdo: postura do agente e parada obrigatória no `AGENTS.md` (Postura, parada obrigatória, critério antes do código, simplicidade, mudança cirúrgica e invariantes dentro das etapas 2 e 3 do workflow); `CLAUDE.md` como ponte de uma linha `@AGENTS.md` com o gate de pacote `checkClaudeBridge`; `COMMANDS*` passa a viajar no zip (removido de `packExcludes`); os gates de pares de documentação respeitam `packExcludes` para par totalmente excluído.

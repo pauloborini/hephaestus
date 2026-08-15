@@ -8,6 +8,8 @@ Descrever como interpretar a estrutura canônica sem amarrar o kit a um domínio
 
 - `AGENTS.md`
   - entrypoint humano e operacional do pacote gerado
+- `CLAUDE.md`
+  - ponte de uma linha (`@AGENTS.md`) para clientes que leem só `CLAUDE.md`; nunca conteúdo próprio
 - `project-rules/index/*`
   - roteadores por tipo de tarefa
 - `project-rules/rules/*`

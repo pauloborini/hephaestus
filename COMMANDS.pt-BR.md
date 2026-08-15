@@ -2,7 +2,7 @@
 
 # Hephaestus — referência de comandos
 
-Execute os comandos na raiz do repositório.
+Execute os comandos na raiz do repositório. A suíte não viaja no zip de release (`manifests/kit-manifest.json:packExcludes`), então `node --test` só vale em um checkout do repositório do kit; os demais comandos funcionam também a partir de uma instalação descompactada.
 
 ## Validar o kit distribuível
 
@@ -10,13 +10,13 @@ Execute os comandos na raiz do repositório.
 node scripts/validate-skill-kit.mjs
 ```
 
-Valida manifesto, política de nomenclatura, arquivos obrigatórios, extensões suportadas e referências proibidas. Para validar outra raiz:
+Verifica `requiredFiles`, política de nomenclatura e legado, tipos de arquivo permitidos, alvos linkados pelos templates, os pares de documentação bilíngue e o catálogo de roteamento (destino fora dos quatro territórios reprova o kit). Sai 0 no passe integral, 1 na primeira checagem que falha. Para validar outra raiz:
 
 ```bash
 node scripts/validate-skill-kit.mjs /caminho/para/hephaestus
 ```
 
-Cheque se os pares de documentos públicos em inglês/português apontam um para o outro:
+Conferir os pares de documentos públicos em inglês/português (pares excluídos do zip de release são pulados):
 
 ```bash
 node scripts/check-public-docs.mjs
@@ -28,7 +28,15 @@ node scripts/check-public-docs.mjs
 node --test "scripts/__tests__/**/*.test.mjs"
 ```
 
-Roda o harness de teste do kit com o runner nativo do Node (sem dependências). Fixtures e helpers vivem em `scripts/__tests__/` e ficam de fora do pacote distribuível (`manifests/kit-manifest.json:packExcludes`).
+Roda o harness de teste do kit com o runner nativo do Node (sem dependências). Fixtures e helpers vivem em `scripts/__tests__/` e ficam de fora do pacote distribuível (`manifests/kit-manifest.json:packExcludes`). Passar o diretório (`node --test scripts/__tests__/`) faz o runner tratá-lo como módulo e falhar antes de coletar qualquer teste.
+
+O golden do roteamento é capturado, não escrito à mão:
+
+```bash
+node scripts/__tests__/capture-golden-routing.mjs
+```
+
+Recapture só quando a mudança na cascata ou no catálogo for intencional, e revise o diff do golden como parte dessa mudança — recapturar para limpar teste vermelho apaga exatamente a regressão que o golden existe para pegar.
 
 ## Validar um pacote gerado
 
@@ -36,7 +44,7 @@ Roda o harness de teste do kit com o runner nativo do Node (sem dependências). 
 node scripts/validate-package.mjs /caminho/para/pacote-gerado
 ```
 
-Verifica `AGENTS.md`, índices de regras, manifests, mapa de cobertura e relatório de referências externas. Sai com erro no primeiro contrato inválido.
+Roda os gates de pacote contra um repositório produzido pelo Hephaestus — cabeçalho e âncora dupla do `AGENTS.md`, ponte `CLAUDE.md`, alvos dos índices, run state, identidade DEC, território×regime, cobertura, keep bytes, resíduo e conferência de hash aplicado. Manifest ausente em `.hephaestus/` é reportado como pulado, não como falha: o pacote é julgado pelo que declara. `--help` lista todos os gates.
 
 ## Gerar o zip de release
 

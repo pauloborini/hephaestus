@@ -57,11 +57,23 @@ const publicDocumentationPairs = [
 ];
 
 for (const [english, portuguese] of publicDocumentationPairs) {
+  // Par inteiro em `packExcludes` não viaja no kit distribuído — mesma razão
+  // que já dispensa a entrada em `requiredFiles` acima. Par só parcialmente
+  // excluído continua checado: essa assimetria é erro de manifest.
+  if (isPackExcluded(english) && isPackExcluded(portuguese)) {
+    continue;
+  }
+
   for (const [file, peer, marker] of [
     [english, portuguese, "Language:"],
     [portuguese, english, "Idioma:"],
   ]) {
-    const contents = fs.readFileSync(path.join(rootDir, file), "utf8");
+    const filePath = path.join(rootDir, file);
+    if (!fs.existsSync(filePath)) {
+      fail(`${file} is missing but pairs with ${peer} in the distributed kit`);
+    }
+
+    const contents = fs.readFileSync(filePath, "utf8");
     const header = contents.split("\n").slice(0, 5).join("\n");
     if (!header.includes(marker) || !header.includes(`](${peer})`)) {
       fail(`${file} must link ${peer} in its language header`);

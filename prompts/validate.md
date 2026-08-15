@@ -12,10 +12,13 @@ Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com *
 ## Checklist
 
 - existe `AGENTS.md`;
+- existe `CLAUDE.md` na raiz contendo exatamente a linha `@AGENTS.md`, sem conteúdo próprio (ponte, nunca contrato paralelo);
 - `AGENTS.md` começa com o nome do projeto e o contrato do agente explícitos (formato `<Nome do projeto> — contrato do agente`), sem cabeçalho genérico;
 - `AGENTS.md` é centralizador e enxuto;
-- `AGENTS.md` contém workflow, precedência e roteamento, não regras de domínio;
-- `AGENTS.md` possui triagem, seleção de tipo, pré-confirmação e validação final;
+- `AGENTS.md` contém postura, parada, workflow, precedência e roteamento, não regras de domínio;
+- `AGENTS.md` possui triagem, seleção de tipo, parada obrigatória, pré-confirmação e validação final;
+- a parada obrigatória, as premissas, o critério, a simplicidade, a mudança cirúrgica e os invariantes estão dentro das etapas 2 e 3 do workflow, não promovidos a seção própria;
+- `AGENTS.md` não repete o que `project-rules/rules/operational_rules.md` norma (gates, testes, baseline, fechamento, commits);
 - o workflow, a precedência interna e as regras universais base seguem o protocolo fixo do template, sem deriva;
 - os gates da validação em `AGENTS.md` estão preenchidos com ferramentas reais do stack (sem placeholder `<preencher na síntese>`);
 - a seção de estrutura do repositório e documentação referencia os componentes reais de `project-rules/` (índices, regras, referências, contratos) e os docs do projeto;

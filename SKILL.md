@@ -32,7 +32,7 @@ Uma execução governa os **quatro territórios** documentais do repositório nu
 
 | Território | O que vive lá |
 |------------|---------------|
-| `AGENTS.md` | workflow, precedência e roteamento |
+| `AGENTS.md` | postura do agente, parada, workflow, precedência e roteamento |
 | `project-rules/` | regras operacionais do projeto |
 | `_app-vault/` | decisões de produto (`DEC-NNN`) e specs |
 | `.app-work/` | processo: estado, issues e guias — nunca insumo de regra |
@@ -91,6 +91,7 @@ O pacote final deve seguir a estrutura canônica do kit:
 
 ```text
 AGENTS.md
+CLAUDE.md            (ponte de uma linha: `@AGENTS.md`)
 project-rules/
   index/
   rules/
@@ -101,6 +102,8 @@ project-rules/
 ```
 
 Categorias opcionais podem ser omitidas quando não houver material suficiente, mas `AGENTS.md` deve existir.
+
+`CLAUDE.md` é ponte, nunca conteúdo: uma linha `@AGENTS.md` e nada mais. Existe para que cliente que lê só `CLAUDE.md` caia no mesmo contrato, sem manter dois arquivos. Projeto que já tem `CLAUDE.md` com conteúdo próprio: reabsorver o conteúdo no `AGENTS.md`/`project-rules/` e reduzir o arquivo à ponte — nunca deixar dois contratos vivos.
 
 ## Contrato de fragmentação
 
