@@ -52,17 +52,7 @@ const zipEntryNames = (zipPath) => {
   return names;
 };
 
-const EXCLUDED_PREFIXES = [
-  "_app-vault",
-  ".app-work",
-  "RELEASE.md",
-  "RELEASE.pt-BR.md",
-  "scripts/__tests__",
-  "scripts/publish-hephaestus.sh",
-  ".gitignore",
-  ".gitkeep",
-  ".DS_Store",
-];
+const EXCLUDED_PREFIXES = readJson(path.join(REPO_ROOT, "manifests", "kit-manifest.json")).packExcludes;
 
 const assertNoExcludedEntries = (entries) => {
   for (const entry of entries) {
@@ -129,6 +119,8 @@ test("CN7: zip real tem raiz hephaestus, LICENSE, sem artefato de desenvolviment
   fs.mkdirSync(path.join(dir, ".app-work", "probe"), { recursive: true });
   fs.writeFileSync(path.join(dir, ".app-work", "probe", "x.md"), "# probe\n");
   fs.writeFileSync(path.join(dir, "_app-vault", "probe.md"), "# probe vault\n");
+  fs.mkdirSync(path.join(dir, ".superpowers", "sdd"), { recursive: true });
+  fs.writeFileSync(path.join(dir, ".superpowers", "sdd", "notes.md"), "# sdd\n");
 
   const result = runPack(dir);
   assert.equal(result.status, 0, result.stderr);
