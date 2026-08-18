@@ -40,7 +40,7 @@ Uma execução governa os **quatro territórios** documentais do repositório nu
 Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
 
 - `adopt` — state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta — closeout `needs-followup`, nunca `ready`;
-- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico — presença sob o root do vault **não** implica canônico.
+- `maintain` — state presente: escopo reduzido. Inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico — presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
 
 O fluxo de qualquer execução é o pipeline de 13 fases acima.
 
@@ -66,7 +66,7 @@ Além do checkpoint efêmero, a execução consulta e grava o estado **versionad
 | Bloco | Lido por | Conteúdo |
 |-------|----------|----------|
 | `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versões e identidade do último run |
-| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional |
+| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional — overlay não inventa pasta |
 | `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana com `answer` estruturada, `scope` (`this-run`/`this-project`/`promote-to-catalog`) e `sourceEvidence` |
 | `shield` | `route` (antes do nível 1) e `compose` | blindagem opt-in de conteúdo de terceiros: lista de `{ path, selector }`, vazia por default |
 
@@ -228,7 +228,7 @@ Saída mínima:
 
 Leia [prompts/apply.md](prompts/apply.md).
 
-Única fase que escreve no repositório. Backup completo em `.hephaestus/backup/<ts>/` antes do primeiro byte, worktree revalidada desde o `preflight`, e ordem `relocate` → `reconcile` → `generate` → `keep`. A lista final é exatamente a do `staging-manifest.json`.
+Única fase que escreve no repositório. Backup completo em `.hephaestus/backup/<ts>/` antes do primeiro byte, worktree revalidada desde o `preflight`, e ordem `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. A lista final é o `staging-manifest.json` inteiro mais as deletions de `.hephaestus/staging-deletions.json`.
 
 Saída mínima:
 

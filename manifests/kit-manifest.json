@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "3",
+  "version": "4",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
@@ -11,7 +11,8 @@
     "scripts/publish-hephaestus.sh",
     ".gitignore",
     ".gitkeep",
-    ".DS_Store"
+    ".DS_Store",
+    ".superpowers"
   ],
   "requiredFiles": [
     "README.md",
@@ -75,6 +76,7 @@
     "schemas/run-state.schema.json",
     "schemas/hephaestus-state.schema.json",
     "schemas/package.schema.json",
+    "schemas/pack-candidates.schema.json",
     "manifests/naming-policy.json"
   ]
 }

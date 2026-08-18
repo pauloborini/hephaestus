@@ -16,7 +16,12 @@ O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo 
   4. docs, specs e READMEs novos ou alterados fora dos territórios canônicos;
   5. integridade do vault: `INDEX.md` derivável dos campos `Afeta:` das decisões, `DEC-NNN` sem colisão nem reuso (cláusulas vivas + `## Histórico`), pasta fora da lista fechada de `references/vault-schema/SCHEMA.md` §2;
   6. candidatos a decisão pendentes nas seções `Candidatos a decisão` dos `LEDGER.md` dos guides em `.app-work/guides/`;
-  7. guia concluído fora do espelho (legado sob `.app-work/done/` ou flat sob `.app-work/archive/guides/`) — inventariar como fonte a reorganizar no espelho (DEC-002).
+  7. guia concluído fora do espelho (legado sob `.app-work/done/` ou flat sob `.app-work/archive/guides/`) — inventariar como fonte a reorganizar no espelho (DEC-002);
+  8. Interior de `.app-work/`: arquivos soltos na raiz; `.md` solto em `guides/`; pack com Plano F `CONCLUÍDO` ou STALE ainda em `guides/`; PRD sem consumidor; brainstorm marcado fechado ainda vivo; `done/`; flat `archive/guides/<PACK>/`; `private/references/`; `roadmap` sob `private/`.
+  9. Duplicata byte a byte (`cmp` / hash) entre vivo×vivo e vivo×archive.
+  10. Candidato a condensar: arquivo cujo conteúdo único cabe num canônico vivo mais completo (mesmo tema; canônico mais recente ou spec/DEC vigente). Não condensar no escuro — entra no plano como `condense` destrutivo.
+  11. Path fora de §4 → fila §6.
+  12. Packs em `guides/` com Plano F pendente **não** arquivar (`PRONTO PARA AUDITORIA COM PENDÊNCIAS` ≠ `CONCLUÍDO`).
 
 ## Regras
 

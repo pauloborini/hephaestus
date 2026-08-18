@@ -73,11 +73,46 @@
       "reason": "processo local"
     },
     {
-      "pattern": "roadmap / research / ops de sessão / dossiê de feature",
-      "destination": ".app-work/private/",
+      "pattern": "roadmap vivo (`ROADMAP.md`, `.app-work/roadmap/`, slices de product-roadmap)",
+      "destination": ".app-work/roadmap/",
       "confidence": "alta",
-      "since": "D41+Argus",
-      "reason": "envelhece; privado"
+      "since": "DEC-005",
+      "reason": "fila de promoção versionada; nunca private/"
+    },
+    {
+      "pattern": "research de sessão (notas de pesquisa, não roadmap)",
+      "destination": ".app-work/private/research/",
+      "confidence": "alta",
+      "since": "DEC-005",
+      "reason": "envelhece; gitignored"
+    },
+    {
+      "pattern": "ops de sessão (runbook local, excluindo MANUAL_RELEASE)",
+      "destination": ".app-work/private/ops/",
+      "confidence": "alta",
+      "since": "DEC-005",
+      "reason": "ops local gitignored"
+    },
+    {
+      "pattern": "docs de operação/produto vivos (não decisão, não spec técnica)",
+      "destination": ".app-work/docs/",
+      "confidence": "alta",
+      "since": "DEC-005",
+      "reason": "processo versionado vivo"
+    },
+    {
+      "pattern": "guides monolíticos citados sem pack (Fonte legada, guides/legados)",
+      "destination": ".app-work/guides/legados/",
+      "confidence": "alta",
+      "since": "DEC-005",
+      "reason": "ainda há consumidor vivo"
+    },
+    {
+      "pattern": "clones OSS em private/references/ (duplicata do território references)",
+      "destination": ".app-work/references/",
+      "confidence": "alta",
+      "since": "DEC-005",
+      "reason": "único lugar para clones; gitignored"
     },
     {
       "pattern": "ops de release (`MANUAL_RELEASE`, `PATCH_PROCEDURE`, `RELEASE_BUMP`, equivalentes)",

@@ -1,5 +1,9 @@
 <!-- Language: **English** · [Português](README.pt-BR.md) -->
 
+<p align="center">
+  <img src="resources/logo-atlas-agents.png" alt="Hephaestus logo" width="200">
+</p>
+
 # Hephaestus
 
 The **Hephaestus** kit is a single command, `/hephaestus`, that governs the four documentary territories of a repository — `AGENTS.md`, `project-rules/`, `_app-vault/` and `.app-work/` — in one run and one write transaction. Its scope is documentation structure, not application code or an editor plugin.
@@ -45,7 +49,7 @@ skills/
 
 Every entry in the zip is prefixed with the fixed folder `hephaestus/` — no version in the folder name — so unpacking an updated release over an existing install overwrites it instead of accumulating. The zip never contains `_app-vault/`, `.app-work/`, the test suite or development artifacts; the final exclusion list lives in `manifests/kit-manifest.json:packExcludes`.
 
-Then run `/hephaestus` inside the target repository. Two internal modes are decided by the presence of `.app-work/hephaestus-state.json`: `adopt` (full scan) when the state is absent, `maintain` (drift-only, driven by `catalog/drift-catalog.json`) when it is present.
+Then run `/hephaestus` inside the target repository. Two internal modes are decided by the presence of `.app-work/hephaestus-state.json`: `adopt` (full scan) when the state is absent, `maintain` (drift plus `.app-work/` hygiene, driven by `catalog/drift-catalog.json` and the closed process schema) when it is present. New process patterns become pack candidates; they do not create folders via overlay.
 
 ## What to provide
 

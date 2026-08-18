@@ -128,3 +128,11 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v3`.
 - Artifact: `hephaestus-3.zip`.
 - Content: agent posture and mandatory stop in `AGENTS.md` (Postura, mandatory stop, criteria-before-code, simplicity, surgical change, and invariants inside workflow steps 2 and 3); `CLAUDE.md` as the one-line `@AGENTS.md` bridge with the `checkClaudeBridge` package gate; `COMMANDS*` ships in the zip (removed from `packExcludes`); the documentation-pair gates honor `packExcludes` for fully excluded pairs.
+
+## Fourth release (v4)
+
+- Manifest version: `"4"`.
+- Tag: `v4`.
+- Artifact: `hephaestus-4.zip`.
+- Content: self-contained `.app-work/` hygiene (`maintain` inventories the interior; INV9 `delete`/`condense`); closed process schema (`roadmap/`, `docs/`, `guides/legados/`; dated archive mirror); new patterns become pack candidates (not overlay folders). No auxiliary organization skill.
+

@@ -24,7 +24,7 @@
     },
     "regime": {
       "type": "string",
-      "enum": ["keep", "generate", "reconcile", "relocate"]
+      "enum": ["keep", "generate", "reconcile", "relocate", "delete", "condense"]
     },
     "destinationPath": {
       "type": "string",
