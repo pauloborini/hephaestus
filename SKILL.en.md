@@ -40,7 +40,7 @@ One run governs the four documentary territories of the repository in a single w
 Two internal modes, decided by the presence of `.app-work/hephaestus-state.json`:
 
 - `adopt` — state absent: **full adoption** of the four territories into the canonical package. Scaffolding folders or “keep”ing content already under a vault root is not enough: product rules found (including under `.app-vault/` / `_app-vault/` outside `docs/decisions/`, `### D\d+` headings, `DECISOES_*`, “Closed decisions” sections, ADRs/specs with observable norms) **become `### DEC-NNN` in `_app-vault/docs/decisions/`** in the same run; vault paths outside the closed list in `references/vault-schema/SCHEMA.md` §2 are reclassified (process → `.app-work/`, spec → `specs/`, decision → `docs/decisions/`); `INDEX.md` is derived from materialized `Afeta:` fields. Empty `docs/decisions/` scaffold while decision material still lives outside the canonical form = incomplete adoption — closeout `needs-followup`, never `ready`;
-- `maintain` — state present: reduced scope, only drift and other tools' artifacts (`catalog/drift-catalog.json`). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form — being under the vault root does **not** imply canonical.
+- `maintain` — state present: reduced scope. Inventories drift and other tools' artifacts (`catalog/drift-catalog.json`) **and** the interior of `.app-work/` (F/STALE packs, loose `.md`, `private/references/`, legacy `done/`, flat archive, duplicates, paths outside the closed list). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form — being under the vault root does **not** imply canonical. Process territory (INV9): only `keep|relocate|delete|condense`. Live schema includes `roadmap/`, `docs/`, `guides/legados/`. A new pattern → `includeInPack` interview → `.hephaestus/pack-candidates.json`; the state overlay does not invent folders; a run never edits the installed skill. The kit does not depend on an auxiliary organization skill.
 
 Every run follows the 13-phase pipeline above.
 
@@ -64,7 +64,7 @@ Besides the ephemeral checkpoint, execution reads and writes the project's **ver
 | Block | Read by | Content |
 |-------|---------|---------|
 | `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versions and last run identity |
-| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` |
+| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` — overlay does not invent folders |
 | `answers` | `route` (cascade level 2) and `interview` | map `questionKey` → human answer with structured `answer`, `scope` (`this-run`/`this-project`/`promote-to-catalog`) and `sourceEvidence` |
 | `shield` | `route` (before level 1) and `compose` | opt-in shielding of third-party content: list of `{ path, selector }`, empty by default |
 
@@ -188,7 +188,7 @@ Output: staging verdict and a checkpoint distinguishing `validated` from `produc
 
 Read [prompts/apply.md](prompts/apply.md).
 
-The only phase that writes to the repository. Complete backup in `.hephaestus/backup/<ts>/` before the first byte, worktree revalidated since `preflight`, and the order `relocate` → `reconcile` → `generate` → `keep`. The final list is exactly the `staging-manifest.json`.
+The only phase that writes to the repository. Complete backup in `.hephaestus/backup/<ts>/` before the first byte, worktree revalidated since `preflight`, and the order `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. The final list is the full `staging-manifest.json` plus deletions from `.hephaestus/staging-deletions.json`.
 
 Output: package written in transactional order; complete `artifactsWritten` in the run-state.
 

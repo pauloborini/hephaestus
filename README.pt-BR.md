@@ -145,7 +145,7 @@ Toda entrada do zip é prefixada com a pasta fixa `hephaestus/` — sem versão 
 No repositório alvo, rode `/hephaestus`. Dois modos internos são decididos pela presença de `.app-work/hephaestus-state.json`:
 
 - `adopt` — state ausente: varredura integral e adoção dos quatro territórios;
-- `maintain` — state presente: escopo reduzido, só drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`).
+- `maintain` — state presente: escopo reduzido; drift, artefatos de outras ferramentas (`catalog/drift-catalog.json`) e higiene do interior de `.app-work/` no schema fechado. Padrão novo vira candidato de pack — overlay não cria pasta.
 
 ## O Que Você Precisa Entregar Para A LLM
 

@@ -25,9 +25,9 @@ const isLegalDestination = (destination) => {
   return LEGAL_PREFIXES.some((prefix) => destination.startsWith(prefix));
 };
 
-test("AC-1.5.1: toda linha da Tabela vigente virou entrada (36), com as 4 baixas em destination null", () => {
+test("AC-1.5.1: toda linha da Tabela vigente virou entrada (41), com as 4 baixas em destination null", () => {
   assert.equal(Array.isArray(catalog.entries), true);
-  assert.equal(catalog.entries.length, 36);
+  assert.equal(catalog.entries.length, 41);
   const low = catalog.entries.filter((entry) => entry.confidence === "baixa");
   assert.equal(low.length, 4);
   for (const entry of low) {
@@ -101,9 +101,36 @@ test("AC-1.5.3: assets absorvidos listados em requiredFiles e SCHEMA.md sem AppV
     "utf8",
   );
   assert.ok(!schemaDoc.includes("AppVault"));
+  assert.ok(schemaDoc.includes("hephaestus-state.json"));
 });
 
 test("AC-1.5.3: validate-skill-kit sai 0 com os assets absorvidos", () => {
   const result = runNode(["scripts/validate-skill-kit.mjs"]);
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("DEC-005: roadmap vivo não destina private/", () => {
+  // /roadmap/i isolado casa "não roadmap" no pattern de research (brief).
+  const roadmap = catalog.entries.filter(
+    (e) => /roadmap/i.test(e.pattern) && !/não roadmap/i.test(e.pattern),
+  );
+  assert.ok(roadmap.length >= 1, "faltou entrada de roadmap");
+  for (const entry of roadmap) {
+    if (entry.destination === null) continue;
+    assert.equal(
+      entry.destination.startsWith(".app-work/private/"),
+      false,
+      entry.pattern,
+    );
+  }
+  const vivo = catalog.entries.find((e) => e.destination === ".app-work/roadmap/");
+  assert.ok(vivo, "faltou destination .app-work/roadmap/");
+});
+
+test("DEC-005: docs vivos e legados e references únicos", () => {
+  assert.ok(catalog.entries.some((e) => e.destination === ".app-work/docs/"));
+  assert.ok(catalog.entries.some((e) => e.destination === ".app-work/guides/legados/"));
+  const privRefs = catalog.entries.find((e) => /private\/references/i.test(e.pattern));
+  assert.ok(privRefs);
+  assert.equal(privRefs.destination, ".app-work/references/");
 });

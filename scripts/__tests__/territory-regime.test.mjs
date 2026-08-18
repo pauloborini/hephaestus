@@ -51,6 +51,8 @@ test("INV9: matriz legal — vault só reconcile/keep, agents/project-rules só 
     ["project-rules", "keep"],
     ["process", "relocate"],
     ["process", "keep"],
+    ["process", "delete"],
+    ["process", "condense"],
   ];
   const illegal = [
     ["vault", "generate"],
@@ -74,4 +76,11 @@ test("INV9: matriz legal — vault só reconcile/keep, agents/project-rules só 
     const result = runValidator(pkg);
     assert.equal(result.status, 1, `${territory}/${regime} deveria reprovar`);
   }
+});
+
+test("INV9: process + delete passa; process + generate continua ilegal", () => {
+  const pkg = mkdtemp("hep-tr-del-");
+  makeValidPackage(pkg);
+  writeCoverageMap(pkg, [coverageEntry({ fragmentId: "d1", territory: "process", regime: "delete" })]);
+  assert.equal(runValidator(pkg).status, 0, runValidator(pkg).stderr);
 });

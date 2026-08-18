@@ -21,7 +21,7 @@ Cada entrada do plano tem:
 
 - `artifactPath` — caminho do artefato no repositório;
 - `territory` e `regime` herdados do roteamento;
-- `operation ∈ {create, amend, overwrite, move, keep, skip}`;
+- `operation ∈ {create, amend, overwrite, move, keep, skip, delete, condense}`;
 - `rationale` — justificativa;
 - `origin` — `fragmentId` ou `questionKey` que originou a operação (rastreio obrigatório);
 - `decidedBy` herdado do roteamento (`keep`/`state`/`catalog`/`detector`/`llm`/`human`);
@@ -37,7 +37,8 @@ Cada entrada do plano tem:
 - mover arquivo citado por código;
 - remover `DEC-NNN`;
 - mudar valor de decisão vigente;
-- remover conteúdo de terceiros do `AGENTS.md`.
+- remover conteúdo de terceiros do `AGENTS.md`;
+- `operation` é `delete` ou `condense`.
 
 Em `maintain` sem nenhum item destrutivo, aplica sem aprovação.
 
