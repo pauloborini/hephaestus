@@ -128,3 +128,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v3`.
 - Artefato: `hephaestus-3.zip`.
 - Conteúdo: postura do agente e parada obrigatória no `AGENTS.md` (Postura, parada obrigatória, critério antes do código, simplicidade, mudança cirúrgica e invariantes dentro das etapas 2 e 3 do workflow); `CLAUDE.md` como ponte de uma linha `@AGENTS.md` com o gate de pacote `checkClaudeBridge`; `COMMANDS*` passa a viajar no zip (removido de `packExcludes`); os gates de pares de documentação respeitam `packExcludes` para par totalmente excluído.
+
+## Quarta release (v4)
+
+- Versão manifesto: `"4"`.
+- Tag: `v4`.
+- Artefato: `hephaestus-4.zip`.
+- Conteúdo: higiene autocontida de `.app-work/` (`maintain` inventaria o interior; INV9 `delete`/`condense`); schema fechado de processo (`roadmap/`, `docs/`, `guides/legados/`; espelho de archive datado); padrão novo vira candidato de pack (não pasta via overlay). Sem skill auxiliar de organização.

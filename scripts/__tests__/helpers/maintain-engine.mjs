@@ -15,6 +15,7 @@ import path from "node:path";
 import { REPO_ROOT } from "./fs-utils.mjs";
 import { buildFragments, buildRouting } from "./routing-engine.mjs";
 import { inventoryDecisions } from "./reconcile-engine.mjs";
+import { inventoryProcessHygiene } from "./hygiene-engine.mjs";
 
 export const loadDriftCatalog = () =>
   JSON.parse(
@@ -66,8 +67,8 @@ export const globFiles = (root, glob) => {
 const VAULT_CLOSED = new Set(["INDEX.md", "docs", "specs"]);
 const DOCS_CLOSED = new Set(["decisions", "TEMPLATES"]);
 const APP_WORK_CLOSED = new Set([
-  ".gitignore", "guides", "brainstorming", "prd", "references",
-  "private", "issues", "archive",
+  "INDEX.md", ".gitignore", "hephaestus-state.json", "guides", "roadmap",
+  "brainstorming", "prd", "docs", "references", "private", "issues", "archive",
 ]);
 
 export const checkVaultIntegrity = (root) => {
@@ -111,7 +112,7 @@ export const checkVaultIntegrity = (root) => {
   const appWork = path.join(root, ".app-work");
   if (fs.existsSync(appWork)) {
     for (const entry of fs.readdirSync(appWork, { withFileTypes: true })) {
-      if (!APP_WORK_CLOSED.has(entry.name) && entry.name !== "hephaestus-state.json") {
+      if (!APP_WORK_CLOSED.has(entry.name)) {
         issues.push(`.app-work/${entry.name} fora da lista fechada de SCHEMA.md §2`);
       }
     }
@@ -218,6 +219,7 @@ export const discoverMaintain = (root, { state = {}, driftCatalog } = {}) => {
     docs: findChangedDocs(root),
     vault: checkVaultIntegrity(root),
     pendingCandidates: pendingDecisionCandidates(root),
+    processHygiene: inventoryProcessHygiene(root),
   };
 };
 
@@ -235,11 +237,15 @@ export const runMaintainPipeline = (root, { state = {}, residue = [], now = "202
       artifactPath: entry.destinationPath,
       territory: entry.territory,
       regime: entry.regime,
-      operation: entry.regime === "keep" ? "keep" : entry.regime === "relocate" ? "move" : "create",
+      operation: entry.regime === "keep" ? "keep"
+        : entry.regime === "relocate" ? "move"
+        : entry.regime === "delete" ? "delete"
+        : entry.regime === "condense" ? "condense"
+        : "create",
       rationale: `regime ${entry.regime} herdado do roteamento (${entry.decidedBy})`,
       origin: entry.fragmentId,
       decidedBy: entry.decidedBy,
-      destructive: entry.regime !== "keep",
+      destructive: entry.regime === "delete" || entry.regime === "condense" || entry.regime === "relocate",
     };
   });
   const plan = { version: 1, entries: planEntries };

@@ -222,11 +222,16 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
 
   // --- Território process (.app-work): scaffold da lista fechada + realocação ---
   files.set(".app-work/.gitignore", "references/\nprivate/\n");
+  const deletionPaths = [];
   for (const entry of routing) {
-    if (entry.territory !== "process" || entry.regime !== "relocate") continue;
+    if (entry.territory !== "process") continue;
     const src = srcByFragment.get(entry.fragmentId);
     if (!src) continue;
-    files.set(destOf(entry, src), readFile(fixtureRoot, src));
+    if (entry.regime === "relocate" || entry.regime === "condense") {
+      files.set(destOf(entry, src), readFile(fixtureRoot, src));
+    } else if (entry.regime === "delete") {
+      deletionPaths.push(src);
+    }
   }
 
   // --- Scaffold raiz ---
@@ -306,7 +311,15 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
       territory: entry.territory,
       regime: entry.regime,
       operation:
-        entry.regime === "keep" ? "keep" : entry.regime === "relocate" ? "move" : "create",
+        entry.regime === "keep"
+          ? "keep"
+          : entry.regime === "relocate"
+            ? "move"
+            : entry.regime === "delete"
+              ? "delete"
+              : entry.regime === "condense"
+                ? "condense"
+                : "create",
       rationale: `regime ${entry.regime} herdado do roteamento (${entry.decidedBy})`,
       origin: entry.fragmentId,
       decidedBy: entry.decidedBy,
@@ -334,7 +347,11 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
 
   // --- Composição da lista de artefatos gravados (staging-manifest) ---
   const processFiles = routing
-    .filter((e) => e.territory === "process" && e.regime === "relocate")
+    .filter(
+      (e) =>
+        e.territory === "process" &&
+        (e.regime === "relocate" || e.regime === "condense"),
+    )
     .map((e) => destOf(e, srcByFragment.get(e.fragmentId)));
   const prGenerated = routing
     .filter((e) => e.territory === "project-rules" && e.regime === "generate")
@@ -456,6 +473,10 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
     "",
   ];
   files.set(".hephaestus/report.md", reportLines.join("\n"));
+  files.set(
+    ".hephaestus/staging-deletions.json",
+    `${JSON.stringify({ version: 1, paths: deletionPaths }, null, 2)}\n`,
+  );
 
   // garante que a lista final reflete exatamente o que foi composto
   const missing = composedFinal.filter((rel) => !files.has(rel));

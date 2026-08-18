@@ -102,7 +102,7 @@ test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plan
   assert.equal(moveEntry.operation, "move", "remoção/reabsorção é operação move no plano");
   assert.equal(
     moveEntry.artifactPath,
-    ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
+    ".app-work/archive/guides/2026-08/semana-2/XPTO_GUIDE/GUIDE.md",
   );
   // após o apply (sem blindagem), o conteúdo saiu da origem
   assert.ok(!fs.existsSync(path.join(fixture, GUIDE_SRC)), "sem shield o guia é reabsorvido");
@@ -113,6 +113,8 @@ test("AC-5.3.1: bloco FORA da lista é reabsorvido e a remoção aparece no plan
         ".app-work",
         "archive",
         "guides",
+        "2026-08",
+        "semana-2",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),
@@ -137,6 +139,8 @@ test("AC-5.3.1: o mesmo arquivo fora da lista na execução seguinte é reabsorv
         ".app-work",
         "archive",
         "guides",
+        "2026-08",
+        "semana-2",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),

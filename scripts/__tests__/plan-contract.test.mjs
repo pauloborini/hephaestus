@@ -67,3 +67,35 @@ test("AC-2.3.2: destrutiva decidida por human sem aprovação passa", () => {
   const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);
 });
+
+test("higiene: operation delete com origin passa; llm destrutivo sem approved falha", () => {
+  const pkg = mkdtemp("hep-plan-del-");
+  makeValidPackage(pkg);
+  withPlan(pkg, [
+    entry({
+      artifactPath: ".app-work/guides/COPIA.md",
+      territory: "process",
+      regime: "delete",
+      operation: "delete",
+      decidedBy: "detector",
+      destructive: true,
+    }),
+  ]);
+  assert.equal(runValidator(pkg).status, 0);
+
+  const pkg2 = mkdtemp("hep-plan-del-llm-");
+  makeValidPackage(pkg2);
+  withPlan(pkg2, [
+    entry({
+      artifactPath: ".app-work/guides/COPIA.md",
+      territory: "process",
+      regime: "delete",
+      operation: "delete",
+      decidedBy: "llm",
+      destructive: true,
+    }),
+  ]);
+  const r = runValidator(pkg2);
+  assert.equal(r.status, 1);
+  assert.ok(r.stderr.includes("INV7") || r.stderr.includes("llm"));
+});
