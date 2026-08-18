@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Única fase que escreve no repositório. Materializa o staging aprovado em transação única, com backup completo antes do primeiro byte, ordem `relocate` → `reconcile` → `generate` → `keep` e lista final exatamente igual ao `staging-manifest.json`.
+Única fase que escreve no repositório. Materializa o staging aprovado em transação única, com backup completo antes do primeiro byte, ordem `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. Lista final = `staging-manifest.json` inteiro mais deletions aplicadas.
 
 ## Entradas
 
@@ -15,20 +15,22 @@ Sim — única fase que escreve no repositório. Exceção declarada de INV1: `i
 
 ## Gate
 
-- backup completo em `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` **antes do primeiro byte**: todo arquivo do repositório que será sobrescrito ou removido é copiado preservando a estrutura relativa (ex.: `project-rules/rules/x.md` vira `.hephaestus/backup/<ts>/project-rules/rules/x.md`); um diretório por execução, com timestamp no formato `YYYYMMDDTHHMMSS`, sem rotação nem reuso entre execuções (semântica append);
+- backup completo em `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` **antes do primeiro byte**: todo arquivo do repositório que será sobrescrito ou removido (incluindo paths de `.hephaestus/staging-deletions.json`) é copiado preservando a estrutura relativa (ex.: `project-rules/rules/x.md` vira `.hephaestus/backup/<ts>/project-rules/rules/x.md`); um diretório por execução, com timestamp no formato `YYYYMMDDTHHMMSS`, sem rotação nem reuso entre execuções (semântica append);
 - worktree revalidada desde o `preflight`: `git status --porcelain` vazio — suja desde o `preflight` bloqueia, porque o rollback por git arrastaria trabalho alheio;
 - plano com aprovação registrada quando exigida (ver `plan`).
 
 ## Ordem transacional de escrita
 
 1. `relocate` — mover artefatos que trocam de território ou pasta (destinos em `.app-work/` e `_app-vault/` fora de `issues/` são sempre `relocate`);
-2. `reconcile` — alterar decisões existentes in-place (identidade `DEC-NNN` preservada);
-3. `generate` — criar arquivos novos, incluindo o scaffold do `.gitignore` do alvo (regime `generate`): a linha `.hephaestus/` é criada quando ausente;
-4. `keep` — cópia byte a byte quando o destino calculado == origem atual (regra do não-toque).
+2. `condense` — fundir trecho único no canônico + uma linha de nota de rastro `_Absorvido <data> — de: <path>.` + remover origem;
+3. `delete` — unlink dos paths de `.hephaestus/staging-deletions.json` (já copiados no backup);
+4. `reconcile` — alterar decisões existentes in-place (identidade `DEC-NNN` preservada);
+5. `generate` — criar arquivos novos, incluindo o scaffold do `.gitignore` do alvo (regime `generate`): a linha `.hephaestus/` é criada quando ausente;
+6. `keep` — cópia byte a byte quando o destino calculado == origem atual (regra do não-toque).
 
 ## Lista final
 
-Os artefatos gravados são **exatamente** os do `staging-manifest.json` — a lista inteira, nunca um subconjunto. Cada artefato gravado e cada backup são registrados em `artifactsWritten` do run-state (`outputPath`, `phase: apply`, `validationStatus: valid`).
+Os artefatos gravados são **exatamente** os do `staging-manifest.json` — a lista inteira, nunca um subconjunto — **mais** as deletions aplicadas a partir de `.hephaestus/staging-deletions.json`. Cada artefato gravado, cada backup e cada path deletado são registrados em `artifactsWritten` do run-state (`outputPath`, `phase: apply`, `validationStatus: valid`; operação `delete` nos removidos).
 
 ## Cunhagem de ISSUE-NNN
 

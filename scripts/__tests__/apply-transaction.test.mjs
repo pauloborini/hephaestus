@@ -41,13 +41,20 @@ test("AC-2.4.2: staging com artefatos nos quatro regimes e a ordem declarada é 
   const prompt = applyPrompt();
   const orderSection =
     prompt.split("## Ordem transacional de escrita")[1]?.split("## Lista final")[0] ?? "";
-  const expectedOrder = ["relocate", "reconcile", "generate", "keep"];
+  const expectedOrder = ["relocate", "condense", "delete", "reconcile", "generate", "keep"];
   let lastIndex = -1;
   for (const regime of expectedOrder) {
     const index = orderSection.indexOf(regime);
     assert.ok(index > lastIndex, `regime ${regime} fora da ordem em apply.md`);
     lastIndex = index;
   }
+});
+
+test("apply remove paths de staging-deletions após backup", () => {
+  const prompt = applyPrompt();
+  assert.match(prompt, /staging-deletions\.json/);
+  assert.match(prompt, /condense/);
+  assert.match(prompt, /nota de rastro/);
 });
 
 test("AC-2.4.3: lista final é o staging-manifest.json inteiro, nunca um subconjunto", () => {

@@ -47,6 +47,8 @@ test("AC-1.2.1: enum de territory não volta aos papéis de uma dimensão", () =
     "generate",
     "reconcile",
     "relocate",
+    "delete",
+    "condense",
   ]);
   assert.ok(fragmentSchema.required.includes("territory"));
   assert.ok(fragmentSchema.required.includes("regime"));

@@ -17,9 +17,19 @@ import { writeJson } from "./fs-utils.mjs";
 import {
   isArchiveGuideCatalogRoot,
   isCanonicalArchiveGuidePath,
+  isFlatLegacyArchiveGuidePath,
   isLegacyDonePath,
   resolveArchiveGuideDestination,
 } from "./archive-mirror.mjs";
+import {
+  APP_WORK_LIVE_DIRS,
+  inventoryProcessHygiene,
+  isPackConcluded,
+  isPackStale,
+} from "./hygiene-engine.mjs";
+
+/** Data estável do golden (`_provenance.capturedAt`) — evita destino flutuante até a Task 4 recapturar. */
+const GOLDEN_ARCHIVE_DATE = new Date("2026-08-13T12:00:00");
 
 export const normalizeText = (text) =>
   text
@@ -81,14 +91,41 @@ const isDecisionsPath = (destination) => {
   );
 };
 
-const regimeFor = (destination) => {
+const matchesHygienePath = (src, from) => {
+  if (!src || !from) return false;
+  if (src === from) return true;
+  if (from.endsWith("/")) return src.startsWith(from);
+  return src.startsWith(`${from}/`);
+};
+
+const hygieneMatch = (src, hygiene) => {
+  if (!hygiene) return null;
+  if (hygiene.unknown.some((p) => src === p || src.startsWith(`${p}/`))) {
+    return { kind: "unknown" };
+  }
+  if (hygiene.deletes.includes(src)) return { kind: "delete" };
+  const rel = hygiene.relocate.find((r) => matchesHygienePath(src, r.from));
+  if (rel) return { kind: "relocate", to: rel.to };
+  const condensed = hygiene.condensed?.find((c) => c.from === src);
+  if (condensed) return { kind: "condense", into: condensed.into };
+  return null;
+};
+
+const regimeFor = (destination, sourcePath, hygiene) => {
   const territory = territoryOf(destination);
   const n = normalizeVaultPath(destination);
   if (territory === "vault") {
     if (n.startsWith("_app-vault/docs/decisions")) return "reconcile";
     return "keep";
   }
-  if (territory === "process") return "relocate";
+  if (territory === "process") {
+    if (sourcePath && hygiene?.deletes.includes(sourcePath)) return "delete";
+    if (sourcePath && hygiene?.relocate.some((r) => matchesHygienePath(sourcePath, r.from))) {
+      return "relocate";
+    }
+    if (sourcePath && hygiene?.condensed?.some((c) => c.from === sourcePath)) return "condense";
+    return "relocate";
+  }
   if (territory === "project-rules" || territory === "agents") return "generate";
   return null;
 };
@@ -189,15 +226,38 @@ const vaultArchiveDestination = (src) => {
 
 const isVaultRootSource = (src) => normalizeVaultPath(src).startsWith("_app-vault/");
 
-const isCanonicalKeepPath = (src) => {
+const liveGuidePackDir = (src, root) => {
+  const m = src.match(/^\.app-work\/guides\/([^/]+_GUIDE)(?:\/|$)/i);
+  if (!m || !root) return null;
+  return path.join(root, ".app-work", "guides", m[1]);
+};
+
+const isCanonicalKeepPath = (src, root) => {
   if (src === "AGENTS.md") return true;
   if (src.startsWith("project-rules/")) return true;
   if (isCanonicalVaultKeep(src)) return true;
-  if (src.startsWith(".app-work/") && !isLegacyDonePath(src)) return true;
-  return false;
+  if (!src.startsWith(".app-work/")) return false;
+  if (isLegacyDonePath(src)) return false;
+  if (isFlatLegacyArchiveGuidePath(src)) return false;
+  if (src.startsWith(".app-work/private/references/")) return false;
+  if (src.startsWith(".app-work/private/roadmap/")) return false;
+  const top = src.split("/")[1];
+  if (
+    top &&
+    !APP_WORK_LIVE_DIRS.has(top) &&
+    top !== "done" &&
+    top !== "INDEX.md" &&
+    top !== ".gitignore" &&
+    top !== "hephaestus-state.json"
+  ) {
+    return false;
+  }
+  const packDir = liveGuidePackDir(src, root);
+  if (packDir && (isPackConcluded(packDir) || isPackStale(packDir))) return false;
+  return true;
 };
 
-const structuralDestination = (fragment) => {
+const structuralDestination = (fragment, ctx = {}) => {
   const src = fragment.provenance[0].sourcePath;
   const base = path.basename(src);
   const stem = base.replace(/\.(md|yaml|yml|json|openapi\.json)$/i, "");
@@ -215,11 +275,24 @@ const structuralDestination = (fragment) => {
   }
   // legado .app-work/done/ (removido da lista fechada) → espelho archive/guides/ (DEC-002)
   if (isLegacyDonePath(src)) {
-    return resolveArchiveGuideDestination(src);
+    return resolveArchiveGuideDestination(src, { archiveDate: GOLDEN_ARCHIVE_DATE });
   }
   // já no espelho archive/guides/ → canônico (não-toque)
   if (isCanonicalArchiveGuidePath(src)) {
     return src;
+  }
+  // flat legado archive/guides/<PACK>/ → datado
+  if (isFlatLegacyArchiveGuidePath(src)) {
+    return resolveArchiveGuideDestination(src, {
+      repoRoot: ctx.root,
+      archiveDate: GOLDEN_ARCHIVE_DATE,
+    });
+  }
+  if (src.startsWith(".app-work/private/references/")) {
+    return src.replace(".app-work/private/references/", ".app-work/references/");
+  }
+  if (src.startsWith(".app-work/private/roadmap/")) {
+    return src.replace(".app-work/private/roadmap/", ".app-work/roadmap/");
   }
   // decisões canônicas já em docs/decisions/ → não-toque
   if (isCanonicalDecisionsFile(src, text)) {
@@ -237,8 +310,8 @@ const structuralDestination = (fragment) => {
   if (isVaultRootSource(src)) {
     return vaultArchiveDestination(src);
   }
-  // origem já canônica (project-rules, AGENTS, app-work não-flat)
-  if (isCanonicalKeepPath(src)) {
+  // origem já canônica (project-rules, AGENTS, app-work vivo sem higiene)
+  if (isCanonicalKeepPath(src, ctx.root)) {
     return src;
   }
   if (textNorm.includes("openapi") || src.endsWith(".openapi.json")) {
@@ -302,7 +375,7 @@ export const matchCatalog = (fragment, entries) => {
 // returns { entry } (decidido) ou { question } (enfileirado).
 const expandArchiveGuideDestination = (destinationPath, sourcePath) => {
   if (!isArchiveGuideCatalogRoot(destinationPath)) return destinationPath;
-  return resolveArchiveGuideDestination(sourcePath);
+  return resolveArchiveGuideDestination(sourcePath, { archiveDate: GOLDEN_ARCHIVE_DATE });
 };
 
 const expandCatalogDestination = (destination, sourcePath) => {
@@ -347,10 +420,61 @@ const routeFragment = (fragment, ctx) => {
     }
   }
 
+  // Higiene de processo (nível 4, antes do keep canônico de `.app-work/`):
+  // duplicata → delete; relocate (pack F/STALE, md solto, private/references,
+  // private/roadmap, PRD sem consumidor, brainstorm fechado, done/, flat
+  // archive); unknown → pergunta pack-candidate (não keep).
+  const hyg = hygieneMatch(src, ctx.hygiene);
+  if (hyg?.kind === "unknown") {
+    return { question: { fragmentId, sourcePath: src } };
+  }
+  if (hyg?.kind === "delete") {
+    return {
+      entry: {
+        fragmentId,
+        territory: "process",
+        regime: "delete",
+        destinationPath: src,
+        confidence: 0.8,
+        decidedBy: "detector",
+        evidence: `higiene: duplicata byte a byte (${src})`,
+        needsSplit: false,
+      },
+    };
+  }
+  if (hyg?.kind === "relocate") {
+    return {
+      entry: {
+        fragmentId,
+        territory: territoryOf(hyg.to) ?? "process",
+        regime: "relocate",
+        destinationPath: hyg.to,
+        confidence: 0.8,
+        decidedBy: "detector",
+        evidence: `higiene: relocate ${src} → ${hyg.to}`,
+        needsSplit: false,
+      },
+    };
+  }
+  if (hyg?.kind === "condense") {
+    return {
+      entry: {
+        fragmentId,
+        territory: "process",
+        regime: "condense",
+        destinationPath: hyg.into,
+        confidence: 0.8,
+        decidedBy: "detector",
+        evidence: `higiene: condense ${src} → ${hyg.into}`,
+        needsSplit: false,
+      },
+    };
+  }
+
   // Nível 1 — não-toque e identidade: destino calculado pela classificação
   // estrutural == origem atual ⇒ keep, decidido por POSIÇÃO (nunca por
   // comparação com execução anterior).
-  const structural = structuralDestination(fragment);
+  const structural = structuralDestination(fragment, ctx);
   if (structural !== null && structural === src) {
     return {
       entry: {
@@ -387,7 +511,7 @@ const routeFragment = (fragment, ctx) => {
       entry: {
         fragmentId,
         territory: territoryOf(destinationPath),
-        regime: regimeFor(destinationPath),
+        regime: regimeFor(destinationPath, src, ctx.hygiene),
         destinationPath,
         confidence: 1,
         decidedBy: "state",
@@ -422,7 +546,7 @@ const routeFragment = (fragment, ctx) => {
       entry: {
         fragmentId,
         territory: territoryOf(destinationPath),
-        regime: regimeFor(destinationPath),
+        regime: regimeFor(destinationPath, src, ctx.hygiene),
         destinationPath,
         confidence: match.entry.confidence === "alta" ? 1 : 0.5,
         decidedBy: "catalog",
@@ -444,7 +568,7 @@ const routeFragment = (fragment, ctx) => {
       entry: {
         fragmentId,
         territory: territoryOf(destinationPath),
-        regime: regimeFor(destinationPath),
+        regime: regimeFor(destinationPath, src, ctx.hygiene),
         destinationPath,
         confidence: 0.8,
         decidedBy: "detector",
@@ -468,7 +592,7 @@ const routeFragment = (fragment, ctx) => {
       entry: {
         fragmentId,
         territory: territoryOf(destinationPath),
-        regime: regimeFor(destinationPath),
+        regime: regimeFor(destinationPath, src, ctx.hygiene),
         destinationPath,
         confidence: residue.confidence,
         decidedBy: "llm",
@@ -549,6 +673,10 @@ export const buildRouting = (root, options = {}) => {
     answers: state.answers ?? {},
     shield: state.shield ?? [],
     residue: options.residue ?? DEFAULT_RESIDUE,
+    root,
+    hygiene:
+      options.hygiene ??
+      inventoryProcessHygiene(root, { archiveDate: GOLDEN_ARCHIVE_DATE }),
   };
   const routing = [];
   const questions = [];

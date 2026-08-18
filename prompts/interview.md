@@ -24,17 +24,29 @@ Dreno único da fila de perguntas: interromper o usuário **uma vez por execuç�
 Por pergunta respondida, gravar no bloco `answers` do estado:
 
 - `questionKey = sha256(contexto normalizado)` — **contexto** (origem do fragmento + o que falta decidir), nunca o texto literal da pergunta: reformular a prosa da pergunta não muda a chave e o reuso continua funcionando;
-- `answer` — resposta estruturada (para pergunta de destino, carrega `destinationPath`);
+- `answer` — resposta estruturada (para pergunta de destino, carrega `destinationPath`; para padrão novo de processo, carrega `includeInPack` boolean);
 - `scope ∈ {this-run, this-project, promote-to-catalog}`:
   - `this-run` — vale só para a execução atual: **não** é gravado no estado;
   - `this-project` — gravado em `answers`, vinculante nas próximas execuções (nível 2 da cascata);
-  - `promote-to-catalog` — gravado em `answers` **e** vira candidato apresentado no fechamento (promoção opt-in de default de roteamento);
+  - `promote-to-catalog` — gravado em `answers` **e** vira candidato apresentado no fechamento (promoção opt-in de default de roteamento). **Só** para linha de catálogo de tipo já previsto (ex. glob de ferramenta em `drift-catalog`); **não** para pasta fora da lista fechada;
 - `sourceEvidence` — evidência de origem da resposta;
 - `answeredAt` — momento da resposta.
 
 ## Escrita fora da transação
 
 Gravar `.app-work/hephaestus-state.json` **imediatamente** após cada resposta, fora da transação de `apply`: o custo humano já foi pago e não deve ser desfeito por rollback. Escrita **merge** por `questionKey` — preserva as demais chaves de `answers` e os outros três blocos (`meta`, `routing`, `shield`) intactos. O rollback de `verify(applied)` **nunca** reverte este arquivo (exceção declarada de INV1, registrada em `prompts/apply.md`).
+
+## Eixo: padrão novo de processo
+
+Path ou pasta sob `.app-work/` fora da lista fechada (SCHEMA §4 / `inventoryProcessHygiene().unknown`) enfileira pergunta com o texto:
+
+> Você criou um padrão novo (`<path ou tipo>`). Gostaria de incluir isso dentro do pack da skill para ficar padronizado em todos os projetos?
+
+`answer.includeInPack` boolean.
+
+- Sim (`includeInPack: true`): aplicar o destino proposto neste run; gravar entrada em `.hephaestus/pack-candidates.json` (efêmero, shape `schemas/pack-candidates.schema.json`). **Não** gravar pasta nova em `routing.overlay`. A fase **não edita** a skill instalada. `scope` da resposta de destino pontual pode ser `this-run` ou `this-project` só para **este path**, nunca como default de pasta.
+- Não (`includeInPack: false`): mapear para pasta já listada em SCHEMA §2 / §4; último recurso `.app-work/archive/docs/`.
+- Sem resposta: run `blocked` / closeout `needs-followup`.
 
 ## Gate
 

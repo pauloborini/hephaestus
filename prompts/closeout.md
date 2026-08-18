@@ -33,7 +33,7 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 2. `## Decisão recomendada por pendência` — decisão objetiva para cada pendência;
 3. `## Resíduo decidido pela LLM` — lista explícita das entradas degradantes (uma linha por entrada: `fragmentId → destinationPath`, marcando quando o destino vira `DEC-NNN` nova ou regra nova) e das entradas de resíduo não degradantes;
 4. `## Métricas` — linha `llmDecidedRatio: <0..1>` com a proporção medida;
-5. `## Candidatos a promoção` — candidatos a promoção de default de roteamento do catálogo (overlay → base), quando houver;
+5. `## Candidatos a pack` — entradas de `.hephaestus/pack-candidates.json` (padrão novo aceito para o pack); também listar candidatos a promoção de glob já previsto no `drift-catalog` (não pasta fora da lista), quando houver;
 6. `## Confirmações` — estado final de `AGENTS.md`; estado final de `project-rules/`; confirmação de que os fragmentos relevantes têm destino no mapa de cobertura (`.hephaestus/manifests/coverage-map.json`); resumo explícito das referências externas encontradas e do que deveria ser internalizado; confirmação do estado final de `.hephaestus/manifests/run-state.json`;
 7. `## Veredito` — linha final com `ready`, `degraded-but-usable` ou `needs-followup`.
 
