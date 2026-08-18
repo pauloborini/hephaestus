@@ -1,5 +1,9 @@
 <!-- Language: **English** · [Português](README.pt-BR.md) -->
 
+<p align="center">
+  <img src="resources/logo-atlas-agents.png" alt="Hephaestus logo" width="200">
+</p>
+
 # Hephaestus
 
 The **Hephaestus** kit is a single command, `/hephaestus`, that governs the four documentary territories of a repository — `AGENTS.md`, `project-rules/`, `_app-vault/` and `.app-work/` — in one run and one write transaction. Its scope is documentation structure, not application code or an editor plugin.
