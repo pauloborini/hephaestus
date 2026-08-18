@@ -48,11 +48,57 @@ const pickCanonicalDuplicate = (paths) => {
   })[0];
 };
 
-const isProtectedLiveGuideFile = (rel, root) => {
-  const m = rel.match(/^\.app-work\/guides\/([^/]+_GUIDE)\//i);
-  if (!m) return false;
-  const packDir = path.join(root, ".app-work", "guides", m[1]);
-  return !isPackConcluded(packDir) && !isPackStale(packDir);
+const CONDENSE_MIN = 40;
+const GENERIC_STEM = /^(readme|index|license|guid)$/i;
+
+const normalizeForCondense = (text) => text.replace(/\s+/g, " ").trim().toLowerCase();
+
+const fileStem = (rel) => path.basename(rel).replace(/\.[^.]+$/, "").toLowerCase();
+
+const sameCondenseTheme = (fromRel, intoRel) => {
+  const sa = fileStem(fromRel);
+  const sb = fileStem(intoRel);
+  if (sa === sb) return true;
+  if (GENERIC_STEM.test(sa) || GENERIC_STEM.test(sb)) return sa === sb;
+  const fromLc = fromRel.toLowerCase();
+  const intoLc = intoRel.toLowerCase();
+  if (sa.length >= 4 && (sb.includes(sa) || intoLc.includes(sa))) return true;
+  if (sb.length >= 4 && (sa.includes(sb) || fromLc.includes(sb))) return true;
+  return false;
+};
+
+const isCondenseScanRel = (rel) =>
+  isHashableDuplicateRel(rel) && !isArchiveRel(rel) && isTextish(rel);
+
+const collectCondensed = (root, all, occupied) => {
+  const files = [];
+  for (const rel of all) {
+    if (!isCondenseScanRel(rel) || occupied.has(rel)) continue;
+    const abs = path.join(root, rel);
+    if (!fs.statSync(abs).isFile()) continue;
+    const norm = normalizeForCondense(fs.readFileSync(abs, "utf8"));
+    if (norm.length < CONDENSE_MIN) continue;
+    files.push({
+      rel,
+      norm,
+      len: norm.length,
+      protectedPack: isProtectedLiveGuideFile(rel, root),
+    });
+  }
+  const condensed = [];
+  for (const from of files) {
+    if (from.protectedPack) continue;
+    const containers = files.filter(
+      (into) =>
+        into.rel !== from.rel &&
+        into.len > from.len &&
+        into.norm.includes(from.norm) &&
+        sameCondenseTheme(from.rel, into.rel),
+    );
+    if (containers.length !== 1) continue;
+    condensed.push({ from: from.rel, into: containers[0].rel });
+  }
+  return condensed;
 };
 
 export const fileSha256 = (abs) =>
@@ -75,6 +121,13 @@ export const isPackStale = (packDir) => {
   const r = path.join(packDir, "README.md");
   const text = [g, r].filter(fs.existsSync).map((p) => fs.readFileSync(p, "utf8")).join("\n");
   return /\bSTALE\b/i.test(text);
+};
+
+const isProtectedLiveGuideFile = (rel, root) => {
+  const m = rel.match(/^\.app-work\/guides\/([^/]+_GUIDE)\//i);
+  if (!m) return false;
+  const packDir = path.join(root, ".app-work", "guides", m[1]);
+  return !isPackConcluded(packDir) && !isPackStale(packDir);
 };
 
 const ingestTextDir = (root, relBase, parts) => {
@@ -319,6 +372,12 @@ export const inventoryProcessHygiene = (root, options = {}) => {
       }
     }
   }
+
+  const occupied = new Set([
+    ...deletes,
+    ...relocate.flatMap((r) => (r.from.endsWith("/") ? [] : [r.from])),
+  ]);
+  condensed.push(...collectCondensed(root, all, occupied));
 
   return { relocate, deletes, unknown, condensed };
 };

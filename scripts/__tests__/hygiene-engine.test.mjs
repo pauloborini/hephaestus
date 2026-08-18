@@ -139,3 +139,38 @@ test("guides/ pasta sem _GUIDE é unknown", () => {
   const inv = inventoryProcessHygiene(root, { archiveDate: D });
   assert.ok(inv.unknown.some((p) => p === ".app-work/guides/not-a-pack"));
 });
+
+test("trecho único vivo cabe no canônico mais completo → condense", () => {
+  const root = mkdtemp("hep-hyg-");
+  const snippet = "A regra de timeout da fila é 30 segundos sem retry.\n";
+  writeFile(root, ".app-work/docs/timeout.md", snippet);
+  writeFile(
+    root,
+    ".app-work/docs/timeout-completo.md",
+    `# Timeout\n\n${snippet}\nTambém vale para o worker noturno.\n`,
+  );
+  const inv = inventoryProcessHygiene(root, { archiveDate: D });
+  assert.deepEqual(inv.condensed, [
+    { from: ".app-work/docs/timeout.md", into: ".app-work/docs/timeout-completo.md" },
+  ]);
+  assert.equal(inv.deletes.includes(".app-work/docs/timeout.md"), false);
+});
+
+test("substring sem mesmo tema não condensa no escuro", () => {
+  const root = mkdtemp("hep-hyg-");
+  const snippet = "A regra de timeout da fila é 30 segundos sem retry.\n";
+  writeFile(root, ".app-work/docs/alpha.md", snippet);
+  writeFile(root, ".app-work/prd/omega.md", `# Outro assunto\n\n${snippet}\nFim.\n`);
+  const inv = inventoryProcessHygiene(root, { archiveDate: D });
+  assert.equal(inv.condensed.length, 0);
+});
+
+test("dois canônicos possíveis não condensam no escuro", () => {
+  const root = mkdtemp("hep-hyg-");
+  const snippet = "A regra de timeout da fila é 30 segundos sem retry.\n";
+  writeFile(root, ".app-work/docs/timeout.md", snippet);
+  writeFile(root, ".app-work/docs/timeout-a.md", `# A\n\n${snippet}\nmais A\n`);
+  writeFile(root, ".app-work/docs/timeout-b.md", `# B\n\n${snippet}\nmais B\n`);
+  const inv = inventoryProcessHygiene(root, { archiveDate: D });
+  assert.equal(inv.condensed.length, 0);
+});
