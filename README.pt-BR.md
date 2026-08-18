@@ -1,5 +1,9 @@
 <!-- Idioma: [English](README.md) · **Português** -->
 
+<p align="center">
+  <img src="resources/logo-atlas-agents.png" alt="Logo do Hephaestus" width="200">
+</p>
+
 # Hephaestus
 
 > Nome grego deste projeto no umbrella `greek-stack`.
