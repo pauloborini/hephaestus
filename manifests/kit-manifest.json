@@ -11,7 +11,8 @@
     "scripts/publish-hephaestus.sh",
     ".gitignore",
     ".gitkeep",
-    ".DS_Store"
+    ".DS_Store",
+    ".superpowers"
   ],
   "requiredFiles": [
     "README.md",
