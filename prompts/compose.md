@@ -21,6 +21,8 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - todo destino é `.hephaestus/staging/<caminho relativo>`, nunca o caminho real do repositório — o staging espelha o pacote final inteiro, incluindo os manifests do pacote sob `.hephaestus/staging/.hephaestus/manifests/`;
 - a saída inclui `.hephaestus/staging-manifest.json` com sha256 por artefato (um artefato por entrada: `outputPath` + `sha256`), que `apply` grava como lista final e `verify(applied)` confere hash a hash;
 - o próprio `staging-manifest.json` não entra na lista que descreve;
+- materializar canônicos condensados no staging; emitir `.hephaestus/staging-deletions.json` `{ version: 1, paths: string[] }` com paths relativos a remover. Arquivo marcado `delete` **não** entra no `staging-manifest.json`;
+- entradas `keep` inalteradas (keep-bytes); `delete` não entra no check de hash do staging-manifest;
 - nenhuma pergunta aqui: dúvida nesta fase é bug de fase anterior, nunca pergunta ao usuário.
 
 ## Territórios de produto (`_app-vault/`)
@@ -39,9 +41,11 @@ Materializar o scaffold de processo conforme a lista fechada de `references/vaul
 
 - `.app-work/.gitignore` — **mesmo em projeto verde**, versionado, com as linhas `references/` e `private/` (e `issues/` quando o repositório for público);
 - `.app-work/INDEX.md` — mapa do processo, instanciado de `templates/appwork/INDEX_TEMPLATE.md` (mesmo padrão do vault: ponteiro, não conteúdo): pastas da lista fechada com o papel de cada uma + regras de ouro do processo; criado **sempre**, mesmo em projeto verde — é a âncora que o `AGENTS.md` aponta, nunca pode faltar;
-- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `brainstorming/`, `prd/`, `references/`, `private/`, `issues/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework);
-- sob `archive/`, materializar o espelho do `destinationPath` já expandido pela cascata: `archive/guides/<NOME>_GUIDE|arquivo` (DEC-002) — não achatar na raiz de `archive/`;
-- fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados).
+- apenas as pastas da lista fechada são criadas: `.app-work/guides/`, `guides/legados/`, `roadmap/`, `brainstorming/`, `prd/`, `docs/`, `references/`, `private/`, `issues/`, `archive/` (quando houver conteúdo para elas — pasta fora da lista não existe para o framework; pasta vazia não se cria);
+- sob `archive/`, materializar o espelho do `destinationPath` já expandido pela cascata: `archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (DEC-002) — não achatar na raiz de `archive/` nem em `archive/guides/<PACK>/`;
+- fragmentos `relocate` com destino em `.app-work/` entram na pasta correspondente (basename preservado, bytes preservados);
+- fragmentos `condense` materializam o canônico no staging (trecho único + nota de rastro); a origem vai para `staging-deletions.json`;
+- se o plano tocou `guides|prd|docs|issues|archive|roadmap|references|private`, gerar/atualizar o `README.md` da pasta (papel/tipo, não nomes eternos). Não restaurar arquivo podado.
 
 ## Blindagem (shield)
 

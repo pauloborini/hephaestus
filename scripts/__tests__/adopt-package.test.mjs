@@ -51,6 +51,8 @@ test("AC-4.3.1/CN1: os quatro territórios existem e estão coerentes", () => {
         ".app-work",
         "archive",
         "guides",
+        "2026-08",
+        "semana-2",
         "XPTO_GUIDE",
         "GUIDE.md",
       ),
@@ -83,7 +85,7 @@ test("AC-4.3.1/CN1: guide e brainstorm foram movidos para .app-work/ sem reescri
     ["docs/brainstorming/tema-x.md", ".app-work/brainstorming/tema-x.md"],
     [
       "docs/guides/XPTO_GUIDE/GUIDE.md",
-      ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
+      ".app-work/archive/guides/2026-08/semana-2/XPTO_GUIDE/GUIDE.md",
     ],
     ["docs/archive/clones-oss/analise-argus.md", ".app-work/references/analise-argus.md"],
   ];
@@ -179,7 +181,7 @@ test("AC-4.3.x/CN1: replay do pipeline sobre cópia do fixture reproduz os terri
     ".app-work/.gitignore",
     ".app-work/references/analise-argus.md",
     ".app-work/brainstorming/tema-x.md",
-    ".app-work/archive/guides/XPTO_GUIDE/GUIDE.md",
+    ".app-work/archive/guides/2026-08/semana-2/XPTO_GUIDE/GUIDE.md",
   ];
   for (const rel of compared) {
     assert.equal(files.get(rel), read(rel), `replay divergiu em ${rel}`);

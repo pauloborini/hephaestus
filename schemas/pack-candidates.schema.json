@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Pack Candidates",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "entries"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern", "destination", "evidence", "answeredAt"],
+        "properties": {
+          "pattern": { "type": "string", "minLength": 1 },
+          "destination": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "answeredAt": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

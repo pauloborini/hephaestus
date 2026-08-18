@@ -69,25 +69,48 @@ test("AC-6.1.1: escopo de maintain conhece o formato atual do Cursor e a regra �
   assert.match(discover, /nunca embutida no prompt/);
 });
 
+const hygieneAllow = (inventory, fragments) => {
+  const hygiene = inventory.processHygiene ?? { relocate: [], deletes: [] };
+  const marked = [...hygiene.deletes, ...hygiene.relocate.flatMap((r) => [r.from, r.to])];
+  const isMarked = (p) =>
+    Boolean(p) &&
+    marked.some((m) => p === m || (m.endsWith("/") ? p.startsWith(m) : p.startsWith(`${m}/`)));
+  const srcById = new Map(
+    (fragments ?? []).map((f) => [f.fragmentId, f.provenance[0].sourcePath]),
+  );
+  return (entry) => {
+    const dest = entry.destinationPath ?? entry.artifactPath;
+    if (!dest?.startsWith(".app-work/")) return false;
+    const src = srcById.get(entry.fragmentId ?? entry.origin);
+    return isMarked(dest) || isMarked(src);
+  };
+};
+
 test("AC-6.1.2: todo fragmento não relacionado ao drift permanece keep e o plano não escreve sobre eles", () => {
   const root = adoptedWithDrift();
-  const { routing, plan } = runMaintainPipeline(root, { state: ADOPTED_STATE, residue: [] });
+  const { routing, plan, inventory, fragments } = runMaintainPipeline(root, {
+    state: ADOPTED_STATE,
+    residue: [],
+  });
 
+  const hygieneOk = hygieneAllow(inventory, fragments);
   const nonDrift = routing.filter((e) => e.destinationPath !== "project-rules/rules/domain_rules.md");
   assert.ok(nonDrift.length > 0, "esperava fragmentos não-drift roteados");
   for (const entry of nonDrift) {
+    if ((entry.regime === "relocate" || entry.regime === "delete") && hygieneOk(entry)) {
+      continue;
+    }
     assert.equal(entry.regime, "keep", `não-drift com regime ${entry.regime}: ${entry.destinationPath}`);
   }
 
-  // o plano não contém nenhuma operação de escrita sobre fragmento não-drift
   const writes = plan.entries.filter((e) => e.operation !== "keep");
-  assert.equal(writes.length, 1, `esperava só a escrita do drift: ${JSON.stringify(plan.entries)}`);
-  assert.equal(writes[0].artifactPath, "project-rules/rules/domain_rules.md");
-  for (const entry of plan.entries) {
-    if (entry.operation === "keep") continue;
+  for (const entry of writes) {
+    const driftWrite = entry.artifactPath.startsWith("project-rules/rules/");
+    const hygieneWrite =
+      (entry.operation === "move" || entry.operation === "delete") && hygieneOk(entry);
     assert.ok(
-      entry.artifactPath.startsWith("project-rules/rules/"),
-      `escrita fora do drift: ${entry.artifactPath}`,
+      driftWrite || hygieneWrite,
+      `escrita fora do drift/higiene: ${entry.operation} ${entry.artifactPath}`,
     );
   }
 });
@@ -96,11 +119,17 @@ test("AC-6.1.2: sem drift nenhum, o plan.json é integralmente keep/skip", () =>
   const root = copyFixture("pacote-adopt");
   writeJson(root, ".app-work/hephaestus-state.json", ADOPTED_STATE);
 
-  const { routing, plan } = runMaintainPipeline(root, { state: ADOPTED_STATE, residue: [] });
+  const { routing, plan, inventory, fragments } = runMaintainPipeline(root, {
+    state: ADOPTED_STATE,
+    residue: [],
+  });
   assert.ok(routing.length > 0);
+  const hygieneOk = hygieneAllow(inventory, fragments);
   for (const entry of plan.entries) {
+    const hygieneWrite =
+      (entry.operation === "move" || entry.operation === "delete") && hygieneOk(entry);
     assert.ok(
-      entry.operation === "keep" || entry.operation === "skip",
+      entry.operation === "keep" || entry.operation === "skip" || hygieneWrite,
       `operação fora de keep/skip sem drift: ${entry.operation} ${entry.artifactPath}`,
     );
   }

@@ -1,6 +1,6 @@
 ---
 vault_version: 1
-updated: 2026-08-12
+updated: 2026-08-17
 scope: Kit Hephaestus — decisões de produto e contrato do kit
 ---
 

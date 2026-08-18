@@ -50,17 +50,29 @@ Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, bas
 - entrada com `confidence: baixa` **nunca decide** — enfileira pergunta;
 - entrada com `confidence: alta` e destino concreto decide `decidedBy: catalog`;
 - destino `.app-work/archive/guides/` (raiz do catálogo) **não** é o path final: expandir para
-  `.app-work/archive/guides/<NOME>_GUIDE/` (pack) ou `.app-work/archive/guides/` (arquivo solto) —
-  espelho do archive (DEC-002). O `destinationPath` emitido é o path expandido (termina em `/`).
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (pack) ou
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/` (arquivo solto) — espelho datado (DEC-002).
+  Data = Plano F `Status: CONCLUÍDO` senão momento do roteamento. O `destinationPath` emitido
+  é o path expandido (termina em `/`).
 
 ### Nível 4 — detectores sintáticos
 
 Classificação estrutural determinística (a mesma usada no nível 1), nesta ordem:
 
 - regra de domínio enterrada no contrato do agente — origem `AGENTS.md` legado (com seção de regra, ex. `## Regra de domínio`) ou arquivo de regras de agente de outra ferramenta (os globs vigiados de `catalog/drift-catalog.json`) + verbo deôntico ⇒ regra → `project-rules/rules/`;
-- origem em `.app-work/archive/guides/` (espelho) ⇒ destino é a própria origem — não-toque (DEC-002);
-- origem legada em `.app-work/done/` (removido da lista fechada) ⇒ relocate para `.app-work/archive/guides/<NOME>_GUIDE|arquivo/` (DEC-002) — migração, nunca keep;
-- origem já na lista fechada canônica (§2 + nível 1 acima: `AGENTS.md`, `project-rules/**` já no lugar, vault só `INDEX`/`docs/decisions`/`docs/TEMPLATES`/`specs`, `.app-work/` fora do legado `done/`) ⇒ destino é a própria origem — não-toque (INV2/INV11/CN2); **proibido** tratar `_app-vault/**` ou `.app-vault/**` inteiro como canônico;
+- origem datada em `.app-work/archive/guides/<YYYY-MM>/semana-<N>/` (espelho canônico) ⇒ destino é a própria origem — keep / não-toque (DEC-002);
+- pack em `.app-work/guides/<NOME>_GUIDE/` com Plano F `Status: CONCLUÍDO` ou `STALE` ⇒ relocate para `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` — nunca keep;
+- `.md` solto em `.app-work/guides/` (exceto `README.md`) ⇒ relocate para `.app-work/guides/legados/`;
+- origem em `.app-work/private/references/` ⇒ relocate para `.app-work/references/` (preservar sufixo);
+- origem em `.app-work/private/roadmap/` ⇒ relocate para `.app-work/roadmap/` (preservar sufixo);
+- PRD em `.app-work/prd/` com `Status: done|concluído|fechado|arquivado|aposentado` **e** sem citação em fatia/pack vivo (`roadmap/` ou `_GUIDE` não CONCLUÍDO/STALE) ⇒ relocate para `.app-work/archive/prds/` (preservar sufixo). Citação viva vence o status;
+- `brainstorming/<tema>/` (ou `.md` solto no caderno) com `Status` fechado/concluído/done ⇒ relocate para `.app-work/archive/perguntas/<tema>/`;
+- origem flat em `.app-work/archive/guides/<PACK>/` (sem `<YYYY-MM>/semana-<N>/`) ⇒ relocate para `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<PACK>/` (DEC-002) — migração, nunca keep;
+- origem legada em `.app-work/done/` (removido da lista fechada) ⇒ relocate para `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE|arquivo/` (DEC-002) — migração, nunca keep; data = Plano F `Status: CONCLUÍDO` senão momento do roteamento;
+- duplicata byte a byte (mesmo hash) **só** vivo×vivo e vivo×archive ⇒ `regime: delete` da cópia extra; canônico = o vivo (archive é a cópia). Nunca hashear `references/` nem `private/` para delete; nunca apagar membro de pack `_GUIDE` vivo não-concluído/não-STALE;
+- trecho único vivo (texto ≥ 40 chars normalizados) **estritamente** contido num único canônico vivo mais longo, mesmo tema (stem do arquivo) ⇒ `regime: condense` da origem no canônico; 0 ou 2+ canônicos = não decide (não condensar no escuro). Não condensar `archive/`, `references/`, `private/` nem membro de pack `_GUIDE` vivo. Duplicata idêntica continua `delete`, não `condense`;
+- path sob `.app-work/` fora da lista fechada §4 (pasta unknown) ⇒ **não** keep: enfileira pergunta pack-candidate (fila §6);
+- origem já na lista fechada canônica (§2 + nível 1 acima: `AGENTS.md`, `project-rules/**` já no lugar, vault só `INDEX`/`docs/decisions`/`docs/TEMPLATES`/`specs`, `.app-work/` vivo **exceto** `done/`, archive flat, `private/references/`, `private/roadmap/`, PRD sem consumidor, brainstorm fechado, pack F/STALE em `guides/`) ⇒ destino é a própria origem — não-toque (INV2/INV11/CN2); **proibido** tratar `_app-vault/**` ou `.app-vault/**` inteiro como canônico;
 - candidato a decisão legado — path `DECISOES_*`, heading `### D\d+`, `### DEC-\d+` sem em-dash canônico, ou seção “Decisões fechadas” / “Closed decisions” ⇒ `_app-vault/docs/decisions/<dominio>.md` (`<dominio>` = slug da feature/pasta pai ou stem normalizado), `regime: reconcile` — **obrigatório em `adopt`**; ID legado não congela numeração;
 - OpenAPI/JSON-Schema (texto com `openapi` ou `json-schema`) ⇒ contrato → `project-rules/contracts/`;
 - heading + verbo deôntico + valor numérico (norma de produto observável) ⇒ candidato a decisão → `_app-vault/docs/decisions/<dominio>.md`, `regime: reconcile`;
@@ -82,6 +94,7 @@ Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22).
 
 - nível 5 abaixo do limiar de confiança (a LLM não decide);
 - catálogo sem match, ou match com `destination: null` ou `confidence: baixa`;
+- path sob `.app-work/` fora da lista fechada §4 (`inventoryProcessHygiene().unknown`) — pergunta pack-candidate (DEC-006);
 - conflito de valor entre fontes para a mesma regra (tratado em `reconcile`);
 - remoção de `DEC-NNN` com citação pendente (tratado em `reconcile`);
 - remoção de conteúdo de terceiros fora da lista `shield` (tratado em `reconcile`/`plan`).
@@ -89,7 +102,7 @@ Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22).
 **Nunca pergunta** (lista fechada — decidir em silêncio, com evidência):
 
 - rota com match alto (catálogo `confidence: alta` com destino concreto) — o nível 3 decide;
-- decisão por não-toque (nível 1), identidade congelada (`### DEC-NNN`) ou detector (nível 4) — decidem antes;
+- decisão por não-toque (nível 1), identidade congelada (`### DEC-NNN`) ou detector (nível 4) — decidem antes, **exceto** pasta unknown (pack-candidate);
 - nome de arquivo e ordem de seções — detalhe local, nunca ambiguidade genuína;
 - nada já respondido com `scope: this-project` — a resposta é vinculante e reusada por `questionKey`.
 
@@ -97,7 +110,7 @@ Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22).
 
 - todo fragmento sai roteado **ou** enfileirado, com evidência — nunca em silêncio;
 - `destinationPath` sempre cai em `AGENTS.md`, em `project-rules/` ou na lista fechada de `references/vault-schema/SCHEMA.md` §2 (`_app-vault/**` e `.app-work/**`) — os quatro territórios;
-- fragmento com origem em `.app-work/` nunca recebe `regime: generate` nem `reconcile` (D19/INV9): só `keep` ou `relocate`;
+- fragmento com origem em `.app-work/` nunca recebe `regime: generate` nem `reconcile` (D19/INV9): só `keep`, `relocate`, `delete` ou `condense`;
 - nenhum fragmento com `needsSplit: true` segue sem divisão — dividir é trabalho da fase `fragment`, não do usuário;
 - a saída é validada por `schemas/routing.schema.json`.
 

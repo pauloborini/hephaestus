@@ -39,16 +39,23 @@ _app-vault/                 # VERDADE VIGENTE — visível, buscável
 .app-work/                  # PROCESSO — descartável, oculto para busca
   INDEX.md                  # mapa do processo (§8) — ponteiro, não conteúdo; âncora do AGENTS.md
   .gitignore                # versionado; contém `references/` e `private/`; `issues/` se o repo é público (D43)
-  guides/<NOME>_GUIDE/      # packs de execução
-  brainstorming/            # caderno de processo
-  prd/                      # proposta datada
-  references/               # refs open source de terceiros — SEMPRE gitignored
-  private/                  # área privada (sessões, roadmap, research, ops, auditorias) — SEMPRE gitignored
-  issues/                   # registro de defeitos — versionado em repo privado; gitignored em repo público (D43)
-  archive/                  # espelho de concluídos (DEC-002) + depósito livre do usuário
-    guides/<NOME>_GUIDE/    # pack concluído preservado
-    perguntas/<tema>/       # brainstorming fechado
-    prds/                   # PRD aposentado
+  hephaestus-state.json     # estado versionado do kit (minúsculo)
+  guides/<NOME>_GUIDE/
+  guides/legados/
+  roadmap/                 # ROADMAP.md + slices/ — versionado
+  brainstorming/<tema>/
+  prd/
+  docs/                    # vivos; omitir se vazio
+  issues/
+  references/              # gitignored — único lugar de clones OSS
+  private/                 # auditorias/, ops/, research/, notes/ — gitignored
+  archive/
+    guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/
+    perguntas/<tema>/
+    prds/
+    roadmap/<MARCO>_<YYYY-MM>/
+    docs/ backlogs/ plans/ sprints/ features/ design-prototipos/
+    produto/ qa/ releases/ evidence/ issues/<YYYY>/
 ```
 
 **Toda pasta de `_app-vault/` é vigente.** Sem exceção: o que envelheceu sai do vault — foi o que
@@ -83,21 +90,25 @@ acidental ali é indistinguível de regra própria. O ignore viaja com o schema:
 
 ### 2.2 Ciclos
 
-- **Guide** — nasce em `.app-work/guides/`, é executado, vai para o **espelho** do archive:
-  `.app-work/archive/guides/<NOME>_GUIDE/` (pack) ou arquivo solto sob `archive/guides/` (DEC-002).
-  Path já no espelho é canônico (não-toque); legado sob `.app-work/done/` migra na próxima
-  execução. Nunca consultado em análise de feature, infraestrutura ou arquitetura.
+- **Guide** — nasce em `.app-work/guides/`, é executado, vai para o **espelho** datado:
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (DEC-002). Path já datado é
+  canônico (não-toque); legado sob `.app-work/done/` e flat `archive/guides/<PACK>/` migram na
+  próxima execução. Monolítico ainda citado sem pack: `guides/legados/`. Nunca consultado em
+  análise de feature, infraestrutura ou arquitetura.
 - **Brainstorm** — ao fechar, roteia e não permanece como referência viva: produto →
   `_app-vault/docs/decisions/`; arquitetura/implementação → `project-rules/`; caderno fechado vai
   para o espelho `archive/perguntas/<tema>/` (DEC-002).
 - **PRD** — proposta datada, nem sempre cumprida na totalidade. Não é contrato. Aposentado → o
   espelho `archive/prds/` (DEC-002).
-- **Archive** — espelho de concluídos + depósito do usuário: o que o framework move (concluídos)
-  tem formato definido (`guides/`, `perguntas/`, `prds/` — DEC-002); o resto é depósito livre,
-  sem formato imposto, apagável a qualquer momento. Nenhuma regra do schema depende do que está lá.
-- **Private** — área privada: sessões, roadmap, research, ops, backlog e relatórios de auditoria de
-  feature. Sempre gitignored — nunca sobe ao remoto, logo só existe na máquina local. Como todo
-  `.app-work/`, é proibida como insumo de regra.
+- **Roadmap** — vivo em `.app-work/roadmap/` (`ROADMAP.md` + slices), versionado, única fila de
+  promoção; nunca em `private/`. Marco fechado → `archive/roadmap/<MARCO>_<YYYY-MM>/`.
+- **Docs** — vivos em `.app-work/docs/` (omitir se vazio); aposentado → `archive/docs/`.
+- **Archive** — espelho de concluídos + depósito nominado (não “qualquer pasta”). Espelho: `guides/<YYYY-MM>/semana-<N>/`,
+  `perguntas/`, `prds/`, `roadmap/<MARCO>_<YYYY-MM>/`. Depósito de nomes fixos: `docs/`, `backlogs/`,
+  `plans/`, `sprints/`, `features/`, `design-prototipos/`, `produto/`, `qa/`, `releases/`,
+  `evidence/`, `issues/<YYYY>/`. Nenhuma regra do schema depende do que está lá.
+- **Private** — área privada gitignored: `auditorias/`, `ops/`, `research/`, `notes/`. Não é casa
+  de roadmap. Nunca sobe ao remoto. Como todo `.app-work/`, é proibida como insumo de regra.
 - **Issues (D43)** — registro único de defeitos e ajustes de UI/UX/comportamento: linha no
   `INDEX.md` da pasta (tabela viva por estado — Abertos / Em verificação / Fechados) com ID
   `ISSUE-NNN` sequencial (prefixo único em todos os projetos), severidade S0–S3 e ciclo
@@ -123,7 +134,7 @@ não hermética.
 
 - `docs/TEMPLATES/` **maiúsculo** (minúsculo passa em macOS e quebra em Linux/CI).
 - Guides: `.app-work/guides/<NOME>_GUIDE/`, `<NOME>` em `MAIUSCULO_COM_UNDERSCORE`.
-  Executados: `.app-work/archive/guides/<NOME>_GUIDE/` (DEC-002).
+  Executados: `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (DEC-002).
 - Decisões: `docs/decisions/<dominio>.md`, kebab-case.
 - Gatilho do framework: `_app-vault/INDEX.md` existe. Sem ele, o agente **não cria** o vault.
 
