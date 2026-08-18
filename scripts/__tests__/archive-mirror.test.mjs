@@ -1,59 +1,59 @@
-// DEC-002: espelho do archive — guia concluído vai para `.app-work/archive/guides/`.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   guidePackName,
+  civilWeekOfMonth,
   isArchiveGuideCatalogRoot,
   isCanonicalArchiveGuidePath,
+  isFlatLegacyArchiveGuidePath,
   isLegacyDonePath,
   resolveArchiveGuideDestination,
 } from "./helpers/archive-mirror.mjs";
 
-test("DEC-002: pack *_GUIDE preserva o nome no espelho", () => {
+const D = new Date("2026-08-17T12:00:00");
+
+test("DEC-002: semana civil", () => {
+  assert.equal(civilWeekOfMonth(1), 1);
+  assert.equal(civilWeekOfMonth(8), 2);
+  assert.equal(civilWeekOfMonth(17), 3);
+  assert.equal(civilWeekOfMonth(22), 4);
+  assert.equal(civilWeekOfMonth(31), 5);
+});
+
+test("DEC-002: pack vai para archive/guides/<YYYY-MM>/semana-<N>/<PACK>/", () => {
   assert.equal(guidePackName("docs/guides/XPTO_GUIDE/GUIDE.md"), "XPTO_GUIDE");
   assert.equal(
-    resolveArchiveGuideDestination("docs/guides/XPTO_GUIDE/GUIDE.md"),
-    ".app-work/archive/guides/XPTO_GUIDE/",
-  );
-  assert.equal(
-    resolveArchiveGuideDestination("docs/FOO.md"),
-    ".app-work/archive/guides/",
+    resolveArchiveGuideDestination("docs/guides/XPTO_GUIDE/GUIDE.md", { archiveDate: D }),
+    ".app-work/archive/guides/2026-08/semana-3/XPTO_GUIDE/",
   );
 });
 
-test("DEC-002: origem já no espelho é canônica (keep por posição)", () => {
+test("DEC-002: path datado é canônico; flat é legado", () => {
+  assert.equal(
+    isCanonicalArchiveGuidePath(".app-work/archive/guides/2026-08/semana-3/XPTO_GUIDE/GUIDE.md"),
+    true,
+  );
+  assert.equal(
+    isFlatLegacyArchiveGuidePath(".app-work/archive/guides/XPTO_GUIDE/GUIDE.md"),
+    true,
+  );
   assert.equal(
     isCanonicalArchiveGuidePath(".app-work/archive/guides/XPTO_GUIDE/GUIDE.md"),
-    true,
+    false,
   );
-  assert.equal(
-    resolveArchiveGuideDestination(".app-work/archive/guides/XPTO_GUIDE/GUIDE.md"),
-    ".app-work/archive/guides/XPTO_GUIDE/",
-  );
-  assert.equal(isCanonicalArchiveGuidePath(".app-work/archive/perguntas/x/"), false);
 });
 
-test("DEC-002: legado sob done/ é detectado para migração (nunca keep)", () => {
+test("DEC-002: done/ e flat migram para o datado", () => {
   assert.equal(isLegacyDonePath(".app-work/done/GUIDE.md"), true);
   assert.equal(
-    isLegacyDonePath(".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md"),
-    true,
-  );
-  assert.equal(isLegacyDonePath(".app-work/archive/guides/XPTO_GUIDE/GUIDE.md"), false);
-  // migração: legado (flat ou segmentado) vai ao espelho, sem data
-  assert.equal(
-    resolveArchiveGuideDestination(".app-work/done/GUIDE.md"),
-    ".app-work/archive/guides/",
+    resolveArchiveGuideDestination(".app-work/done/XPTO_GUIDE/GUIDE.md", { archiveDate: D }),
+    ".app-work/archive/guides/2026-08/semana-3/XPTO_GUIDE/",
   );
   assert.equal(
-    resolveArchiveGuideDestination(
-      ".app-work/done/2026-08/semana-33_08-10_a_08-16/XPTO_GUIDE/GUIDE.md",
-    ),
-    ".app-work/archive/guides/XPTO_GUIDE/",
+    resolveArchiveGuideDestination(".app-work/archive/guides/XPTO_GUIDE/GUIDE.md", {
+      archiveDate: D,
+    }),
+    ".app-work/archive/guides/2026-08/semana-3/XPTO_GUIDE/",
   );
-});
-
-test("DEC-002: raiz do catálogo do espelho é expandida pela cascata", () => {
   assert.equal(isArchiveGuideCatalogRoot(".app-work/archive/guides/"), true);
-  assert.equal(isArchiveGuideCatalogRoot(".app-work/done/"), false);
 });

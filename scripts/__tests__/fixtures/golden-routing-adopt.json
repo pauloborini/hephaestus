@@ -61,7 +61,7 @@
       "fragmentId": "76c5682760e58a8ccd389bae6abafeef2a0d0d9f28175687c8acf1f307da56f3",
       "territory": "process",
       "regime": "relocate",
-      "destinationPath": ".app-work/archive/guides/XPTO_GUIDE/",
+      "destinationPath": ".app-work/archive/guides/2026-08/semana-2/XPTO_GUIDE/",
       "confidence": 1,
       "decidedBy": "catalog",
       "evidence": "catálogo: pattern \"guides executados/concluídos — arquivo único ou pack `*_GUIDE/`\" (5 termo(s) casados)",

@@ -116,6 +116,14 @@ const walk = (dirPath) => {
       continue;
     }
 
+    if (relativePath === ".superpowers" || relativePath.startsWith(`.superpowers${path.sep}`)) {
+      continue;
+    }
+
+    if (relativePath === "_app-vault" || relativePath.startsWith(`_app-vault${path.sep}`)) {
+      continue;
+    }
+
     if (entry.isDirectory()) {
       walk(absolutePath);
       continue;

@@ -674,7 +674,7 @@ const checkCoverageMap = (root) => {
 // `reconcile`; a matriz cobre os quatro territórios e, para qualquer valor
 // futuro do enum de territory, o default conservador é apenas `keep`.
 const TERRITORY_REGIME_RULES = {
-  process: ["relocate", "keep"],
+  process: ["relocate", "keep", "delete", "condense"],
   vault: ["reconcile", "keep"],
   agents: ["generate", "keep"],
   "project-rules": ["generate", "keep"],
@@ -1062,7 +1062,9 @@ const checkEphemeralIgnored = (root) => {
 // decidida exclusivamente pela LLM sem aprovação registrada. `destructive` é
 // campo derivado no plan.json (nunca preenchido à mão); o gate aplica INV7
 // sobre o resultado derivado.
-const PLAN_OPERATIONS = new Set(["create", "amend", "overwrite", "move", "keep", "skip"]);
+const PLAN_OPERATIONS = new Set([
+  "create", "amend", "overwrite", "move", "keep", "skip", "delete", "condense",
+]);
 const PLAN_DECIDED_BY = new Set(["keep", "state", "catalog", "detector", "llm", "human"]);
 
 const checkPlanContract = (root) => {
