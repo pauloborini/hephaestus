@@ -6,8 +6,6 @@
   "required": [
     "fragmentId",
     "rawText",
-    "territory",
-    "regime",
     "confidence",
     "ambiguity",
     "provenance"
