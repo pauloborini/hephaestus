@@ -22,6 +22,7 @@
     "COMMANDS.md",
     "COMMANDS.pt-BR.md",
     "LICENSE",
+    "resources/logo-atlas-agents.png",
     "scripts/validate-skill-kit.mjs",
     "scripts/check-public-docs.mjs",
     "scripts/validate-package.mjs",

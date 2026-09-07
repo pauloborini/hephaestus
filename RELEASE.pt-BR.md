@@ -54,7 +54,7 @@ node scripts/pack-release.mjs
 ```
 
 Espera: `hephaestus-N.zip` na raiz (já coberto por `*.zip` no `.gitignore`).
-Não deixe o zip na árvore ao rodar `validate-skill-kit.mjs` — extensão `.zip` é rejeitada no kit.
+`validate-skill-kit.mjs` e o empacotador ignoram apenas esse artefato de release na raiz; qualquer outro `.zip` é rejeitado.
 
 Smoke local opcional:
 
