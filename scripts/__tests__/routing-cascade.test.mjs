@@ -189,30 +189,33 @@ test("AC-3.1.5: dividido em dois fragmentos coerentes, a cascata prossegue", () 
 });
 
 test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino ilegal e a fila", () => {
-  const route = fs.readFileSync(path.join(REPO_ROOT, "prompts", "route.md"), "utf8");
-  // cinco níveis na ordem
+  const routeHub = fs.readFileSync(path.join(REPO_ROOT, "prompts", "route.md"), "utf8");
+  // Progressive Disclosure: catalog rules live in route/catalog.md; hub links them.
+  const catalog = fs.readFileSync(path.join(REPO_ROOT, "prompts", "route", "catalog.md"), "utf8");
+  const route = `${routeHub}\n${catalog}`;
+  // cinco níveis na ordem (hub index)
   const order = [
     "Nível 1", "Nível 2", "Nível 3", "Nível 4", "Nível 5",
   ];
   let cursor = 0;
   for (const marker of order) {
-    const index = route.indexOf(marker);
+    const index = routeHub.indexOf(marker);
     assert.ok(index > cursor, `route.md deve conter "${marker}" em ordem`);
     cursor = index;
   }
   // para no primeiro nível que decide
-  assert.match(route, /para no primeiro nível que decide|primeiro nível que decide/i);
-  // destination null nunca decide: enfileira
-  assert.match(route, /destination: null/i);
+  assert.match(routeHub, /para no primeiro nível que decide|primeiro nível que decide/i);
+  // destination null nunca decide: enfileira (catalog subdoc)
+  assert.match(catalog, /destination: null/i);
   assert.match(route, /enfileira/i);
-  // match mais específico vence o genérico
-  assert.match(route, /especificidade|mais específico vence o genérico/i);
+  // match mais específico vence o genérico (catalog subdoc)
+  assert.match(catalog, /especificidade|mais específico vence o genérico/i);
   // lista fechada de destinos (SCHEMA §2)
-  assert.match(route, /_app-vault/i);
-  assert.match(route, /\.app-work/i);
-  assert.match(route, /project-rules/i);
+  assert.match(routeHub, /_app-vault/i);
+  assert.match(routeHub, /\.app-work/i);
+  assert.match(routeHub, /project-rules/i);
   // needsSplit bloqueia
-  assert.match(route, /needsSplit/);
+  assert.match(routeHub, /needsSplit/);
   // a cascata nunca pergunta: perguntas nascem enfileiradas
   assert.match(route, /nunca/i);
 });
