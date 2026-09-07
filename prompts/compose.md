@@ -10,6 +10,19 @@ Exemplos e contratos longos devem ficar em `project-rules/reference/*`.
 Contratos externos (ex.: OpenAPI) devem ficar em `project-rules/contracts/`, quando o material exigir.
 Referências externas reais podem continuar existindo quando o projeto depender delas, mas devem ser detectadas, registradas e reportadas.
 
+## Entradas
+
+- `.hephaestus/plan.json` / plano aprovado;
+- ledgers (`routing.json`, `identity-map.json`, fragments);
+- `templates/`, `references/`;
+- bloco `shield` do state (se houver).
+
+## Saídas
+
+- `.hephaestus/staging/**` (pacote materializado)
+- `.hephaestus/staging-manifest.json`
+- coverage-map / external-references-report (quando aplicável; ver Cobertura Obrigatória)
+
 ## Agnosticismo de framework
 
 - Detecte o framework e a linguagem do repositório (ex.: Flutter, React, Go, Python).

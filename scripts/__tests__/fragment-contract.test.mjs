@@ -1,5 +1,5 @@
 // AC-1.2.1, AC-1.2.2 e a prova de morte do LEG5: o contrato do fragmento tem
-// territory + regime obrigatórios e independentes, e provenance[] com >= 1 origem.
+// territory + regime opcionais (route preenche), e provenance[] com >= 1 origem.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -22,12 +22,14 @@ const validFragment = (overrides = {}) => ({
   ...overrides,
 });
 
-test("AC-1.2.1: fragmento sem regime é rejeitado pelo schema", () => {
-  const { regime, ...withoutRegime } = validFragment();
+test("AC-1.2.1: fragmento sem territory/regime é aceito (route decide destino)", () => {
+  const { territory, regime, ...withoutDest } = validFragment();
+  assert.ok(territory);
   assert.ok(regime);
-  const result = validate(fragmentSchema, withoutRegime);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((error) => error.includes('"regime"')));
+  const result = validate(fragmentSchema, withoutDest);
+  assert.equal(result.valid, true, result.errors.join("\n"));
+  assert.ok(!fragmentSchema.required.includes("territory"));
+  assert.ok(!fragmentSchema.required.includes("regime"));
 });
 
 test("AC-1.2.1: fragmento com territory vault e regime reconcile é aceito", () => {
@@ -50,8 +52,8 @@ test("AC-1.2.1: enum de territory não volta aos papéis de uma dimensão", () =
     "delete",
     "condense",
   ]);
-  assert.ok(fragmentSchema.required.includes("territory"));
-  assert.ok(fragmentSchema.required.includes("regime"));
+  assert.ok(!fragmentSchema.required.includes("territory"));
+  assert.ok(!fragmentSchema.required.includes("regime"));
 });
 
 test("AC-1.2.2: provenance com duas origens é aceito", () => {
