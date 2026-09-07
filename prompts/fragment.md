@@ -7,6 +7,11 @@ Quebrar fontes extensas em unidades menores e utilizáveis.
 O objetivo não é resumir o material.
 O objetivo é preservar todas as regras relevantes em fragmentos menores, rastreáveis e fáceis de classificar.
 
+## Entradas
+
+- `.hephaestus/manifests/snapshot.json` (e mapa fonte→unidades);
+- `schemas/fragment.schema.json` (forma da saída).
+
 ## Delimitadores preferenciais
 
 - headings
@@ -48,11 +53,14 @@ Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (e
 - fonte original;
 - localização aproximada;
 - texto preservado ou síntese fiel;
+- proveniência (`provenance[]` com `sourcePath`/`startOffset`/`endOffset`) — obrigatória;
 - tipo estrutural inicial: seção, regra, checklist, exemplo, tabela, preferência, metadado ou desconhecido;
 - observações de conflito, duplicidade ou ambiguidade;
 - indicação se o fragmento precisa ser quebrado novamente (`needsSplit`), registrada como campo de observação — fragmento misto marcado `needsSplit` não dividido bloqueia a fase `route`;
 - atualização do checkpoint da fase.
 
-## Saída agregada
+**Não inventar destino.** Em `fragment`, **não** inventar, estimar nem adivinhar `territory`, `regime` nem path de destino. Esses campos são opcionais no schema nesta fase; a fase `route` (cascata) é quem decide destino/território/regime.
 
-`.hephaestus/manifests/fragments.json` — um objeto por fragmento (`fragmentId`, `rawText`, `territory` e `regime` estimados pela estrutura, `confidence`, `ambiguity`, `provenance[]` com `sourcePath`/`startOffset`/`endOffset`), válido pelo `schemas/fragment.schema.json` — consumido por `route` (cascata) e pelos gates `checkCoverage`/`checkKeepBytes` do validador.
+## Saídas
+
+`.hephaestus/manifests/fragments.json` — um objeto por fragmento (`fragmentId`, `rawText`, `confidence`, `ambiguity`, `provenance[]` com `sourcePath`/`startOffset`/`endOffset`; `territory`/`regime` opcionais e tipicamente ausentes até `route`), válido pelo `schemas/fragment.schema.json` — consumido por `route` (cascata decide destino) e pelos gates `checkCoverage`/`checkKeepBytes` do validador.

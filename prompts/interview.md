@@ -64,6 +64,6 @@ Path ou pasta sob `.app-work/` fora da lista fechada (SCHEMA §4 / `inventoryPro
 
 Sim — **única exceção declarada de INV1**: grava `.app-work/hephaestus-state.json` (estado versionado do projeto) fora da transação; o rollback de `verify(applied)` nunca reverte este arquivo. Nenhum outro caminho versionado é escrito.
 
-## Saídas de checkpoint
+## Saídas
 
 Aplicar a regra única de checkpoint do `SKILL.md`: ao iniciar, marcar `interview` como `in_progress`; ao concluir a drenagem, `produced`; marcar `validated` quando a fila estiver drenada (ou bloqueada com run `blocked`) e o estado gravado for válido; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).

@@ -1,3 +1,8 @@
+---
+name: hephaestus
+description: Use when o usuario pedir /hephaestus ou transformar fontes cruas em regras de projeto (AGENTS.md, project-rules, _app-vault, .app-work) numa transacao de escrita.
+---
+
 <!-- Idioma: [English](SKILL.en.md) · **Português** -->
 
 # Hephaestus
@@ -83,6 +88,7 @@ Antes de produzir qualquer artefato final:
 - use `templates/` como alvo estrutural;
 - use `schemas/` para restringir a forma da saída;
 - use `references/` (plural) como apoio do próprio kit, apenas para leitura; **não confundir** com `reference/` (singular) que é a pasta do pacote gerado dentro de `project-rules/`;
+- matriz anti-invenção por fase: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / pasta / texto — não despejar a matriz neste SKILL);
 - use `manifests/` para nomenclatura, política e metadados.
 
 ## Estrutura alvo
@@ -126,150 +132,29 @@ Se a classificação for fraca:
 - registre a ambiguidade;
 - não force uma categoria arbitrária.
 
-## Fases
+## Fases (Progressive Disclosure)
 
-### 1. Preflight
+**Regra de carga:** em cada passo, leia **somente** o prompt da fase atual em `prompts/` (+ schemas/refs listados na linha). Não pré-carregue os outros `prompts/*.md`. I/O, gates e procedimento vivem no prompt — este índice não os duplica.
 
-Leia [prompts/preflight.md](prompts/preflight.md).
+`prompts/validate.md` é **um corpo, dois alvos** (`Alvo: staging` = fase 10 `verify_staging`; `Alvo: applied` = fase 12 `verify_applied`). Manter dual no mesmo arquivo.
 
-Guarda o terreno antes de qualquer trabalho: exige repositório git e worktree limpa nos dois modos, sem override, e resolve o `mode` por presença de `.app-work/hephaestus-state.json` (`adopt` ausente, `maintain` presente) — nunca por heurística sobre estrutura presente. Nenhuma escrita no repositório.
+| # | Fase | Prompt | Job | Lê (mín.) | Produz (mín.) |
+|---|------|--------|-----|-----------|---------------|
+| 1 | `preflight` | [prompts/preflight.md](prompts/preflight.md) | Gate git/worktree + resolve `mode` | `catalog/*`, state se existir | `run-state.mode` |
+| 2 | `discover` | [prompts/discover.md](prompts/discover.md) | Inventário de fontes por modo | naming-policy, drift-catalog | inventário / ausentes |
+| 3 | `snapshot` | [prompts/snapshot.md](prompts/snapshot.md) | Congelar fontes byte a byte | inventário discover | `snapshot.json` |
+| 4 | `fragment` | [prompts/fragment.md](prompts/fragment.md) | Cortar unidades com proveniência | snapshot | `fragments.json` |
+| 5 | `route` | [prompts/route.md](prompts/route.md) | Cascata territory/regime + evidência | fragments, catalog, state | `routing.json`, fila |
+| 6 | `reconcile` | [prompts/reconcile.md](prompts/reconcile.md) | Identidade `DEC-NNN` (casar/cunhar) | routing, `docs/decisions/**` | `identity-map.json` |
+| 7 | `interview` | [prompts/interview.md](prompts/interview.md) | Drenar fila; grava state fora da tx | fila, bloco `answers` | state `answers` |
+| 8 | `plan` | [prompts/plan.md](prompts/plan.md) | Plano legível + destrutividade | ledgers de execução | `plan.json` / `plan.md` |
+| 9 | `compose` | [prompts/compose.md](prompts/compose.md) | Materializar staging (sem repo) | templates/, references/ | `staging/**` + manifest |
+| 10 | `verify_staging` | [prompts/validate.md](prompts/validate.md) `Alvo: staging` | Contrato do pacote no staging | schemas/, manifests/ | veredito staging |
+| 11 | `apply` | [prompts/apply.md](prompts/apply.md) | Única escrita no repo (tx + backup) | staging-manifest aprovado | pacote no worktree |
+| 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Alvo: applied` | Hash no disco; rollback se diverge | staging-manifest | veredito applied |
+| 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Relatório/veredito; não altera pacote | templates/, manifests | `report.md` |
 
-### 2. Discover
-
-Leia [prompts/discover.md](prompts/discover.md).
-
-Saída mínima:
-
-- inventário de fontes por modo (`adopt` integral, `maintain` guiado por `catalog/drift-catalog.json`);
-- lista de fontes ausentes;
-- observações de ambiguidade estrutural inicial.
-
-### 3. Snapshot
-
-Leia [prompts/snapshot.md](prompts/snapshot.md).
-
-Congele o inventário textual relevante antes de reorganizar.
-
-Saída mínima:
-
-- mapa entre fonte original e unidades processáveis;
-- checkpoint da fase em `.hephaestus/manifests/run-state.json`.
-
-### 4. Fragment
-
-Leia [prompts/fragment.md](prompts/fragment.md).
-
-Saída mínima:
-
-- fragmentos menores com localização e texto bruto.
-
-### 5. Route
-
-Leia [prompts/route.md](prompts/route.md).
-
-Atribui `territory` e `regime` por fragmento, com evidência, numa cascata de níveis que para no primeiro que decide; o resíduo da LLM nunca decide sozinho destino destrutivo.
-
-Saída mínima:
-
-- roteamento por fragmento (`territory`, `regime`, `destinationPath`, `decidedBy`, `evidence`).
-
-### 6. Reconcile
-
-Leia [prompts/reconcile.md](prompts/reconcile.md).
-
-Motor de identidade: casa por `DEC-NNN` e por similaridade; **cunha `create` (max+1) quando não há a quem casar** — inclusive na primeira adoção (inventário vazio). Detecta conflito e duplicação de valor entre territórios. Em `adopt`, candidato a decisão roteado para `docs/decisions/` nunca termina em `keep` sem `decId`.
-
-Saída mínima:
-
-- inventário de decisões reconciliadas/cunhadas, com identidade preservada (`identity-map.json` com `decId` em todo destino `docs/decisions/`).
-
-### 7. Interview
-
-Leia [prompts/interview.md](prompts/interview.md).
-
-Dreno único da fila de perguntas; grava as respostas no state **fora** da transação (imune a rollback).
-
-Saída mínima:
-
-- fila drenada e respostas persistidas no bloco `answers`.
-
-### 8. Plan
-
-Leia [prompts/plan.md](prompts/plan.md).
-
-Emite `.hephaestus/plan.json` e `.hephaestus/plan.md` legível e editável, com rastreio obrigatório a fragmento ou resposta e destrutividade derivada por definição mecânica. O usuário lê e aprova antes de qualquer escrita.
-
-Saída mínima:
-
-- plano por artefato (operação, regime, justificativa, origem, destrutividade).
-
-### 9. Compose
-
-Leia [prompts/compose.md](prompts/compose.md).
-
-Materializa o pacote inteiro em `.hephaestus/staging/**` com `.hephaestus/staging-manifest.json` (sha256 por artefato). Não escreve no repositório; dúvida aqui é bug de fase anterior, nunca pergunta.
-
-Saída mínima:
-
-- staging completo + `staging-manifest.json`;
-- `external-references-report.json` e `coverage-map.json` preservados.
-
-### 10. Verify (staging)
-
-Leia [prompts/validate.md](prompts/validate.md) com `Alvo: staging`.
-
-Roda os enforcements contra `.hephaestus/staging/`; status `valid`, `degraded` ou `blocked`.
-
-Saída mínima:
-
-- veredito de staging e checkpoint com fases `validated` vs `produced`.
-
-### 11. Apply
-
-Leia [prompts/apply.md](prompts/apply.md).
-
-Única fase que escreve no repositório. Backup completo em `.hephaestus/backup/<ts>/` antes do primeiro byte, worktree revalidada desde o `preflight`, e ordem `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. A lista final é o `staging-manifest.json` inteiro mais as deletions de `.hephaestus/staging-deletions.json`.
-
-Saída mínima:
-
-- pacote gravado na ordem transacional;
-- `artifactsWritten` completo no run-state.
-
-### 12. Verify (applied)
-
-Leia [prompts/validate.md](prompts/validate.md) com `Alvo: applied`.
-
-Recomputa o hash de cada artefato do `staging-manifest.json` no disco; divergência dispara rollback imediato por git e por `backup/<ts>/`, preservando o state.
-
-Saída mínima:
-
-- veredito de disco hash a hash.
-
-### 13. Closeout
-
-Leia [prompts/closeout.md](prompts/closeout.md).
-
-Emite `.hephaestus/report.md` com pendências, decisões em aberto, referências externas e o veredito final (`ready`, `degraded-but-usable` ou `needs-followup`). Nunca altera o pacote.
-
-Saída mínima:
-
-- relatório de fechamento consistente com os manifests.
-
-## Leituras obrigatórias por fase
-
-- `preflight`: `prompts/preflight.md`, `catalog/routing-defaults.json`, `catalog/drift-catalog.json`
-- `discover`: `prompts/discover.md`, `manifests/naming-policy.json`
-- `snapshot`: `prompts/snapshot.md`
-- `fragment`: `prompts/fragment.md`, `schemas/fragment.schema.json`
-- `route`: `prompts/route.md`, `catalog/routing-defaults.json`, bloco `routing` e `answers` do state
-- `reconcile`: `prompts/reconcile.md`, `_app-vault/docs/decisions/**`
-- `interview`: `prompts/interview.md`, bloco `answers` do state
-- `plan`: `prompts/plan.md`, ledgers de execução
-- `compose`: `prompts/compose.md`, `templates/`, `references/`
-- `verify_staging`: `prompts/validate.md` (Alvo: staging), `schemas/`, `manifests/`
-- `apply`: `prompts/apply.md`, `staging-manifest.json`
-- `verify_applied`: `prompts/validate.md` (Alvo: applied), `staging-manifest.json`
-- `closeout`: `prompts/closeout.md`, `templates/`, artefatos gerados
+Modos `adopt` / `maintain` **não** são fases — ver Superfície.
 
 ## Guardrails
 

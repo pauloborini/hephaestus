@@ -4,6 +4,16 @@
 
 Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com **um corpo, dois alvos**: `verify(staging)` prova a intenção (fase 10) e `verify(applied)` prova o resultado (fase 12).
 
+## Entradas
+
+- parâmetro `Alvo: staging` | `Alvo: applied` (um corpo, dois alvos — não dividir o arquivo);
+- em `staging`: `.hephaestus/staging/` + schemas/manifests;
+- em `applied`: worktree + `.hephaestus/staging-manifest.json` (+ `staging-deletions.json`).
+
+## Saídas
+
+- veredito `staging` | `applied` (parametrizado por `Alvo`)
+
 ## Alvo
 
 - `Alvo: staging` — os checks rodam contra `.hephaestus/staging/` (o pacote materializado por `compose`, ainda não gravado);

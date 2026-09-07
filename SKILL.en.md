@@ -79,6 +79,7 @@ Do not invent the final tree freely. Before producing final artifacts:
 - use `templates/` as the structural target;
 - use `schemas/` to constrain output shape;
 - use `references/` (plural) only as kit support; do not confuse it with the generated package's `project-rules/reference/` directory;
+- per-phase anti-invention matrix: [references/anti-invention-gates.md](references/anti-invention-gates.md) (same path; PT-BR);
 - use `manifests/` for names, policy, and metadata.
 
 ## Target structure
@@ -114,117 +115,29 @@ There is no canonical `memory` role. Persistent agent preferences belong to the 
 
 If classification is weak, mark it `unknown` or low confidence, record the ambiguity, and do not force an arbitrary category.
 
-## Phases
+## Phases (Progressive Disclosure)
 
-### 1. Preflight
+**Load rule:** at each step, read **only** the current phase prompt in `prompts/` (+ schemas/refs listed on the row). Do not preload the other `prompts/*.md`. I/O, gates, and procedure live in the prompt — this index does not duplicate them.
 
-Read [prompts/preflight.md](prompts/preflight.md).
+`prompts/validate.md` is **one body, two targets** (`Target: staging` = phase 10 `verify_staging`; `Target: applied` = phase 12 `verify_applied`). Keep both targets in the same file.
 
-Guards the ground before any work: requires a git repository and a clean worktree in both modes, without override, and resolves `mode` by the presence of `.app-work/hephaestus-state.json` (`adopt` when absent, `maintain` when present) — never by heuristics over present structure. Nothing is written to the repository.
+| # | Phase | Prompt | Job | Reads (min.) | Produces (min.) |
+|---|-------|--------|-----|--------------|-----------------|
+| 1 | `preflight` | [prompts/preflight.md](prompts/preflight.md) | Gate git/worktree + resolve `mode` | `catalog/*`, state if present | `run-state.mode` |
+| 2 | `discover` | [prompts/discover.md](prompts/discover.md) | Source inventory by mode | naming-policy, drift-catalog | inventory / missing |
+| 3 | `snapshot` | [prompts/snapshot.md](prompts/snapshot.md) | Freeze sources byte-for-byte | discover inventory | `snapshot.json` |
+| 4 | `fragment` | [prompts/fragment.md](prompts/fragment.md) | Cut units with provenance | snapshot | `fragments.json` |
+| 5 | `route` | [prompts/route.md](prompts/route.md) | Territory/regime cascade + evidence | fragments, catalog, state | `routing.json`, queue |
+| 6 | `reconcile` | [prompts/reconcile.md](prompts/reconcile.md) | `DEC-NNN` identity (match/mint) | routing, `docs/decisions/**` | `identity-map.json` |
+| 7 | `interview` | [prompts/interview.md](prompts/interview.md) | Drain queue; writes state outside tx | queue, `answers` block | state `answers` |
+| 8 | `plan` | [prompts/plan.md](prompts/plan.md) | Readable plan + destructiveness | execution ledgers | `plan.json` / `plan.md` |
+| 9 | `compose` | [prompts/compose.md](prompts/compose.md) | Materialize staging (no repo writes) | templates/, references/ | `staging/**` + manifest |
+| 10 | `verify_staging` | [prompts/validate.md](prompts/validate.md) `Target: staging` | Package contract on staging | schemas/, manifests/ | staging verdict |
+| 11 | `apply` | [prompts/apply.md](prompts/apply.md) | Sole repo write (tx + backup) | approved staging-manifest | package on worktree |
+| 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Target: applied` | On-disk hash; rollback if diverge | staging-manifest | applied verdict |
+| 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Report/verdict; does not alter package | templates/, manifests | `report.md` |
 
-### 2. Discover
-
-Read [prompts/discover.md](prompts/discover.md).
-
-Output: source inventory by mode (`adopt` is a full scan, `maintain` is driven by `catalog/drift-catalog.json`), missing sources, and initial structural ambiguity notes.
-
-### 3. Snapshot
-
-Read [prompts/snapshot.md](prompts/snapshot.md). Freeze the relevant source inventory before reorganization. Output: source-to-unit map and a checkpoint in `.hephaestus/manifests/run-state.json`.
-
-### 4. Fragment
-
-Read [prompts/fragment.md](prompts/fragment.md). Output: smaller source fragments with location and raw text.
-
-### 5. Route
-
-Read [prompts/route.md](prompts/route.md).
-
-Assigns `territory` and `regime` per fragment, with evidence, through a cascade that stops at the first deciding level; LLM residue never decides a destructive destination on its own.
-
-Output: routing per fragment (`territory`, `regime`, `destinationPath`, `decidedBy`, `evidence`).
-
-### 6. Reconcile
-
-Read [prompts/reconcile.md](prompts/reconcile.md).
-
-Identity engine: match by `DEC-NNN` and by similarity; **mint `create` (max+1) when there is no match** — including first adoption (empty inventory). Detects value conflicts and duplication across territories. In `adopt`, a decision candidate routed to `docs/decisions/` never ends as `keep` without a `decId`.
-
-Output: reconciled/minted decision inventory with preserved identity (`identity-map.json` with `decId` on every `docs/decisions/` destination).
-
-### 7. Interview
-
-Read [prompts/interview.md](prompts/interview.md).
-
-Single drain for the question queue; persists answers in the state **outside** the transaction (immune to rollback).
-
-Output: drained queue and answers persisted in the `answers` block.
-
-### 8. Plan
-
-Read [prompts/plan.md](prompts/plan.md).
-
-Emits readable, editable `.hephaestus/plan.json` and `.hephaestus/plan.md`, with mandatory tracing to a fragment or an answer and destructiveness derived by mechanical definition. The user reads and approves before any write.
-
-Output: per-artifact plan (operation, regime, rationale, origin, destructiveness).
-
-### 9. Compose
-
-Read [prompts/compose.md](prompts/compose.md).
-
-Materializes the whole package into `.hephaestus/staging/**` with `.hephaestus/staging-manifest.json` (sha256 per artifact). Does not write to the repository; doubts here are bugs from a previous phase, never questions.
-
-Output: complete staging + `staging-manifest.json`; `external-references-report.json` and `coverage-map.json` preserved.
-
-### 10. Verify (staging)
-
-Read [prompts/validate.md](prompts/validate.md) with `Target: staging`.
-
-Runs the enforcements against `.hephaestus/staging/`; status `valid`, `degraded`, or `blocked`.
-
-Output: staging verdict and a checkpoint distinguishing `validated` from `produced`.
-
-### 11. Apply
-
-Read [prompts/apply.md](prompts/apply.md).
-
-The only phase that writes to the repository. Complete backup in `.hephaestus/backup/<ts>/` before the first byte, worktree revalidated since `preflight`, and the order `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. The final list is the full `staging-manifest.json` plus deletions from `.hephaestus/staging-deletions.json`.
-
-Output: package written in transactional order; complete `artifactsWritten` in the run-state.
-
-### 12. Verify (applied)
-
-Read [prompts/validate.md](prompts/validate.md) with `Target: applied`.
-
-Recomputes the hash of every `staging-manifest.json` artifact on disk; divergence triggers immediate rollback via git and `backup/<ts>/`, preserving the state.
-
-Output: disk verdict, hash by hash.
-
-### 13. Closeout
-
-Read [prompts/closeout.md](prompts/closeout.md).
-
-Emits `.hephaestus/report.md` with pending items, open decisions, external references and the final verdict (`ready`, `degraded-but-usable`, or `needs-followup`). Never modifies the package.
-
-Output: closeout report consistent with the manifests.
-
-## Required reading by phase
-
-- `preflight`: `prompts/preflight.md`, `catalog/routing-defaults.json`, `catalog/drift-catalog.json`
-- `discover`: `prompts/discover.md`, `manifests/naming-policy.json`
-- `snapshot`: `prompts/snapshot.md`
-- `fragment`: `prompts/fragment.md`, `schemas/fragment.schema.json`
-- `route`: `prompts/route.md`, `catalog/routing-defaults.json`, `routing` and `answers` blocks of the state
-- `reconcile`: `prompts/reconcile.md`, `_app-vault/docs/decisions/**`
-- `interview`: `prompts/interview.md`, `answers` block of the state
-- `plan`: `prompts/plan.md`, execution ledgers
-- `compose`: `prompts/compose.md`, `templates/`, `references/`
-- `verify_staging`: `prompts/validate.md` (Target: staging), `schemas/`, `manifests/`
-- `apply`: `prompts/apply.md`, `staging-manifest.json`
-- `verify_applied`: `prompts/validate.md` (Target: applied), `staging-manifest.json`
-- `closeout`: `prompts/closeout.md`, `templates/`, generated artifacts
-
-The phase prompts are currently maintained in Portuguese; they are normative detail for the procedure above.
+Modes `adopt` / `maintain` are **not** phases — see Surface.
 
 ## Guardrails
 
