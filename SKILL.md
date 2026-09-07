@@ -88,6 +88,7 @@ Antes de produzir qualquer artefato final:
 - use `templates/` como alvo estrutural;
 - use `schemas/` para restringir a forma da saída;
 - use `references/` (plural) como apoio do próprio kit, apenas para leitura; **não confundir** com `reference/` (singular) que é a pasta do pacote gerado dentro de `project-rules/`;
+- matriz anti-invenção por fase: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / pasta / texto — não despejar a matriz neste SKILL);
 - use `manifests/` para nomenclatura, política e metadados.
 
 ## Estrutura alvo
