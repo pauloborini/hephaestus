@@ -54,7 +54,7 @@ node scripts/pack-release.mjs
 ```
 
 Expect: `hephaestus-N.zip` at the repo root (already covered by `*.zip` in `.gitignore`).
-Do not leave the zip in the tree when running `validate-skill-kit.mjs` — `.zip` is a rejected kit extension.
+`validate-skill-kit.mjs` and the packer ignore only this root release artifact; any other `.zip` is rejected.
 
 Optional local smoke:
 
@@ -135,4 +135,3 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v4`.
 - Artifact: `hephaestus-4.zip`.
 - Content: self-contained `.app-work/` hygiene (`maintain` inventories the interior; INV9 `delete`/`condense`); closed process schema (`roadmap/`, `docs/`, `guides/legados/`; dated archive mirror); new patterns become pack candidates (not overlay folders). No auxiliary organization skill.
-
