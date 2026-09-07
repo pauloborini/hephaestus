@@ -87,7 +87,7 @@ const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
 
 const legacyPatterns = ["project-context", "extended-memory"];
 
-const allowedExtensions = new Set([".md", ".template", ".json", ".mjs"]);
+const allowedExtensions = new Set([".md", ".template", ".json", ".mjs", ".png"]);
 const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
 // Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
@@ -103,6 +103,12 @@ const walk = (dirPath) => {
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.name === ".git" || entry.name === ".gitkeep") {
+      continue;
+    }
+
+    // Artefato de pack-release (hephaestus-*.zip) — não faz parte do kit;
+    // skip *.zip para o gate não falhar com zip residual na raiz.
+    if (entry.name.endsWith(".zip")) {
       continue;
     }
 

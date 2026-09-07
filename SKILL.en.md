@@ -1,4 +1,8 @@
 <!-- Language: **English** · [Português](SKILL.md) -->
+---
+name: hephaestus
+description: Use when the user asks for /hephaestus or to turn raw sources into project rules (AGENTS.md, project-rules, _app-vault, .app-work) in a single write transaction.
+---
 
 # Hephaestus
 
