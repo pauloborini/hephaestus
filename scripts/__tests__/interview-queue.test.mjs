@@ -24,25 +24,35 @@ const FILA_CHANNEL =
   /(?:enfileir|fila|nasce|drenad|bloqueante|questionKey|nunca|não|nao|justifica|registra)/i;
 
 test("AC-5.2.3: route.md e reconcile.md não instruem perguntar — só enfileiram", () => {
-  for (const file of ["route.md", "reconcile.md"]) {
-    const contents = readPrompt(file);
+  // Progressive Disclosure: regra da fila vive em route/residual.md; hub só aponta.
+  const routeCorpus = [readPrompt("route.md"), readPrompt(path.join("route", "residual.md"))].join("\n");
+  const targets = [
+    ["route.md+route/residual.md", routeCorpus],
+    ["reconcile.md", readPrompt("reconcile.md")],
+  ];
+  for (const [label, contents] of targets) {
     const offenders = [];
     for (const line of contents.split("\n")) {
       if (!ASK_IMPERATIVES.test(line)) continue;
       if (FILA_CHANNEL.test(line)) continue;
       offenders.push(line.trim());
     }
-    assert.deepEqual(offenders, [], `${file}: instrução direta de perguntar na fase de origem`);
+    assert.deepEqual(offenders, [], `${label}: instrução direta de perguntar na fase de origem`);
   }
 });
 
 test("AC-5.2.3: as duas fases declaram o canal da fila e a lista do que nunca pergunta", () => {
-  for (const file of ["route.md", "reconcile.md"]) {
-    const contents = readPrompt(file);
-    assert.match(contents, /Fila de perguntas/, `${file}: seção da fila ausente`);
-    assert.match(contents, /enfileira/, `${file}: deve enfileirar`);
-    assert.match(contents, /Justifica pergunta/, `${file}: lista fechada do que justifica pergunta`);
-    assert.match(contents, /Nunca pergunta/, `${file}: lista fechada do que nunca pergunta`);
+  // Question-rule prose is in route/residual.md (hub links it; do not restuff hub).
+  const routeCorpus = [readPrompt("route.md"), readPrompt(path.join("route", "residual.md"))].join("\n");
+  const targets = [
+    ["route.md+route/residual.md", routeCorpus],
+    ["reconcile.md", readPrompt("reconcile.md")],
+  ];
+  for (const [label, contents] of targets) {
+    assert.match(contents, /Fila de perguntas/, `${label}: seção da fila ausente`);
+    assert.match(contents, /enfileira/, `${label}: deve enfileirar`);
+    assert.match(contents, /Justifica pergunta/, `${label}: lista fechada do que justifica pergunta`);
+    assert.match(contents, /Nunca pergunta/, `${label}: lista fechada do que nunca pergunta`);
   }
 });
 
