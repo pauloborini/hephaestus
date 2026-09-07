@@ -8,6 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { mkdtemp, runNode, writeFile, writeJson } from "./helpers/fs-utils.mjs";
+import { copyFixture } from "./helpers/fixtures.mjs";
 import { makeValidPackage, writeCoverageMap, coverageEntry } from "./helpers/package-fixture.mjs";
 
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
@@ -74,7 +75,7 @@ test("AC-4.2.2/CN8: sem coverage-map o gate não bloqueia pacotes sem a fase", (
 });
 
 test("AC-4.2.2: pacote-adopt — nenhum fragmento vault alojado no AGENTS.md (gate agregado)", () => {
-  const pacote = path.join(import.meta.dirname, "fixtures", "pacote-adopt");
+  const pacote = copyFixture("pacote-adopt");
   const result = runValidator(pacote);
   assert.equal(result.status, 0, result.stderr);
 });
