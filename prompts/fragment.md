@@ -7,6 +7,11 @@ Quebrar fontes extensas em unidades menores e utilizáveis.
 O objetivo não é resumir o material.
 O objetivo é preservar todas as regras relevantes em fragmentos menores, rastreáveis e fáceis de classificar.
 
+## Entradas
+
+- `.hephaestus/manifests/snapshot.json` (e mapa fonte→unidades);
+- `schemas/fragment.schema.json` (forma da saída).
+
 ## Delimitadores preferenciais
 
 - headings
@@ -53,6 +58,6 @@ Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (e
 - indicação se o fragmento precisa ser quebrado novamente (`needsSplit`), registrada como campo de observação — fragmento misto marcado `needsSplit` não dividido bloqueia a fase `route`;
 - atualização do checkpoint da fase.
 
-## Saída agregada
+## Saídas
 
 `.hephaestus/manifests/fragments.json` — um objeto por fragmento (`fragmentId`, `rawText`, `territory` e `regime` estimados pela estrutura, `confidence`, `ambiguity`, `provenance[]` com `sourcePath`/`startOffset`/`endOffset`), válido pelo `schemas/fragment.schema.json` — consumido por `route` (cascata) e pelos gates `checkCoverage`/`checkKeepBytes` do validador.

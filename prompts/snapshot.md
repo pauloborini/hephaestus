@@ -4,6 +4,11 @@
 
 Congelar um inventário estável das fontes e unidades que seguirão para fragmentação.
 
+## Entradas
+
+- inventário de fontes da fase `discover`;
+- checkpoint `.hephaestus/manifests/run-state.json`.
+
 ## Regras
 
 - não reinterpretar regras ainda;
@@ -16,7 +21,7 @@ Congelar um inventário estável das fontes e unidades que seguirão para fragme
 
 Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored) e o ledger `.hephaestus/manifests/snapshot.json` (efêmero, gitignored).
 
-## Saída mínima
+## Saídas
 
 - `.hephaestus/manifests/snapshot.json` — congelamento byte a byte das fontes: `files` (uma entrada por fonte: `path`, `sha256`, `size`) e `ignoredRegions` (regiões declaradamente ignoradas: `path`, `startOffset`, `endOffset`, `reason`) — consumido pelo gate `checkCoverage` do validador (INV5);
 - mapa entre cada fonte e suas unidades processáveis;
