@@ -79,6 +79,7 @@ Do not invent the final tree freely. Before producing final artifacts:
 - use `templates/` as the structural target;
 - use `schemas/` to constrain output shape;
 - use `references/` (plural) only as kit support; do not confuse it with the generated package's `project-rules/reference/` directory;
+- per-phase anti-invention matrix: [references/anti-invention-gates.md](references/anti-invention-gates.md) (same path; PT-BR);
 - use `manifests/` for names, policy, and metadata.
 
 ## Target structure
