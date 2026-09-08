@@ -135,3 +135,11 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v4`.
 - Artefato: `hephaestus-4.zip`.
 - Conteúdo: higiene autocontida de `.app-work/` (`maintain` inventaria o interior; INV9 `delete`/`condense`); schema fechado de processo (`roadmap/`, `docs/`, `guides/legados/`; espelho de archive datado); padrão novo vira candidato de pack (não pasta via overlay). Sem skill auxiliar de organização.
+
+## Quinta release (v5)
+
+- Versão manifesto: `"5"`.
+- Tag: `v5`.
+- Artefato: `hephaestus-5.zip`.
+- Conteúdo: divulgação progressiva (progressive disclosure) nos prompts de fases e detectores de rota; matriz de anti-invenção INV9 e verificação rigorosa de regimes por território; roteamento diferido de território/regime; validação aprimorada de cabeçalhos de documentação bilíngue e integridade de empacotamento; integração canônica do /release-pipeline (`.app-work/releases/BUILD_AND_RELEASE.md` e recibo `.app-work/releases/RELEASE_v5.md`).
+
