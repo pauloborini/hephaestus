@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "4",
+  "version": "5",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
@@ -22,6 +22,7 @@
     "COMMANDS.md",
     "COMMANDS.pt-BR.md",
     "LICENSE",
+    "resources/logo-atlas-agents.png",
     "scripts/validate-skill-kit.mjs",
     "scripts/check-public-docs.mjs",
     "scripts/validate-package.mjs",
