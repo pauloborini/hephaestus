@@ -56,6 +56,19 @@ const publicDocumentationPairs = [
   ["SKILL.en.md", "SKILL.md"],
 ];
 
+const languageHeader = (contents) => {
+  const lines = contents.split("\n");
+  if (lines[0] !== "---") {
+    return lines.slice(0, 5).join("\n");
+  }
+
+  const frontmatterEnd = lines.indexOf("---", 1);
+  if (frontmatterEnd === -1) {
+    return "";
+  }
+  return lines.slice(frontmatterEnd + 1, frontmatterEnd + 6).join("\n");
+};
+
 for (const [english, portuguese] of publicDocumentationPairs) {
   // Par inteiro em `packExcludes` não viaja no kit distribuído — mesma razão
   // que já dispensa a entrada em `requiredFiles` acima. Par só parcialmente
@@ -74,7 +87,7 @@ for (const [english, portuguese] of publicDocumentationPairs) {
     }
 
     const contents = fs.readFileSync(filePath, "utf8");
-    const header = contents.split("\n").slice(0, 5).join("\n");
+    const header = languageHeader(contents);
     if (!header.includes(marker) || !header.includes(`](${peer})`)) {
       fail(`${file} must link ${peer} in its language header`);
     }
@@ -87,7 +100,7 @@ const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
 
 const legacyPatterns = ["project-context", "extended-memory"];
 
-const allowedExtensions = new Set([".md", ".template", ".json", ".mjs"]);
+const allowedExtensions = new Set([".md", ".template", ".json", ".mjs", ".png"]);
 const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
 // Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
@@ -108,6 +121,13 @@ const walk = (dirPath) => {
 
     const absolutePath = path.join(dirPath, entry.name);
     const relativePath = path.relative(rootDir, absolutePath);
+    // Apenas o artefato de release na raiz é saída, não conteúdo. Qualquer
+    // outro .zip precisa reprovar como tipo não suportado.
+    const isOwnReleaseZip =
+      path.dirname(relativePath) === "." && /^hephaestus-[^/]+\.zip$/.test(path.basename(relativePath));
+    if (isOwnReleaseZip) {
+      continue;
+    }
     if (skippedRelativePaths.has(relativePath)) {
       continue;
     }

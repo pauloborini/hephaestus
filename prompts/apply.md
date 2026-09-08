@@ -52,6 +52,6 @@ Defeito detectado nas fases anteriores chega aqui **enfileirado** com `findingSi
 
 `verify(applied)` com divergência de hash dispara rollback imediato: primeiro `git`, depois `.hephaestus/backup/<ts>/`, nesta ordem. `.app-work/hephaestus-state.json` nunca é revertido. O staging órfão é descartado na retomada.
 
-## Saídas de checkpoint
+## Saídas
 
 Aplicar a regra única de checkpoint do `SKILL.md`: ao iniciar, marcar `apply` como `in_progress`; ao concluir a transação, `produced`; marcar `validated` quando `verify(applied)` confirmar os hashes do staging-manifest no disco; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).

@@ -4,6 +4,13 @@
 
 Descobrir as fontes cruas do usuário antes de qualquer reorganização.
 
+## Entradas
+
+- `mode` do run-state (`preflight`);
+- `manifests/naming-policy.json`;
+- `catalog/drift-catalog.json` (e overlay de `routing` quando `maintain`);
+- state `.app-work/hephaestus-state.json` quando presente (`meta.lastRunAt` em `maintain`).
+
 ## Escopo por modo
 
 O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo `mode` do run-state), nunca por heurística sobre estrutura presente:
@@ -37,7 +44,7 @@ O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo 
 
 Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored).
 
-## Saída mínima
+## Saídas
 
 - inventário de fontes;
 - notas de estrutura;
