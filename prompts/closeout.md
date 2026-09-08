@@ -4,6 +4,12 @@
 
 Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um fechamento consistente do pacote, com veredito explícito e a lista do que a LLM decidiu sozinha. O closeout **não decide nada novo**: o gate de resíduo (fase `route`) marca; esta fase traduz em veredito.
 
+## Entradas
+
+- run-state e manifests pós-`apply` (`coverage-map`, `routing`, external-references);
+- pacote aplicado nos quatro territórios;
+- `templates/` / forma do relatório.
+
 ## Regras
 
 - aplicar a regra única de checkpoint do `SKILL.md` em toda a fase: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `closeout` como `in_progress`; ao concluir o relatório, marcar `closeout` como `produced`; marcar `closeout` como `validated` quando a saída mínima estiver consistente com os manifests e os artefatos do `apply`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
@@ -25,7 +31,7 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 - `degraded-but-usable` — há entrada degradante (lista nominal obrigatória) ou pendência controlada; o pacote é utilizável com ressalvas; **não** use este veredito para “decisions/ vazio na primeira adoção” quando havia material de decisão — isso é `needs-followup`;
 - `needs-followup` — pendência bloqueante em aberto (ex.: fila de entrevista não drenada; adoção incompleta do vault: decisões legadas não promovidas a `DEC-NNN`); o run não é dado como concluído.
 
-## Saída mínima
+## Saídas
 
 `.hephaestus/report.md` — sem omitir seção mesmo quando vazia (com `nenhuma` explícito), contendo:
 

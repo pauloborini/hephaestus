@@ -51,9 +51,9 @@ const isExcluded = (relativePath) => {
   });
 };
 
-// O próprio artefato do empacotador (release anterior na mesma árvore) nunca
-// viaja no zip — é saída, não conteúdo.
-const isOwnZip = (relativePath) => /^hephaestus-.*\.zip$/.test(path.basename(relativePath));
+// Apenas o próprio artefato de release na raiz é saída, não conteúdo.
+const isOwnZip = (relativePath) =>
+  path.dirname(relativePath) === "." && /^hephaestus-[^/]+\.zip$/.test(path.basename(relativePath));
 
 const collectFiles = (dirPath) => {
   const files = [];
@@ -76,6 +76,11 @@ const collectFiles = (dirPath) => {
 };
 
 const files = collectFiles(rootDir).sort();
+const unexpectedZips = files.filter((relativePath) => path.extname(relativePath).toLowerCase() === ".zip");
+if (unexpectedZips.length > 0) {
+  fail(`unexpected zip artifacts:\n${unexpectedZips.join("\n")}`);
+}
+
 // Entrada de diretório raiz primeiro: descompactar sempre cria/sobrescreve
 // `hephaestus/`, nunca uma segunda pasta com versão no nome.
 const entries = ["hephaestus/", ...files.map((relativePath) => `hephaestus/${relativePath}`)];

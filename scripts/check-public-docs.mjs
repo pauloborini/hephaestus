@@ -17,6 +17,19 @@ const packExcludes = Array.isArray(manifest.packExcludes) ? manifest.packExclude
 const isPackExcluded = (relativePath) =>
   packExcludes.some((entry) => relativePath === entry || relativePath.startsWith(`${entry}/`));
 
+const languageHeader = (contents) => {
+  const lines = contents.split("\n");
+  if (lines[0] !== "---") {
+    return lines.slice(0, 5).join("\n");
+  }
+
+  const frontmatterEnd = lines.indexOf("---", 1);
+  if (frontmatterEnd === -1) {
+    return "";
+  }
+  return lines.slice(frontmatterEnd + 1, frontmatterEnd + 6).join("\n");
+};
+
 let failed = false;
 
 for (const [english, portuguese] of pairs) {
@@ -32,9 +45,9 @@ for (const [english, portuguese] of pairs) {
       continue;
     }
 
-    const prefix = fs.readFileSync(filePath, "utf8").split("\n").slice(0, 5).join("\n");
+    const prefix = languageHeader(fs.readFileSync(filePath, "utf8"));
     if (!prefix.includes(marker) || !prefix.includes(`](${peer})`)) {
-      console.error(`Documentation check failed: ${file} must link ${peer} in its first five lines.`);
+      console.error(`Documentation check failed: ${file} must link ${peer} in its language header.`);
       failed = true;
     }
   }

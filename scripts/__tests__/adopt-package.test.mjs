@@ -18,36 +18,40 @@ import { copyFixture } from "./helpers/fixtures.mjs";
 import { runAdoptPipeline } from "./helpers/compose-engine.mjs";
 import { parseDecisionFile } from "./helpers/reconcile-engine.mjs";
 
-const FIXTURE = path.join(import.meta.dirname, "fixtures", "pacote-adopt");
 const NOW = "2026-08-12";
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
 
-const read = (rel) => fs.readFileSync(path.join(FIXTURE, rel), "utf8");
+// Sempre cópia exclusiva — o fixture versionado em fixtures/pacote-adopt é
+// imutável sob concorrência do runner (AC-6.1.3 / HOTFIX flake).
+const adoptedPackage = () => copyFixture("pacote-adopt");
+const readFrom = (pkg, rel) => fs.readFileSync(path.join(pkg, rel), "utf8");
 
 test("AC-4.3.1/CN1: pacote-adopt valida ponta a ponta (gate agregado da trilha)", () => {
-  const result = runValidator(FIXTURE);
+  const pkg = adoptedPackage();
+  const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);
   assert.ok(result.stdout.includes("Package validation passed"), result.stdout);
 });
 
 test("AC-4.3.1/CN1: os quatro territórios existem e estão coerentes", () => {
+  const pkg = adoptedPackage();
   // agents
-  assert.ok(fs.existsSync(path.join(FIXTURE, "AGENTS.md")), "AGENTS.md ausente");
-  assert.match(read("AGENTS.md"), /^# .+— contrato do agente/m);
+  assert.ok(fs.existsSync(path.join(pkg, "AGENTS.md")), "AGENTS.md ausente");
+  assert.match(readFrom(pkg, "AGENTS.md"), /^# .+— contrato do agente/m);
   // project-rules
-  assert.ok(fs.existsSync(path.join(FIXTURE, "project-rules", "rules", "domain_rules.md")));
-  assert.ok(fs.existsSync(path.join(FIXTURE, "project-rules", "index", "README.md")));
+  assert.ok(fs.existsSync(path.join(pkg, "project-rules", "rules", "domain_rules.md")));
+  assert.ok(fs.existsSync(path.join(pkg, "project-rules", "index", "README.md")));
   // vault
-  assert.ok(fs.existsSync(path.join(FIXTURE, "_app-vault", "INDEX.md")));
-  assert.ok(fs.existsSync(path.join(FIXTURE, "_app-vault", "docs", "decisions", "produto.md")));
-  assert.ok(fs.existsSync(path.join(FIXTURE, "_app-vault", "docs", "decisions", "ideias.md")));
+  assert.ok(fs.existsSync(path.join(pkg, "_app-vault", "INDEX.md")));
+  assert.ok(fs.existsSync(path.join(pkg, "_app-vault", "docs", "decisions", "produto.md")));
+  assert.ok(fs.existsSync(path.join(pkg, "_app-vault", "docs", "decisions", "ideias.md")));
   // process
-  assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", ".gitignore")));
-  assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", "brainstorming", "tema-x.md")));
+  assert.ok(fs.existsSync(path.join(pkg, ".app-work", ".gitignore")));
+  assert.ok(fs.existsSync(path.join(pkg, ".app-work", "brainstorming", "tema-x.md")));
   assert.ok(
     fs.existsSync(
       path.join(
-        FIXTURE,
+        pkg,
         ".app-work",
         "archive",
         "guides",
@@ -58,29 +62,31 @@ test("AC-4.3.1/CN1: os quatro territórios existem e estão coerentes", () => {
       ),
     ),
   );
-  assert.ok(fs.existsSync(path.join(FIXTURE, ".app-work", "references", "analise-argus.md")));
+  assert.ok(fs.existsSync(path.join(pkg, ".app-work", "references", "analise-argus.md")));
 });
 
 test("AC-4.3.1/CN1: a regra enterrada no README virou DEC-NNN e project-rules cita o ID sem repetir o valor", () => {
+  const pkg = adoptedPackage();
   // o valor mora em um único território: a decisão
-  const produto = read("_app-vault/docs/decisions/produto.md");
+  const produto = readFrom(pkg, "_app-vault/docs/decisions/produto.md");
   assert.match(produto, /### DEC-002 — Limite de consultas/);
   assert.ok(produto.includes("20 consultas por mês"), produto);
   // o resíduo da LLM congelado também virou decisão (ideias.md)
-  assert.match(read("_app-vault/docs/decisions/ideias.md"), /### DEC-001 — Ideias/);
+  assert.match(readFrom(pkg, "_app-vault/docs/decisions/ideias.md"), /### DEC-001 — Ideias/);
   // project-rules/ cita o ID sem repetir o valor
-  const domainRules = read("project-rules/rules/domain_rules.md");
+  const domainRules = readFrom(pkg, "project-rules/rules/domain_rules.md");
   assert.ok(domainRules.includes("DEC-002"), "domain_rules.md deve citar DEC-002");
-  for (const prFile of fs.readdirSync(path.join(FIXTURE, "project-rules"), { recursive: true }).filter((f) => String(f).endsWith(".md"))) {
-    const content = fs.readFileSync(path.join(FIXTURE, "project-rules", String(prFile)), "utf8");
+  for (const prFile of fs.readdirSync(path.join(pkg, "project-rules"), { recursive: true }).filter((f) => String(f).endsWith(".md"))) {
+    const content = fs.readFileSync(path.join(pkg, "project-rules", String(prFile)), "utf8");
     assert.ok(!content.includes("20 consultas por mês"), `project-rules/${prFile} repete o valor da decisão`);
   }
   // o AGENTS.md não carrega regra de domínio nem decisão (CN8)
-  assert.ok(!/^###\s+DEC-/m.test(read("AGENTS.md")), "AGENTS.md com cláusula DEC embutida");
+  assert.ok(!/^###\s+DEC-/m.test(readFrom(pkg, "AGENTS.md")), "AGENTS.md com cláusula DEC embutida");
 });
 
 test("AC-4.3.1/CN1: guide e brainstorm foram movidos para .app-work/ sem reescrita (bytes idênticos)", () => {
-  const origem = path.join(import.meta.dirname, "fixtures", "repo-desorganizado");
+  const pkg = adoptedPackage();
+  const origem = copyFixture("repo-desorganizado");
   const moved = [
     ["docs/brainstorming/tema-x.md", ".app-work/brainstorming/tema-x.md"],
     [
@@ -91,13 +97,14 @@ test("AC-4.3.1/CN1: guide e brainstorm foram movidos para .app-work/ sem reescri
   ];
   for (const [src, dest] of moved) {
     const original = fs.readFileSync(path.join(origem, src));
-    const relocated = fs.readFileSync(path.join(FIXTURE, dest));
+    const relocated = fs.readFileSync(path.join(pkg, dest));
     assert.deepEqual(relocated, original, `${dest} deve ser cópia byte a byte de ${src}`);
   }
 });
 
 test("AC-4.3.1/CN1: proveniência da captura no cabeçalho do staging-manifest", () => {
-  const manifest = JSON.parse(read(".hephaestus/staging-manifest.json"));
+  const pkg = adoptedPackage();
+  const manifest = JSON.parse(readFrom(pkg, ".hephaestus/staging-manifest.json"));
   assert.ok(manifest._provenance, "staging-manifest sem proveniência");
   assert.equal(manifest._provenance.fixture, "scripts/__tests__/fixtures/repo-desorganizado");
   assert.ok(manifest._provenance.capturedAt, "sem data de captura");
@@ -106,9 +113,10 @@ test("AC-4.3.1/CN1: proveniência da captura no cabeçalho do staging-manifest",
 });
 
 test("AC-4.3.2/CN1: INDEX.md lista exatamente os domínios existentes e Por feature derivado de Afeta", () => {
-  const index = read("_app-vault/INDEX.md");
+  const pkg = adoptedPackage();
+  const index = readFrom(pkg, "_app-vault/INDEX.md");
   // domínios == arquivos de docs/decisions/
-  const decisionsDir = path.join(FIXTURE, "_app-vault", "docs", "decisions");
+  const decisionsDir = path.join(pkg, "_app-vault", "docs", "decisions");
   const domains = fs.readdirSync(decisionsDir).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, "")).sort();
   assert.deepEqual(domains, ["ideias", "produto"]);
   for (const domain of domains) {
@@ -117,7 +125,7 @@ test("AC-4.3.2/CN1: INDEX.md lista exatamente os domínios existentes e Por feat
   // Por feature consistente com TODOS os campos Afeta:
   const afetaMap = new Map();
   for (const domain of domains) {
-    const parsed = parseDecisionFile(read(`_app-vault/docs/decisions/${domain}.md`));
+    const parsed = parseDecisionFile(readFrom(pkg, `_app-vault/docs/decisions/${domain}.md`));
     afetaMap.set(domain, parsed.afeta);
   }
   const expectedLines = [];
@@ -138,6 +146,7 @@ test("AC-4.3.2/CN1: INDEX.md lista exatamente os domínios existentes e Por feat
 });
 
 test("AC-4.3.3/CN1: scaffold sem pasta fora da lista fechada de SCHEMA.md §2 e .app-work/.gitignore presente", () => {
+  const pkg = adoptedPackage();
   // lista fechada = filhos diretos de .app-work e _app-vault — nesting sob
   // archive/guides/ (espelho) é conteúdo, não pasta nova da lista (DEC-002)
   const allowedTopLevel = {
@@ -148,7 +157,7 @@ test("AC-4.3.3/CN1: scaffold sem pasta fora da lista fechada de SCHEMA.md §2 e 
     ]),
   };
   for (const [relDir, allowed] of Object.entries(allowedTopLevel)) {
-    const abs = path.join(FIXTURE, relDir);
+    const abs = path.join(pkg, relDir);
     if (!fs.existsSync(abs)) continue;
     for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
@@ -159,12 +168,13 @@ test("AC-4.3.3/CN1: scaffold sem pasta fora da lista fechada de SCHEMA.md §2 e 
     }
   }
   // .app-work/.gitignore versionado mesmo com conteúdo mínimo
-  const gitignore = read(".app-work/.gitignore");
+  const gitignore = readFrom(pkg, ".app-work/.gitignore");
   assert.ok(gitignore.includes("references/"), gitignore);
   assert.ok(gitignore.includes("private/"), gitignore);
 });
 
 test("AC-4.3.x/CN1: replay do pipeline sobre cópia do fixture reproduz os territórios byte a byte", () => {
+  const pkg = adoptedPackage();
   const copy = copyFixture("repo-desorganizado");
   const { files, composed } = runAdoptPipeline(copy, { now: NOW });
   const compared = [
@@ -184,7 +194,7 @@ test("AC-4.3.x/CN1: replay do pipeline sobre cópia do fixture reproduz os terri
     ".app-work/archive/guides/2026-08/semana-2/XPTO_GUIDE/GUIDE.md",
   ];
   for (const rel of compared) {
-    assert.equal(files.get(rel), read(rel), `replay divergiu em ${rel}`);
+    assert.equal(files.get(rel), readFrom(pkg, rel), `replay divergiu em ${rel}`);
   }
   assert.ok(composed.includes(".hephaestus/staging-manifest.json") === false, "staging-manifest não entra na lista que descreve");
 });
