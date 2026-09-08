@@ -135,3 +135,11 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v4`.
 - Artifact: `hephaestus-4.zip`.
 - Content: self-contained `.app-work/` hygiene (`maintain` inventories the interior; INV9 `delete`/`condense`); closed process schema (`roadmap/`, `docs/`, `guides/legados/`; dated archive mirror); new patterns become pack candidates (not overlay folders). No auxiliary organization skill.
+
+## Fifth release (v5)
+
+- Manifest version: `"5"`.
+- Tag: `v5`.
+- Artifact: `hephaestus-5.zip`.
+- Content: progressive disclosure for pipeline prompts and routing detectors; INV9 anti-invention matrix and strict regime/territory verification; deferred territory/regime routing; bilingual documentation header validation; release-pipeline canonical integration (`.app-work/releases/BUILD_AND_RELEASE.md` and receipt `.app-work/releases/RELEASE_v5.md`).
+
