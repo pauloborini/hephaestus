@@ -1,8 +1,9 @@
-<!-- Idioma: [English](SKILL.en.md) · **Português** -->
 ---
 name: hephaestus
 description: Use when o usuario pedir /hephaestus ou transformar fontes cruas em regras de projeto (AGENTS.md, project-rules, _app-vault, .app-work) numa transacao de escrita.
 ---
+
+<!-- Idioma: [English](SKILL.en.md) · **Português** -->
 
 # Hephaestus
 
