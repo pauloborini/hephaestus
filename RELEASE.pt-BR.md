@@ -143,3 +143,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Artefato: `hephaestus-5.zip`.
 - Conteúdo: divulgação progressiva (progressive disclosure) nos prompts de fases e detectores de rota; matriz de anti-invenção INV9 e verificação rigorosa de regimes por território; roteamento diferido de território/regime; validação aprimorada de cabeçalhos de documentação bilíngue e integridade de empacotamento; integração canônica do /release-pipeline (`.app-work/releases/BUILD_AND_RELEASE.md` e recibo `.app-work/releases/RELEASE_v5.md`).
 
+
+## Sexto release (v6)
+
+- Versão do manifesto: "6".
+- Tag: v6.
+- Artefato: hephaestus-6.zip.
+- Conteúdo: empacotamento puro da skill; exclusão de resources/ e scripts/ do pacote de release (packExcludes); redução de tamanho para ~107 KB; conformidade de caracteres (hífens padrão) para instalação limpa no Gemini App e outros hosts.

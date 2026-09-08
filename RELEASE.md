@@ -143,3 +143,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Artifact: `hephaestus-5.zip`.
 - Content: progressive disclosure for pipeline prompts and routing detectors; INV9 anti-invention matrix and strict regime/territory verification; deferred territory/regime routing; bilingual documentation header validation; release-pipeline canonical integration (`.app-work/releases/BUILD_AND_RELEASE.md` and receipt `.app-work/releases/RELEASE_v5.md`).
 
+
+## Sixth release (v6)
+
+- Manifest version: "6".
+- Tag: v6.
+- Artifact: hephaestus-6.zip.
+- Content: pure skill packaging; resources/ and scripts/ excluded from release distribution (packExcludes); bundle size optimized to ~107 KB; standard hyphen formatting for skill ecosystem compliance.

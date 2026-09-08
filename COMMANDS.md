@@ -1,8 +1,8 @@
 <!-- Language: **English** · [Português](COMMANDS.pt-BR.md) -->
 
-# Hephaestus — command reference
+# Hephaestus - command reference
 
-Run commands from the repository root. The test suite itself does not travel in the release zip (`manifests/kit-manifest.json:packExcludes`), so `node --test` only applies to a checkout of the kit repository; the other commands work from an unpacked install too.
+Run commands from the repository root. Scripts and the test suite do not travel in the release zip (`manifests/kit-manifest.json:packExcludes`), so development commands (`node scripts/...`, `node --test`) apply to a checkout of the kit repository.
 
 ## Validate the distributable kit
 
