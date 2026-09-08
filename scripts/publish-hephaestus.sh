@@ -41,7 +41,7 @@ done
 
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "${SOURCE_DIR}/" "${TMP_DIR}/"
 
-node "${TMP_DIR}/scripts/validate-skill-kit.mjs" "${TMP_DIR}"
+node "${SOURCE_DIR}/scripts/validate-skill-kit.mjs" "${TMP_DIR}"
 
 if [[ -z "$(git -C "${TMP_DIR}" status --short)" ]]; then
   echo "No public distribution changes to publish."

@@ -40,12 +40,12 @@ Uma execução governa os **quatro territórios** documentais do repositório nu
 | `AGENTS.md` | postura do agente, parada, workflow, precedência e roteamento |
 | `project-rules/` | regras operacionais do projeto |
 | `_app-vault/` | decisões de produto (`DEC-NNN`) e specs |
-| `.app-work/` | processo: estado, issues e guias — nunca insumo de regra |
+| `.app-work/` | processo: estado, issues e guias - nunca insumo de regra |
 
 Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
 
-- `adopt` — state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta — closeout `needs-followup`, nunca `ready`;
-- `maintain` — state presente: escopo reduzido. Inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico — presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
+- `adopt` - state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta - closeout `needs-followup`, nunca `ready`;
+- `maintain` - state presente: escopo reduzido. Inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico - presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
 
 O fluxo de qualquer execução é o pipeline de 13 fases acima.
 
@@ -66,16 +66,16 @@ Esse arquivo é obrigatório sempre que houver trabalho multi-etapa, para permit
 
 ## Estado do projeto
 
-Além do checkpoint efêmero, a execução consulta e grava o estado **versionado** do projeto em `.app-work/hephaestus-state.json` (nome em minúsculo — o gate do validador reprova variante em caixa alta). Ele é editável à mão e dividido em **quatro blocos** (D29), cada um com dono de leitura distinto:
+Além do checkpoint efêmero, a execução consulta e grava o estado **versionado** do projeto em `.app-work/hephaestus-state.json` (nome em minúsculo - o gate do validador reprova variante em caixa alta). Ele é editável à mão e dividido em **quatro blocos** (D29), cada um com dono de leitura distinto:
 
 | Bloco | Lido por | Conteúdo |
 |-------|----------|----------|
-| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versões e identidade do último run |
-| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional — overlay não inventa pasta |
+| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` - versões e identidade do último run |
+| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional - overlay não inventa pasta |
 | `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana com `answer` estruturada, `scope` (`this-run`/`this-project`/`promote-to-catalog`) e `sourceEvidence` |
 | `shield` | `route` (antes do nível 1) e `compose` | blindagem opt-in de conteúdo de terceiros: lista de `{ path, selector }`, vazia por default |
 
-O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui — um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` é a única fase que grava o state, fora da transação: o rollback de `verify(applied)` nunca reverte as respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
+O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui - um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` é a única fase que grava o state, fora da transação: o rollback de `verify(applied)` nunca reverte as respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
 
 ## Regra central
 
@@ -88,7 +88,7 @@ Antes de produzir qualquer artefato final:
 - use `templates/` como alvo estrutural;
 - use `schemas/` para restringir a forma da saída;
 - use `references/` (plural) como apoio do próprio kit, apenas para leitura; **não confundir** com `reference/` (singular) que é a pasta do pacote gerado dentro de `project-rules/`;
-- matriz anti-invenção por fase: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / pasta / texto — não despejar a matriz neste SKILL);
+- matriz anti-invenção por fase: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / pasta / texto - não despejar a matriz neste SKILL);
 - use `manifests/` para nomenclatura, política e metadados.
 
 ## Estrutura alvo
@@ -109,7 +109,7 @@ project-rules/
 
 Categorias opcionais podem ser omitidas quando não houver material suficiente, mas `AGENTS.md` deve existir.
 
-`CLAUDE.md` é ponte, nunca conteúdo: uma linha `@AGENTS.md` e nada mais. Existe para que cliente que lê só `CLAUDE.md` caia no mesmo contrato, sem manter dois arquivos. Projeto que já tem `CLAUDE.md` com conteúdo próprio: reabsorver o conteúdo no `AGENTS.md`/`project-rules/` e reduzir o arquivo à ponte — nunca deixar dois contratos vivos.
+`CLAUDE.md` é ponte, nunca conteúdo: uma linha `@AGENTS.md` e nada mais. Existe para que cliente que lê só `CLAUDE.md` caia no mesmo contrato, sem manter dois arquivos. Projeto que já tem `CLAUDE.md` com conteúdo próprio: reabsorver o conteúdo no `AGENTS.md`/`project-rules/` e reduzir o arquivo à ponte - nunca deixar dois contratos vivos.
 
 ## Contrato de fragmentação
 
@@ -134,7 +134,7 @@ Se a classificação for fraca:
 
 ## Fases (Progressive Disclosure)
 
-**Regra de carga:** em cada passo, leia **somente** o prompt da fase atual em `prompts/` (+ schemas/refs listados na linha). Não pré-carregue os outros `prompts/*.md`. I/O, gates e procedimento vivem no prompt — este índice não os duplica.
+**Regra de carga:** em cada passo, leia **somente** o prompt da fase atual em `prompts/` (+ schemas/refs listados na linha). Não pré-carregue os outros `prompts/*.md`. I/O, gates e procedimento vivem no prompt - este índice não os duplica.
 
 `prompts/validate.md` é **um corpo, dois alvos** (`Alvo: staging` = fase 10 `verify_staging`; `Alvo: applied` = fase 12 `verify_applied`). Manter dual no mesmo arquivo.
 
@@ -154,7 +154,7 @@ Se a classificação for fraca:
 | 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Alvo: applied` | Hash no disco; rollback se diverge | staging-manifest | veredito applied |
 | 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Relatório/veredito; não altera pacote | templates/, manifests | `report.md` |
 
-Modos `adopt` / `maintain` **não** são fases — ver Superfície.
+Modos `adopt` / `maintain` **não** são fases - ver Superfície.
 
 ## Guardrails
 

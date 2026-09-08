@@ -40,12 +40,12 @@ One run governs the four documentary territories of the repository in a single w
 | `AGENTS.md` | agent posture, hard stop, workflow, precedence, and routing |
 | `project-rules/` | operational project rules |
 | `_app-vault/` | product decisions (`DEC-NNN`) and specs |
-| `.app-work/` | process: state, issues, guides — never a rule input |
+| `.app-work/` | process: state, issues, guides - never a rule input |
 
 Two internal modes, decided by the presence of `.app-work/hephaestus-state.json`:
 
-- `adopt` — state absent: **full adoption** of the four territories into the canonical package. Scaffolding folders or “keep”ing content already under a vault root is not enough: product rules found (including under `.app-vault/` / `_app-vault/` outside `docs/decisions/`, `### D\d+` headings, `DECISOES_*`, “Closed decisions” sections, ADRs/specs with observable norms) **become `### DEC-NNN` in `_app-vault/docs/decisions/`** in the same run; vault paths outside the closed list in `references/vault-schema/SCHEMA.md` §2 are reclassified (process → `.app-work/`, spec → `specs/`, decision → `docs/decisions/`); `INDEX.md` is derived from materialized `Afeta:` fields. Empty `docs/decisions/` scaffold while decision material still lives outside the canonical form = incomplete adoption — closeout `needs-followup`, never `ready`;
-- `maintain` — state present: reduced scope. Inventories drift and other tools' artifacts (`catalog/drift-catalog.json`) **and** the interior of `.app-work/` (F/STALE packs, loose `.md`, `private/references/`, legacy `done/`, flat archive, duplicates, paths outside the closed list). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form — being under the vault root does **not** imply canonical. Process territory (INV9): only `keep|relocate|delete|condense`. Live schema includes `roadmap/`, `docs/`, `guides/legados/`. A new pattern → `includeInPack` interview → `.hephaestus/pack-candidates.json`; the state overlay does not invent folders; a run never edits the installed skill. The kit does not depend on an auxiliary organization skill.
+- `adopt` - state absent: **full adoption** of the four territories into the canonical package. Scaffolding folders or “keep”ing content already under a vault root is not enough: product rules found (including under `.app-vault/` / `_app-vault/` outside `docs/decisions/`, `### D\d+` headings, `DECISOES_*`, “Closed decisions” sections, ADRs/specs with observable norms) **become `### DEC-NNN` in `_app-vault/docs/decisions/`** in the same run; vault paths outside the closed list in `references/vault-schema/SCHEMA.md` §2 are reclassified (process → `.app-work/`, spec → `specs/`, decision → `docs/decisions/`); `INDEX.md` is derived from materialized `Afeta:` fields. Empty `docs/decisions/` scaffold while decision material still lives outside the canonical form = incomplete adoption - closeout `needs-followup`, never `ready`;
+- `maintain` - state present: reduced scope. Inventories drift and other tools' artifacts (`catalog/drift-catalog.json`) **and** the interior of `.app-work/` (F/STALE packs, loose `.md`, `private/references/`, legacy `done/`, flat archive, duplicates, paths outside the closed list). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form - being under the vault root does **not** imply canonical. Process territory (INV9): only `keep|relocate|delete|condense`. Live schema includes `roadmap/`, `docs/`, `guides/legados/`. A new pattern → `includeInPack` interview → `.hephaestus/pack-candidates.json`; the state overlay does not invent folders; a run never edits the installed skill. The kit does not depend on an auxiliary organization skill.
 
 Every run follows the 13-phase pipeline above.
 
@@ -64,16 +64,16 @@ For multi-step work, keep a checkpoint at `.hephaestus/manifests/run-state.json`
 
 ## Project state
 
-Besides the ephemeral checkpoint, execution reads and writes the project's **versioned** state at `.app-work/hephaestus-state.json` (lowercase name — the validator gate rejects uppercase variants). It is hand-editable and split into **four blocks** (D29), each with a distinct reading owner:
+Besides the ephemeral checkpoint, execution reads and writes the project's **versioned** state at `.app-work/hephaestus-state.json` (lowercase name - the validator gate rejects uppercase variants). It is hand-editable and split into **four blocks** (D29), each with a distinct reading owner:
 
 | Block | Read by | Content |
 |-------|---------|---------|
-| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` — versions and last run identity |
-| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` — overlay does not invent folders |
+| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` - versions and last run identity |
+| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` - overlay does not invent folders |
 | `answers` | `route` (cascade level 2) and `interview` | map `questionKey` → human answer with structured `answer`, `scope` (`this-run`/`this-project`/`promote-to-catalog`) and `sourceEvidence` |
 | `shield` | `route` (before level 1) and `compose` | opt-in shielding of third-party content: list of `{ path, selector }`, empty by default |
 
-The file carries **no metrics**: telemetry (for example `llmDecidedRatio`) lives in `.hephaestus/`, never here — a file that accumulates telemetry stops being hand-editable in practice. Unknown top-level fields are **ignored** and the needed information is asked again, never migrated (D4). `interview` is the only phase that writes the state, outside the transaction: the `verify(applied)` rollback never reverts human answers (INV1, exception declared in `prompts/apply.md`).
+The file carries **no metrics**: telemetry (for example `llmDecidedRatio`) lives in `.hephaestus/`, never here - a file that accumulates telemetry stops being hand-editable in practice. Unknown top-level fields are **ignored** and the needed information is asked again, never migrated (D4). `interview` is the only phase that writes the state, outside the transaction: the `verify(applied)` rollback never reverts human answers (INV1, exception declared in `prompts/apply.md`).
 
 ## Core rule
 
@@ -105,16 +105,16 @@ project-rules/
 
 Optional categories may be omitted when source material is insufficient. `AGENTS.md` is mandatory.
 
-`CLAUDE.md` is a bridge, never content: one `@AGENTS.md` line and nothing else. It exists so clients that only read `CLAUDE.md` land on the same contract without maintaining two files. If the project already has a `CLAUDE.md` with its own content, reabsorb that content into `AGENTS.md`/`project-rules/` and reduce the file to the bridge — never leave two live contracts.
+`CLAUDE.md` is a bridge, never content: one `@AGENTS.md` line and nothing else. It exists so clients that only read `CLAUDE.md` land on the same contract without maintaining two files. If the project already has a `CLAUDE.md` with its own content, reabsorb that content into `AGENTS.md`/`project-rules/` and reduce the file to the bridge - never leave two live contracts.
 
 ## Fragment contract
 
 Classify each raw-source fragment by operational role:
 
-- `index` — task routing, reading order, context triggers;
-- `rules` — mandatory, recurring, or normative behavior;
-- `reference` — examples, tables, long contracts, supporting material;
-- `manifest` — provenance, coverage, conflict, or validation metadata.
+- `index` - task routing, reading order, context triggers;
+- `rules` - mandatory, recurring, or normative behavior;
+- `reference` - examples, tables, long contracts, supporting material;
+- `manifest` - provenance, coverage, conflict, or validation metadata.
 
 There is no canonical `memory` role. Persistent agent preferences belong to the client memory system, not to the generated package.
 
@@ -122,7 +122,7 @@ If classification is weak, mark it `unknown` or low confidence, record the ambig
 
 ## Phases (Progressive Disclosure)
 
-**Load rule:** at each step, read **only** the current phase prompt in `prompts/` (+ schemas/refs listed on the row). Do not preload the other `prompts/*.md`. I/O, gates, and procedure live in the prompt — this index does not duplicate them.
+**Load rule:** at each step, read **only** the current phase prompt in `prompts/` (+ schemas/refs listed on the row). Do not preload the other `prompts/*.md`. I/O, gates, and procedure live in the prompt - this index does not duplicate them.
 
 `prompts/validate.md` is **one body, two targets** (`Target: staging` = phase 10 `verify_staging`; `Target: applied` = phase 12 `verify_applied`). Keep both targets in the same file.
 
@@ -142,7 +142,7 @@ If classification is weak, mark it `unknown` or low confidence, record the ambig
 | 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Target: applied` | On-disk hash; rollback if diverge | staging-manifest | applied verdict |
 | 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Report/verdict; does not alter package | templates/, manifests | `report.md` |
 
-Modes `adopt` / `maintain` are **not** phases — see Surface.
+Modes `adopt` / `maintain` are **not** phases - see Surface.
 
 ## Guardrails
 

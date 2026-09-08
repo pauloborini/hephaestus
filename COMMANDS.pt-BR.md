@@ -1,8 +1,8 @@
 <!-- Idioma: [English](COMMANDS.md) · **Português** -->
 
-# Hephaestus — referência de comandos
+# Hephaestus - referência de comandos
 
-Execute os comandos na raiz do repositório. A suíte não viaja no zip de release (`manifests/kit-manifest.json:packExcludes`), então `node --test` só vale em um checkout do repositório do kit; os demais comandos funcionam também a partir de uma instalação descompactada.
+Execute os comandos na raiz do repositório. Scripts e a suíte de testes não viajam no zip de release (`manifests/kit-manifest.json:packExcludes`), então comandos de desenvolvimento (`node scripts/...`, `node --test`) aplicam-se ao checkout do repositório do kit.
 
 ## Validar o kit distribuível
 
