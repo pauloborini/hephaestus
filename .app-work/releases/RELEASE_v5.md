@@ -5,10 +5,12 @@
 - Tag: `v5`
 - Data: 2026-09-07
 - Padrão de branches: gitflow
-- Alvo da integração: `main`
+- SHA final na `main`: `1d631f96ba837b941128564eb9a640b9a444a014`
+- PR forge → develop: https://github.com/pauloborini/hephaestus/pull/9
+- PR develop → main: https://github.com/pauloborini/hephaestus/pull/10
 - Artefato: `hephaestus-5.zip`
 - GitHub Release: https://github.com/pauloborini/hephaestus/releases/tag/v5
-- Status: Preparada para publicação
+- Status: Publicado (confirmado)
 
 ## O que há de novo
 
