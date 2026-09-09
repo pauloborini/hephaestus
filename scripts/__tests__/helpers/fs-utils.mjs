@@ -30,6 +30,7 @@ export const copyKit = (destDir) => {
     const current = stack.pop();
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       if (excluded.has(entry.name)) continue;
+      if (entry.name.endsWith(".zip")) continue;
       if (entry.name === "__tests__" && path.basename(current) === "scripts") continue;
       const src = path.join(current, entry.name);
       const rel = path.relative(REPO_ROOT, src);

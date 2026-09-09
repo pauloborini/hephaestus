@@ -120,7 +120,7 @@ Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índic
 
 ## Regras universais
 
-- Idioma de respostas e documentos: <preencher na síntese: idioma padrão do projeto — ex.: PT-BR>, Markdown, direto e técnico.
+- Idioma de respostas e documentos: <preencher na síntese: idioma padrão do projeto — ex.: PT-BR>, Markdown, direto, claro e explicativo (português simples, sem jargão excessivo, sem analogias).
 - Nunca expor segredo, credencial, token, URL privada ou PII.
 - `.env*` real fora do Git; `.env.example` pode ser versionado somente com placeholders.
 - Antes de remoção autorizada: listar alvos, dependências e efeitos. Remoção derivada fora do recorte aprovado exige nova confirmação.
