@@ -448,19 +448,19 @@ test("AC-4.1.x: reconcile.md declara inventário, identidade e gate; kit-manifes
     "utf8",
   );
   for (const section of [
-    "Inventário de identidade",
-    "## Identidade",
-    "## Verificações",
+    "## Identity inventory",
+    "## Identity",
+    "## Checks",
     "## Gate",
-    "## Bloqueia se",
-    "## Escreve no repositório",
+    "## Blocks if",
+    "## Writes to the repository",
   ]) {
     assert.ok(reconcile.includes(section), `reconcile.md deve conter "${section}"`);
   }
   // inventário: cláusulas vivas E IDs de ## Histórico; proibido restringir às vivas
   assert.match(reconcile, /## Histórico/);
   assert.match(reconcile, /max/);
-  assert.match(reconcile, /nunca/i);
+  assert.match(reconcile, /never/i);
   // nota inline no formato fixo
   assert.match(reconcile, /_Alterado <data> — era: <valor antigo>\. Motivo: <motivo>\._/);
   // remoção exige citação pendente inclusive em .app-work/ (--hidden)

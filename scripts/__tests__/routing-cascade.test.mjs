@@ -195,7 +195,7 @@ test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino il
   const route = `${routeHub}\n${catalog}`;
   // cinco níveis na ordem (hub index)
   const order = [
-    "Nível 1", "Nível 2", "Nível 3", "Nível 4", "Nível 5",
+    "Level 1", "Level 2", "Level 3", "Level 4", "Level 5",
   ];
   let cursor = 0;
   for (const marker of order) {
@@ -204,12 +204,12 @@ test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino il
     cursor = index;
   }
   // para no primeiro nível que decide
-  assert.match(routeHub, /para no primeiro nível que decide|primeiro nível que decide/i);
-  // destination null nunca decide: enfileira (catalog subdoc)
+  assert.match(routeHub, /stops at the first level that decides|first level that decides/i);
+  // destination null never decides: enqueue (catalog subdoc)
   assert.match(catalog, /destination: null/i);
-  assert.match(route, /enfileira/i);
+  assert.match(route, /enqueue/i);
   // match mais específico vence o genérico (catalog subdoc)
-  assert.match(catalog, /especificidade|mais específico vence o genérico/i);
+  assert.match(catalog, /specific match beats the generic|specificity/i);
   // lista fechada de destinos (SCHEMA §2)
   assert.match(routeHub, /_app-vault/i);
   assert.match(routeHub, /\.app-work/i);
@@ -217,7 +217,7 @@ test("AC-3.1.1/3.1.3/3.1.5: route.md declara a cascata, o bloqueio de destino il
   // needsSplit bloqueia
   assert.match(routeHub, /needsSplit/);
   // a cascata nunca pergunta: perguntas nascem enfileiradas
-  assert.match(route, /nunca/i);
+  assert.match(route, /never/i);
 });
 
 test("DEC-004: DECISOES_* sob vault legado não é keep — promove a docs/decisions/", () => {

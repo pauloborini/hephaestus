@@ -1,5 +1,5 @@
 // AC-2.5.2 e LEG9: validate.md declara os dois alvos (staging | applied) e
-// SKILL.md/SKILL.en.md listam as mesmas 13 fases na mesma ordem, com
+// SKILL.md/SKILL.pt-BR.md listam as mesmas 13 fases na mesma ordem, com
 // verify_staging e verify_applied como fases distintas nas 13.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -22,15 +22,15 @@ test("AC-2.5.2: SKILL.md lista as 13 fases com verify_staging e verify_applied d
   assert.notEqual(phases.indexOf("verify_staging"), phases.indexOf("verify_applied"));
 });
 
-test("LEG9: SKILL.en.md lista as mesmas 13 fases na mesma ordem", () => {
-  const skillEn = fs.readFileSync(path.join(REPO_ROOT, "SKILL.en.md"), "utf8");
-  const phasesEn = listPhases(skillEn);
-  assert.deepEqual(phasesEn, THE_13_PHASES);
+test("LEG9: SKILL.pt-BR.md lista as mesmas 13 fases na mesma ordem", () => {
+  const skillPt = fs.readFileSync(path.join(REPO_ROOT, "SKILL.pt-BR.md"), "utf8");
+  const phasesPt = listPhases(skillPt);
+  assert.deepEqual(phasesPt, THE_13_PHASES);
 });
 
 test("AC-2.5.2: validate.md declara os alvos staging e applied", () => {
   const validate = fs.readFileSync(path.join(REPO_ROOT, "prompts", "validate.md"), "utf8");
   assert.match(validate, /staging/);
   assert.match(validate, /applied/);
-  assert.match(validate, /Alvo/);
+  assert.match(validate, /Target/);
 });

@@ -53,7 +53,7 @@ const publicDocumentationPairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
   ["RELEASE.md", "RELEASE.pt-BR.md"],
-  ["SKILL.en.md", "SKILL.md"],
+  ["SKILL.md", "SKILL.pt-BR.md"],
 ];
 
 const languageHeader = (contents) => {

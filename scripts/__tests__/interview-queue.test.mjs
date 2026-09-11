@@ -49,18 +49,18 @@ test("AC-5.2.3: as duas fases declaram o canal da fila e a lista do que nunca pe
     ["reconcile.md", readPrompt("reconcile.md")],
   ];
   for (const [label, contents] of targets) {
-    assert.match(contents, /Fila de perguntas/, `${label}: seção da fila ausente`);
-    assert.match(contents, /enfileira/, `${label}: deve enfileirar`);
-    assert.match(contents, /Justifica pergunta/, `${label}: lista fechada do que justifica pergunta`);
-    assert.match(contents, /Nunca pergunta/, `${label}: lista fechada do que nunca pergunta`);
+    assert.match(contents, /Question queue/, `${label}: seção da fila ausente`);
+    assert.match(contents, /enqueue/, `${label}: deve enfileirar`);
+    assert.match(contents, /Justifies a question/, `${label}: lista fechada do que justifica pergunta`);
+    assert.match(contents, /Never asks/, `${label}: lista fechada do que nunca pergunta`);
   }
 });
 
 test("AC-5.2.3: só interview.md contém instrução de perguntar (ponto único de interrupção)", () => {
   const interview = readPrompt("interview.md");
-  assert.match(interview, /pergunt/i);
-  assert.match(interview, /lote/);
-  assert.match(interview, /dreno único|drenar/i);
+  assert.match(interview, /ask|question/i);
+  assert.match(interview, /batch/);
+  assert.match(interview, /Single drain|drain/i);
   // as demais fases não perguntam: nenhum outro prompt tem seção de entrevista
   const others = fs.readdirSync(promptsDir).filter((f) => f.endsWith(".md") && f !== "interview.md" && f !== "apply.md");
   for (const file of others) {

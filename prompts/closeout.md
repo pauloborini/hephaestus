@@ -1,50 +1,50 @@
 # Closeout
 
-## Objetivo
+## Purpose
 
-Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um fechamento consistente do pacote, com veredito explícito e a lista do que a LLM decidiu sozinha. O closeout **não decide nada novo**: o gate de resíduo (fase `route`) marca; esta fase traduz em veredito.
+Do the final review of what was generated after `apply` and deliver a consistent package closeout to the user, with an explicit verdict and the list of what the LLM decided on its own. Closeout **does not decide anything new**: the residue gate (`route` phase) marks; this phase translates that into a verdict.
 
-## Entradas
+## Inputs
 
-- run-state e manifests pós-`apply` (`coverage-map`, `routing`, external-references);
-- pacote aplicado nos quatro territórios;
-- `templates/` / forma do relatório.
+- run-state and post-`apply` manifests (`coverage-map`, `routing`, external-references);
+- package applied in the four territories;
+- `templates/` / report shape.
 
-## Regras
+## Rules
 
-- aplicar a regra única de checkpoint do `SKILL.md` em toda a fase: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `closeout` como `in_progress`; ao concluir o relatório, marcar `closeout` como `produced`; marcar `closeout` como `validated` quando a saída mínima estiver consistente com os manifests e os artefatos do `apply`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
-- conferir o estado de `.hephaestus/manifests/run-state.json` antes de iniciar: se a fase anterior `apply` não estiver `validated`, registrar pendência e reexecutar o que faltar; em `mode: adopt`, `meta.adoptionStatus` também deve estar `validated`, ou o resultado é `needs-followup`;
-- conferir o estado de `.hephaestus/manifests/coverage-map.json`: cada fragmento relevante precisa ter destino (`artifactType` + `outputPath`); pendência por fragmento sem destino;
-- conferir o estado de `.hephaestus/manifests/external-references-report.json` quando existir; pendência por referência externa sem internalização registrada;
-- revisar `AGENTS.md` e `project-rules/` para detectar regras que deveriam ter ido para `project-rules/rules/*` mas ficaram no `AGENTS.md`, ou árvore final inflada com arquivos vazios;
-- revisar os quatro territórios do pacote — `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` — conferindo que cada um recebeu só o que o plano determinou, sem vazamento de valor de regra entre territórios;
-- em `mode: adopt`, conferir adoção completa do vault: `INDEX.md` presente; `docs/decisions/` com cláusulas `### DEC-NNN` coerentes com o `identity-map.json` quando a discover marcou material de decisão; **nenhuma** pasta sob o vault fora da lista fechada §2 restante no disco; scaffold-only de `docs/decisions/` com fontes de decisão ainda vivas (ou só movidas a `.app-work/` sem promoção) ⇒ pendência **bloqueante** e veredito `needs-followup` (não `ready`, não “degraded aceitável”);
-- **nunca alterar `AGENTS.md`, `project-rules/`, `_app-vault/` nem `.app-work/` durante o closeout** — o closeout revisa e aponta; correções voltam para `apply` na próxima execução;
-- conferir `.hephaestus/manifests/routing.json`: entradas `decidedBy: llm` cujo destino é arquivo novo em `_app-vault/docs/decisions/` ou em `project-rules/rules/` são **degradantes** (D26) e entram na lista nominal do relatório; entradas de resíduo em `project-rules/reference/`, `project-rules/index/` ou `.app-work/` não degradam;
-- reportar `llmDecidedRatio` (proporção de fragmentos decididos pela LLM) **sempre, sem teto** — o critério de degradação é o tipo de destino, nunca o volume;
-- não fixar ferramenta de stack: a revisão registra o que foi usado, sem recomendar substituição de analyzer/linter/validador fora de placeholder `<preencher na síntese>`;
-- não citar projeto real em nenhum item do fechamento.
+- apply the single checkpoint rule from `SKILL.md` throughout the phase: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `closeout` as `in_progress`; when the report is done, mark `closeout` as `produced`; mark `closeout` as `validated` when the minimum output is consistent with the manifests and `apply` artifacts; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`);
+- check `.hephaestus/manifests/run-state.json` before starting: if the previous `apply` phase is not `validated`, record a pending and re-run what is missing; in `mode: adopt`, `meta.adoptionStatus` must also be `validated`, or the result is `needs-followup`;
+- check `.hephaestus/manifests/coverage-map.json`: every relevant fragment needs a destination (`artifactType` + `outputPath`); pending per fragment without a destination;
+- check `.hephaestus/manifests/external-references-report.json` when present; pending per external reference without recorded internalization;
+- review `AGENTS.md` and `project-rules/` for rules that should have gone to `project-rules/rules/*` but stayed in `AGENTS.md`, or a final tree inflated with empty files;
+- review the four package territories — `AGENTS.md`, `project-rules/`, `_app-vault/`, and `.app-work/` — confirming each received only what the plan determined, with no rule-value leak across territories;
+- in `mode: adopt`, check complete vault adoption: `INDEX.md` present; `docs/decisions/` with `### DEC-NNN` clauses coherent with `identity-map.json` when discover marked decision material; **no** folder under the vault outside the closed §2 list remaining on disk; scaffold-only `docs/decisions/` with still-living decision sources (or only moved to `.app-work/` without promotion) ⇒ **blocking** pending and verdict `needs-followup` (not `ready`, not “acceptable degraded”);
+- **never alter `AGENTS.md`, `project-rules/`, `_app-vault/`, or `.app-work/` during closeout** — closeout reviews and points; corrections return to `apply` on the next run;
+- check `.hephaestus/manifests/routing.json`: `decidedBy: llm` entries whose destination is a new file in `_app-vault/docs/decisions/` or `project-rules/rules/` are **degrading** (D26) and enter the report's named list; residue entries in `project-rules/reference/`, `project-rules/index/`, or `.app-work/` do not degrade;
+- report `llmDecidedRatio` (share of fragments decided by the LLM) **always, with no cap** — the degradation criterion is destination type, never volume;
+- do not pin a stack tool: the review records what was used, without recommending replacement of analyzer/linter/validator outside a `<preencher na síntese>` placeholder;
+- do not cite a real project in any closeout item.
 
-## Veredito
+## Verdict
 
-- `ready` — sem entrada degradante e sem pendência bloqueante; em `adopt`, vault canônico completo e `meta.adoptionStatus: validated` (decisões materializadas quando havia fonte);
-- `degraded-but-usable` — há entrada degradante (lista nominal obrigatória) ou pendência controlada; o pacote é utilizável com ressalvas; **não** use este veredito para “decisions/ vazio na primeira adoção” quando havia material de decisão — isso é `needs-followup`;
-- `needs-followup` — pendência bloqueante em aberto (ex.: fila de entrevista não drenada; adoção incompleta do vault: decisões legadas não promovidas a `DEC-NNN`); o run não é dado como concluído.
+- `ready` — no degrading entry and no blocking pending; in `adopt`, complete canonical vault and `meta.adoptionStatus: validated` (decisions materialized when there was a source);
+- `degraded-but-usable` — there is a degrading entry (named list required) or a controlled pending; the package is usable with caveats; **do not** use this verdict for “empty decisions/ on first adoption” when there was decision material — that is `needs-followup`;
+- `needs-followup` — an open blocking pending (for example undrained interview queue; incomplete vault adoption: legacy decisions not promoted to `DEC-NNN`); the run is not treated as complete.
 
-## Saídas
+## Outputs
 
-`.hephaestus/report.md` — sem omitir seção mesmo quando vazia (com `nenhuma` explícito), contendo:
+`.hephaestus/report.md` — omit no section even when empty (with explicit `none`), containing:
 
-1. `## Pendências` — lista de pendências restantes;
-2. `## Decisão recomendada por pendência` — decisão objetiva para cada pendência;
-3. `## Resíduo decidido pela LLM` — lista explícita das entradas degradantes (uma linha por entrada: `fragmentId → destinationPath`, marcando quando o destino vira `DEC-NNN` nova ou regra nova) e das entradas de resíduo não degradantes;
-4. `## Métricas` — linha `llmDecidedRatio: <0..1>` com a proporção medida;
-5. `## Candidatos a pack` — entradas de `.hephaestus/pack-candidates.json` (padrão novo aceito para o pack); também listar candidatos a promoção de glob já previsto no `drift-catalog` (não pasta fora da lista), quando houver;
-6. `## Confirmações` — estado final de `AGENTS.md`; estado final de `project-rules/`; confirmação de que os fragmentos relevantes têm destino no mapa de cobertura (`.hephaestus/manifests/coverage-map.json`); resumo explícito das referências externas encontradas e do que deveria ser internalizado; confirmação do estado final de `.hephaestus/manifests/run-state.json`;
-7. `## Veredito` — linha final com `ready`, `degraded-but-usable` ou `needs-followup`.
+1. `## Pendings` — remaining pending list;
+2. `## Recommended decision per pending` — an objective decision for each pending;
+3. `## Residue decided by the LLM` — explicit list of degrading entries (one line per entry: `fragmentId → destinationPath`, marking when the destination becomes a new `DEC-NNN` or a new rule) and of non-degrading residue entries;
+4. `## Metrics` — line `llmDecidedRatio: <0..1>` with the measured ratio;
+5. `## Pack candidates` — entries from `.hephaestus/pack-candidates.json` (new pattern accepted for the pack); also list promotion candidates for a glob already expected in `drift-catalog` (not a folder outside the list), when present;
+6. `## Confirmations` — final `AGENTS.md` state; final `project-rules/` state; confirmation that relevant fragments have a destination on the coverage map (`.hephaestus/manifests/coverage-map.json`); explicit summary of external references found and what should be internalized; confirmation of the final `.hephaestus/manifests/run-state.json` state;
+7. `## Verdict` — final line with `ready`, `degraded-but-usable`, or `needs-followup`.
 
-O relatório é consumido pelo gate `checkResidueGate` do `scripts/validate-package.mjs` (coerência entre entradas degradantes do `routing.json` e o veredito/lista).
+The report is consumed by the `checkResidueGate` gate in `scripts/validate-package.mjs` (coherence between degrading `routing.json` entries and the verdict/list).
 
-## Escreve no repositório
+## Writes to the repository
 
-Não. O relatório é gravado em `.hephaestus/report.md` (efêmero, gitignored); a revisão lê e aponta; correções voltam para `apply` na próxima execução.
+No. The report is written to `.hephaestus/report.md` (ephemeral, gitignored); the review reads and points; corrections return to `apply` on the next run.

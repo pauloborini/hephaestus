@@ -31,10 +31,10 @@ test("AC-2.1.1/CN6: worktree suja é detectada por git status --porcelain e o pr
 
   const prompt = preflightPrompt();
   assert.match(prompt, /git status --porcelain/);
-  assert.match(prompt, /nos dois modos/);
-  assert.match(prompt, /sem override/);
-  assert.match(prompt, /listando os arquivos pendentes/);
-  assert.match(prompt, /sem mutar nada/);
+  assert.match(prompt, /in both modes/);
+  assert.match(prompt, /with no override|no override/);
+  assert.match(prompt, /listing the pending files/);
+  assert.match(prompt, /mutating nothing/);
 });
 
 test("AC-2.1.1: fora de repositório git a condição do gate falha e o prompt recusa nomeando a condição", () => {
@@ -44,8 +44,8 @@ test("AC-2.1.1: fora de repositório git a condição do gate falha e o prompt r
   assert.notEqual(rev.status, 0);
 
   const prompt = preflightPrompt();
-  assert.match(prompt, /repositório git/);
-  assert.match(prompt, /recusa nomeando a condição/);
+  assert.match(prompt, /git repository/);
+  assert.match(prompt, /refuse, naming the condition/);
 });
 
 test("AC-2.1.1: os comandos do gate (rev-parse, status --porcelain) não mutam o fixture", () => {
