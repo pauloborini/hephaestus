@@ -6,7 +6,7 @@ const pairs = [
   ["README.md", "README.pt-BR.md"],
   ["COMMANDS.md", "COMMANDS.pt-BR.md"],
   ["RELEASE.md", "RELEASE.pt-BR.md"],
-  ["SKILL.en.md", "SKILL.md"],
+  ["SKILL.md", "SKILL.pt-BR.md"],
 ];
 
 // `packExcludes` do kit-manifest é a fonte da verdade sobre o que viaja no kit

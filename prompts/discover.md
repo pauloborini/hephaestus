@@ -1,53 +1,53 @@
 # Discover
 
-## Objetivo
+## Purpose
 
-Descobrir as fontes cruas do usuário antes de qualquer reorganização.
+Discover the user's raw sources before any reorganization.
 
-## Entradas
+## Inputs
 
-- `mode` do run-state (`preflight`);
+- `mode` from the run-state (`preflight`);
 - `manifests/naming-policy.json`;
-- `catalog/drift-catalog.json` (e overlay de `routing` quando `maintain`);
-- state `.app-work/hephaestus-state.json` quando presente (`meta.lastRunAt` em `maintain`).
+- `catalog/drift-catalog.json` (and `routing` overlay when `maintain`);
+- `.app-work/hephaestus-state.json` when present (`meta.lastRunAt` in `maintain`).
 
-## Escopo por modo
+## Scope by mode
 
-O escopo do inventário é decidido pelo `mode` resolvido em `preflight` (campo `mode` do run-state), nunca por heurística sobre estrutura presente:
+Inventory scope is decided by the `mode` resolved in `preflight` (run-state `mode` field), never by heuristics over present structure:
 
-- `mode: adopt` — varredura integral do repositório: documentos de convenção do agente (`AGENTS.md`, `CLAUDE.md`), specs, docs arquiteturais, guias de workflow, convenções de projeto e os territórios canônicos como fonte (na reexecução, o destino também é input). **Obrigatório inventariar e marcar como risco de adoção incompleta:** (a) paths sob `_app-vault/` ou `.app-vault/` fora da lista fechada de `SCHEMA.md` §2; (b) arquivos `DECISOES_*`, seções “Decisões fechadas” / headings `### D\d+` / `### DEC-\d+` sem em-dash canônico **fora** de `docs/decisions/`; (c) ausência de `docs/decisions/` com `### DEC-NNN` quando (a)/(b) existem — a adoção só fecha quando esse material for promovido ou reclassificado na mesma execução;
-- `mode: maintain` — escopo reduzido, guiado por dado: inventariar só o que difere da última execução e o que as outras ferramentas produzem, deixando o resto como fonte inalterada que cai em `keep` pelo nível 1 da cascata (o escopo reduzido diminui o custo, não a corretude — um maintain que varresse tudo produziria o mesmo resultado, só mais devagar):
-  1. `AGENTS.md` alterado desde o último run — comparar `mtime`/hash do arquivo contra `meta.lastRunAt` do `.app-work/hephaestus-state.json`;
-  2. `CLAUDE.md` presente e divergente do `AGENTS.md` (regra que o contrato do agente não cobre);
-  3. cada glob de `catalog/drift-catalog.json` (artefatos de outras ferramentas) presente no repositório — arquivos de regra de agente e artefatos de ferramenta entram como fonte com papel `source` e motivo nomeando a ferramenta de origem; **a lista de globs vigiados vive no catálogo e no overlay, nunca embutida no prompt** — ferramenta nova entra editando o catálogo ou o overlay do projeto (bloco `routing` do estado), sem tocar em prompt (D28);
-  4. docs, specs e READMEs novos ou alterados fora dos territórios canônicos;
-  5. integridade do vault: `INDEX.md` derivável dos campos `Afeta:` das decisões, `DEC-NNN` sem colisão nem reuso (cláusulas vivas + `## Histórico`), pasta fora da lista fechada de `references/vault-schema/SCHEMA.md` §2;
-  6. candidatos a decisão pendentes nas seções `Candidatos a decisão` dos `LEDGER.md` dos guides em `.app-work/guides/`; enfileirar em `questions.json` com `reason: decision-promotion`, `candidateId`, origem, texto, evidência, `questionKey`, `contextFingerprint`, `invalidates: route` e `blocking: false`. Uma recusa deixa o candidato no processo, sem impedir operações independentes;
-  7. guia concluído fora do espelho (legado sob `.app-work/done/` ou flat sob `.app-work/archive/guides/`) — inventariar como fonte a reorganizar no espelho (DEC-002);
-  8. Interior de `.app-work/`: arquivos soltos na raiz; `.md` solto em `guides/`; pack com Plano F `CONCLUÍDO` ou STALE ainda em `guides/`; PRD sem consumidor; brainstorm marcado fechado ainda vivo; `done/`; flat `archive/guides/<PACK>/`; `private/references/`; `roadmap` sob `private/`.
-  9. Duplicata byte a byte (`cmp` / hash) entre vivo×vivo e vivo×archive.
-  10. Candidato a condensar: arquivo cujo conteúdo único cabe num canônico vivo mais completo (mesmo tema; canônico mais recente ou spec/DEC vigente). Não condensar no escuro — entra no plano como `condense` destrutivo.
-  11. Path fora de §4 → fila §6.
-  12. Packs em `guides/` com Plano F pendente **não** arquivar (`PRONTO PARA AUDITORIA COM PENDÊNCIAS` ≠ `CONCLUÍDO`).
+- `mode: adopt` — full repository scan: agent convention documents (`AGENTS.md`, `CLAUDE.md`), specs, architectural docs, workflow guides, project conventions, and the canonical territories as sources (on a rerun, the destination is also input). **Must inventory and mark as incomplete-adoption risk:** (a) paths under `_app-vault/` or `.app-vault/` outside the closed list in `SCHEMA.md` §2; (b) `DECISOES_*` files, “Closed decisions” / “Decisões fechadas” sections / headings `### D\d+` / `### DEC-\d+` without the canonical em-dash **outside** `docs/decisions/`; (c) absence of `docs/decisions/` with `### DEC-NNN` when (a)/(b) exist — adoption only closes when that material is promoted or recategorized in the same run;
+- `mode: maintain` — reduced, data-driven scope: inventory only what differs from the last run and what other tools produce, leaving the rest as unchanged sources that fall to `keep` at cascade level 1 (reduced scope cuts cost, not correctness — a maintain that scanned everything would produce the same result, only slower):
+  1. `AGENTS.md` changed since the last run — compare file `mtime`/hash against `meta.lastRunAt` in `.app-work/hephaestus-state.json`;
+  2. `CLAUDE.md` present and divergent from `AGENTS.md` (a rule the agent contract does not cover);
+  3. each glob from `catalog/drift-catalog.json` (other tools' artifacts) present in the repository — agent-rule files and tool artifacts enter as sources with role `source` and a reason naming the originating tool; **the watched glob list lives in the catalog and overlay, never embedded in the prompt** — a new tool enters by editing the catalog or the project's overlay (`routing` block of state), without touching a prompt (D28);
+  4. docs, specs, and READMEs new or changed outside the canonical territories;
+  5. vault integrity: `INDEX.md` derivable from decision `Afeta:` fields, `DEC-NNN` with no collision or reuse (live clauses + `## Histórico`), folder outside the closed list in `references/vault-schema/SCHEMA.md` §2;
+  6. pending decision candidates in `Candidatos a decisão` sections of `LEDGER.md` files under `.app-work/guides/`; enqueue in `questions.json` with `reason: decision-promotion`, `candidateId`, origin, text, evidence, `questionKey`, `contextFingerprint`, `invalidates: route`, and `blocking: false`. A refusal leaves the candidate in process and does not block independent operations;
+  7. a completed guide outside the mirror (legacy under `.app-work/done/` or flat under `.app-work/archive/guides/`) — inventory as a source to reorganize into the mirror (DEC-002);
+  8. Interior of `.app-work/`: loose files at the root; loose `.md` in `guides/`; pack with Plan F `CONCLUÍDO` or STALE still in `guides/`; PRD with no consumer; brainstorm marked closed still live; `done/`; flat `archive/guides/<PACK>/`; `private/references/`; `roadmap` under `private/`.
+  9. Byte-for-byte duplicate (`cmp` / hash) between live×live and live×archive.
+  10. Condense candidate: a file whose unique content fits a more complete live canonical (same theme; newer canonical or current spec/DEC). Do not condense in the dark — it enters the plan as destructive `condense`.
+  11. Path outside §4 → queue §6.
+  12. Packs in `guides/` with pending Plan F **must not** be archived (`PRONTO PARA AUDITORIA COM PENDÊNCIAS` ≠ `CONCLUÍDO`).
 
-## Regras
+## Rules
 
-- registrar fontes encontradas e ausentes;
-- não preencher lacunas silenciosamente;
-- não interpretar ainda o papel operacional final;
-- detectar monólitos, contradições e material redundante;
-- detectar referências a arquivos externos que possam virar dependências de `project-rules/`;
-- detectar a pasta do kit instalada no workspace (uma pasta é a do kit quando contém `manifests/kit-manifest.json` com `name` igual a `hephaestus`, ou quando contém `SKILL.md`, `prompts/` e `schemas/` juntos) e registrá-la como pasta do kit **excluída** do inventário de fontes (campo de observação); nunca fragmentar a pasta do kit, nunca tratá-la como fonte de regras do projeto e nunca usar qualquer arquivo dela como referência para o pacote gerado;
-- aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `discover` como `in_progress`; ao concluir o inventário inicial, marcar `discover` como `produced`; marcar `discover` como `validated` quando fontes encontradas, ausentes e riscos iniciais estiverem coerentes; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
+- record found and missing sources;
+- do not fill gaps silently;
+- do not yet interpret the final operational role;
+- detect monoliths, contradictions, and redundant material;
+- detect references to external files that may become `project-rules/` dependencies;
+- detect the installed kit folder in the workspace (a folder is the kit when it contains `manifests/kit-manifest.json` with `name` equal to `hephaestus`, or when it contains `SKILL.md`, `prompts/`, and `schemas/` together) and record it as a kit folder **excluded** from the source inventory (observation field); never fragment the kit folder, never treat it as a source of project rules, and never use any file from it as a reference for the generated package;
+- apply the single checkpoint rule from `SKILL.md`: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `discover` as `in_progress`; when the initial inventory is done, mark `discover` as `produced`; mark `discover` as `validated` when found sources, missing sources, and initial risks are coherent; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`).
 
-## Escreve no repositório
+## Writes to the repository
 
-Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored).
+No. The only write is the checkpoint `.hephaestus/manifests/run-state.json` (ephemeral, gitignored).
 
-## Saídas
+## Outputs
 
-- inventário de fontes;
-- notas de estrutura;
-- possíveis riscos para fragmentação;
-- lista preliminar de dependências externas relevantes, se existirem;
-- checkpoint inicial de execução.
+- source inventory;
+- structure notes;
+- possible fragmentation risks;
+- preliminary list of relevant external dependencies, if any;
+- initial execution checkpoint.

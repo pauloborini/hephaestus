@@ -1,30 +1,30 @@
 # Snapshot
 
-## Objetivo
+## Purpose
 
-Congelar um inventário estável das fontes e unidades que seguirão para fragmentação.
+Freeze a stable inventory of the sources and units that will go on to fragmentation.
 
-## Entradas
+## Inputs
 
-- inventário de fontes da fase `discover`;
+- source inventory from `discover`;
 - checkpoint `.hephaestus/manifests/run-state.json`.
 
-## Regras
+## Rules
 
-- não reinterpretar regras ainda;
-- não classificar ainda o papel operacional final;
-- registrar relação entre fonte bruta e unidades processáveis;
-- atualizar `.hephaestus/manifests/run-state.json` para `currentPhase=snapshot`;
-- aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `snapshot` como `in_progress`; ao concluir o inventário, marcar `snapshot` como `produced`; marcar `snapshot` como `validated` quando o mapa cobrir todas as fontes relevantes encontradas em `discover`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
+- do not reinterpret rules yet;
+- do not assign the final operational role yet;
+- record the relation between raw source and processable units;
+- update `.hephaestus/manifests/run-state.json` to `currentPhase=snapshot`;
+- apply the single checkpoint rule from `SKILL.md`: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `snapshot` as `in_progress`; when the inventory is done, mark `snapshot` as `produced`; mark `snapshot` as `validated` when the map covers every relevant source found in `discover`; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`).
 
-## Escreve no repositório
+## Writes to the repository
 
-Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored) e o ledger `.hephaestus/manifests/snapshot.json` (efêmero, gitignored).
+No. The only writes are the checkpoint `.hephaestus/manifests/run-state.json` (ephemeral, gitignored) and the ledger `.hephaestus/manifests/snapshot.json` (ephemeral, gitignored).
 
-## Saídas
+## Outputs
 
-- `.hephaestus/manifests/snapshot.json` — congelamento byte a byte das fontes: `files` (uma entrada por fonte: `path`, `sha256`, `size`) e `ignoredRegions` (regiões declaradamente ignoradas: `path`, `startOffset`, `endOffset`, `reason`) — consumido pelo gate `checkCoverage` do validador (INV5);
-- mapa entre cada fonte e suas unidades processáveis;
-- indicação de fontes fora de escopo ou vazias;
-- inventário de blocos imutáveis ou confirmação explícita de que não há nenhum;
-- atualização do checkpoint da fase.
+- `.hephaestus/manifests/snapshot.json` — byte-for-byte freeze of sources: `files` (one entry per source: `path`, `sha256`, `size`) and `ignoredRegions` (declared ignored regions: `path`, `startOffset`, `endOffset`, `reason`) — consumed by the validator `checkCoverage` gate (INV5);
+- map from each source to its processable units;
+- indication of out-of-scope or empty sources;
+- inventory of blocks declared out of synthesis, or an explicit confirmation that there are none;
+- phase checkpoint update.
