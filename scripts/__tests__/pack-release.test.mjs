@@ -145,7 +145,7 @@ test("CN7: zip real tem raiz hephaestus, LICENSE, sem artefato de desenvolviment
   });
   assert.equal(unzip.status, 0, unzip.stderr);
   assert.ok(fs.existsSync(path.join(skillsDir, "hephaestus", "SKILL.md")), "skills/hephaestus/SKILL.md ausente");
-  assert.ok(fs.existsSync(path.join(skillsDir, "hephaestus", "SKILL.en.md")), "skills/hephaestus/SKILL.en.md ausente");
+  assert.ok(fs.existsSync(path.join(skillsDir, "hephaestus", "SKILL.pt-BR.md")), "skills/hephaestus/SKILL.pt-BR.md ausente");
   assert.ok(!fs.existsSync(path.join(skillsDir, "hephaestus-1")), "pasta com versão criada ao descompactar");
   assert.ok(
     fs.existsSync(path.join(skillsDir, "hephaestus", "COMMANDS.md")),

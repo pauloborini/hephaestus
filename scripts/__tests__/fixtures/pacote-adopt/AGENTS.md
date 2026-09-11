@@ -17,7 +17,7 @@ Antes de iniciar qualquer tarefa, leia `project-rules/index/README.md`, aplique 
 - `project-rules/rules/` — regras obrigatórias
 - `project-rules/reference/` — exemplos e notas
 - `project-rules/contracts/` — contratos externos (somente consulta)
-- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui.
+- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`; protocolo local de decisões: `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui.
 
 ## Produto
 

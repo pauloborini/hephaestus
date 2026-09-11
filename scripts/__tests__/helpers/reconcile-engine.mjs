@@ -1,9 +1,10 @@
 // Motor de referência determinístico da fase reconcile (Plano 04), fora do
 // pack (scripts/__tests__). Materializa em código executável o contrato de
 // `prompts/reconcile.md`: inventário de numeração sobre cláusulas vivas E IDs
-// de `## Histórico` (SCHEMA.md §4.7), casamento por `DEC-NNN` explícito,
-// alteração in-place com nota inline (`_Alterado <data> — era: <antigo>.
-// Motivo: <motivo>._`, empilhando acima das anteriores e podando além de 3),
+// de `## Histórico` (SCHEMA.md §4.7), casamento por `DEC-NNN` explícito e
+// identidade semântica (valores variáveis removidos), alteração in-place com
+// nota inline (`_Alterado <data> — era: <antigo>. Motivo: <motivo>._`,
+// empilhando acima das anteriores e podando além de 3),
 // cunhagem `max+1` e remoção com checagem de citações pendentes — inclusive
 // dentro de `.app-work/` (caminhos ocultos, `--hidden`).
 //
@@ -141,19 +142,27 @@ export const inventoryDecisions = (vaultDir) => {
   return { files, clauses, historico: [...historico], max };
 };
 
-// Similaridade de enunciado: Jaccard sobre tokens significativos (>= 3 chars,
-// sem stopwords básicas); >= 0.6 casa como a mesma regra.
+// Identidade semântica: Jaccard sobre tokens após remover valores variáveis.
+// Similaridade textual só desempata cláusulas com a mesma identidade.
 const STOPWORDS = new Set([
   "em", "de", "da", "do", "das", "dos", "para", "com", "na", "no", "nas",
   "nos", "e", "ou", "que", "por", "ao", "aos", "nao", "é", "sao", "como",
   "se", "uma", "um", "o", "a", "os", "as", "ja", "mais", "menos", "sem",
   "sob", "entre", "ate", "apos", "sobre", "apenas", "so", "quando", "onde",
 ]);
+const IDENTITY_THRESHOLD = 0.8;
 
 const tokensOf = (text) =>
   [...normalizeText(text).matchAll(/[a-z0-9]{3,}/g)]
     .map((m) => m[0])
     .filter((t) => !STOPWORDS.has(t));
+
+export const stripVariableValues = (text) =>
+  normalizeText(text)
+    .replace(/r\$\s*\d+(?:[.,]\d+)?/g, " ")
+    .replace(/\b\d+(?:[.,]\d+)?\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const similarity = (a, b) => {
   const ta = new Set(tokensOf(a));
@@ -164,6 +173,8 @@ const similarity = (a, b) => {
   for (const token of ta) if (tb.has(token)) common += 1;
   return common / (ta.size + tb.size - common);
 };
+
+const semanticIdentityScore = (a, b) => similarity(stripVariableValues(a), stripVariableValues(b));
 
 // Citações pendentes de um ID fora do arquivo dono do heading — inclui
 // `.app-work/` (caminhos ocultos, SCHEMA.md §4.7) e outros arquivos de
@@ -345,17 +356,28 @@ export const reconcileVault = ({ fragments, routing, repoRoot, now }) => {
         inventory.max = Math.max(inventory.max, Number(decId.slice(4)));
       }
     } else {
-      // Candidato: casa por similaridade de enunciado; sem a quem casar, create.
-      let best = null;
-      let bestScore = 0;
-      for (const clause of inventory.clauses) {
-        const score = similarity(clause.statement, statement);
-        if (score > bestScore) {
-          bestScore = score;
-          best = clause;
-        }
+      // Candidato: casa por identidade semântica no mesmo domínio; valor é payload.
+      const sameDomain = inventory.clauses.filter((clause) => clause.file === `${domain}.md`);
+      const pool = sameDomain.length > 0 ? sameDomain : inventory.clauses;
+      const ranked = pool
+        .map((clause) => ({
+          clause,
+          score: semanticIdentityScore(clause.statement, statement),
+          textScore: similarity(clause.statement, statement),
+        }))
+        .sort((a, b) => b.score - a.score || b.textScore - a.textScore);
+      const matches = ranked.filter((item) => item.score >= IDENTITY_THRESHOLD);
+      if (matches.length > 1 && matches[0].score === matches[1].score) {
+        conflicts.push({
+          reason: "reconcile-conflict",
+          domain,
+          statement,
+          candidates: matches.map((item) => item.clause.decId),
+        });
+        continue;
       }
-      if (best && bestScore >= 0.6) {
+      const best = matches[0]?.clause ?? null;
+      if (best) {
         decId = best.decId;
         matchedId = decId;
         action =

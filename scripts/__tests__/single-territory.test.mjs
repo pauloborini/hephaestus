@@ -116,10 +116,10 @@ test("AC-4.2.1: reconcile.md documenta o split obrigatório do caso híbrido", (
     path.join(import.meta.dirname, "..", "..", "prompts", "reconcile.md"),
     "utf8",
   );
-  const split = reconcile.slice(reconcile.indexOf("Split obrigatório"));
+  const split = reconcile.slice(reconcile.indexOf("Mandatory split"));
   assert.ok(split.length > 0, "reconcile.md deve documentar o split obrigatório");
   assert.match(split, /docs\/decisions\//);
   assert.match(split, /project-rules\//);
-  assert.match(split, /referenciando o ID|referencia o ID|referencia a `DEC-NNN`/i);
-  assert.match(split, /nunca copiando o número|nunca copia o valor/i);
+  assert.match(split, /referencing the ID|references the `DEC-NNN`/i);
+  assert.match(split, /never copying the number/i);
 });

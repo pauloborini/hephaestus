@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Hephaestus Project State",
-  "description": "Estado versionado do projeto: .app-work/hephaestus-state.json (nome em minúsculo, D7). Quatro blocos (D29): meta lido por preflight; routing por preflight e route; answers por route e interview; shield por route e compose. Sem métricas — telemetria (ex. llmDecidedRatio) vive em .hephaestus/, nunca aqui (D29). Campo de topo que o schema não conhece é ignorado e o necessário reperguntado, nunca migrado (D4): por isso a tolerância é declarada no nível de topo (additionalProperties true) e o fechamento (additionalProperties false) vale dentro de cada bloco conhecido.",
+  "description": "Estado versionado do projeto: .app-work/hephaestus-state.json (nome em minúsculo, D7). Quatro blocos (D29): meta lido por preflight; routing por preflight e route; answers por route e interview; shield por route e compose. meta.adoptionStatus separa respostas salvas de adoção aplicada/validada. Respostas this-run vivem somente no manifest efêmero run-answers.json. Sem métricas — telemetria vive em .hephaestus/, nunca aqui. Campo de topo que o schema não conhece é ignorado e o necessário reperguntado, nunca migrado (D4).",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -22,6 +22,18 @@
           "minLength": 1
         },
         "lastRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adoptionStatus": {
+          "type": "string",
+          "enum": ["pending", "applied", "validated"]
+        },
+        "adoptionRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adoptionUpdatedAt": {
           "type": "string",
           "minLength": 1
         }
@@ -49,8 +61,11 @@
     "answers": {
       "type": "object",
       "description": "Mapa questionKey (sha256 do contexto normalizado) -> resposta humana de escopo do projeto (D22). Chaves estáveis: derivam do contexto, nunca do texto da pergunta.",
-      "additionalProperties": {
-        "$ref": "#/$defs/answer"
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-f0-9]{64}$": {
+          "$ref": "#/$defs/answer"
+        }
       }
     },
     "shield": {
@@ -98,9 +113,14 @@
           "type": "object",
           "description": "Resposta estruturada (a forma varia por tipo de pergunta; para pergunta de destino, carrega destinationPath)."
         },
+        "contextFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Hash do contexto material que torna a resposta válida; ausência identifica resposta legada não reutilizável."
+        },
         "scope": {
           "type": "string",
-          "enum": ["this-run", "this-project", "promote-to-catalog"]
+          "enum": ["this-project", "promote-to-catalog"]
         },
         "sourceEvidence": {
           "type": "string",

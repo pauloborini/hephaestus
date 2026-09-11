@@ -21,6 +21,7 @@ const ADOPTED_STATE = {
     schemaVersion: "1.0.0",
     lastRunAt: "2026-08-11T00:00:00.000Z",
     lastRunId: "run-anterior",
+    adoptionStatus: "validated",
   },
   routing: { overlay: [] },
   answers: {},
@@ -64,9 +65,9 @@ test("AC-6.1.1: escopo de maintain conhece o formato atual do Cursor e a regra Ã
   assert.match(discover, /overlay/);
   assert.match(discover, /meta\.lastRunAt/);
   assert.match(discover, /CLAUDE\.md/);
-  assert.match(discover, /integridade do vault/);
+  assert.match(discover, /vault integrity/);
   assert.match(discover, /LEDGER\.md/);
-  assert.match(discover, /nunca embutida no prompt/);
+  assert.match(discover, /never embedded in the prompt/);
 });
 
 const hygieneAllow = (inventory, fragments) => {

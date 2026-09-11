@@ -16,6 +16,7 @@ import {
   buildFragments,
   questionKeyOf,
   routingQuestionContext,
+  routingContextFingerprint,
 } from "./helpers/routing-engine.mjs";
 
 // Fragmento cujo catálogo real (routing-defaults.json) decide `.app-work/references/`
@@ -23,11 +24,16 @@ import {
 // aponta para OUTRO destino legal — se o nível 2 fosse consultado depois do
 // catálogo, o destino seria o do catálogo e a asserção falharia.
 const SRC = "docs/archive/clones-oss/analise-argus.md";
+const ADR_SRC = "docs/adr/0001-formato-pagamentos.md";
 const ANSWER_DESTINATION = "project-rules/reference/analise-argus.md";
 
-const answerFor = (destinationPath, scope = "this-project") => ({
+const answerFor = (destinationPath, fixture, sourcePath, scope = "this-project") => ({
   answer: { destinationPath },
   scope,
+  contextFingerprint: routingContextFingerprint(
+    sourcePath,
+    fs.readFileSync(path.join(fixture, sourcePath), "utf8"),
+  ),
   sourceEvidence: "docs/brainstorming/tema-x.md",
   answeredAt: "2026-08-12T00:00:00.000Z",
 });
@@ -40,7 +46,7 @@ test("AC-5.2.1: resposta this-project divergindo do catálogo decide o destino e
     fragments,
     state: {
       routing: { overlay: [] },
-      answers: { [questionKey]: answerFor(ANSWER_DESTINATION) },
+      answers: { [questionKey]: answerFor(ANSWER_DESTINATION, fixture, SRC) },
       shield: [],
     },
   });
@@ -70,7 +76,13 @@ test("AC-5.2.1: resposta decide o ADR enfileirado — reuso sem reperguntar", ()
     fragments,
     state: {
       routing: { overlay: [] },
-      answers: { [adrQuestionKey]: answerFor("_app-vault/docs/decisions/formatos-de-pagamento.md") },
+      answers: {
+        [adrQuestionKey]: answerFor(
+          "_app-vault/docs/decisions/formatos-de-pagamento.md",
+          fixture,
+          ADR_SRC,
+        ),
+      },
       shield: [],
     },
   });
@@ -93,7 +105,7 @@ test("AC-5.2.1: resposta com destino ilegal bloqueia nomeando o fragmento", () =
         fragments,
         state: {
           routing: { overlay: [] },
-          answers: { [questionKey]: answerFor("fora/dos-territorios.md") },
+          answers: { [questionKey]: answerFor("fora/dos-territorios.md", fixture, SRC) },
           shield: [],
         },
       }),
@@ -122,7 +134,13 @@ test("AC-5.2.4: questionKey deriva do contexto normalizado e é estável sob ref
     fragments,
     state: {
       routing: { overlay: [] },
-      answers: { [keyA]: answerFor("_app-vault/docs/decisions/formatos-de-pagamento.md") },
+      answers: {
+        [keyA]: answerFor(
+          "_app-vault/docs/decisions/formatos-de-pagamento.md",
+          fixture,
+          ADR_SRC,
+        ),
+      },
       shield: [],
     },
   });
@@ -146,7 +164,13 @@ test("AC-5.2.4: a chave de enfileiramento é a mesma da consulta do nível 2 (re
     fragments,
     state: {
       routing: { overlay: [] },
-      answers: { [adrQuestion.questionKey]: answerFor("_app-vault/docs/decisions/formatos-de-pagamento.md") },
+      answers: {
+        [adrQuestion.questionKey]: answerFor(
+          "_app-vault/docs/decisions/formatos-de-pagamento.md",
+          fixture,
+          ADR_SRC,
+        ),
+      },
       shield: [],
     },
   });
@@ -160,10 +184,38 @@ test("AC-5.2.x: estado com campo de topo desconhecido não bloqueia a cascata (D
   const { routing } = buildRouting(fixture, {
     state: {
       routing: { overlay: [] },
-      answers: { [questionKey]: answerFor(ANSWER_DESTINATION) },
+      answers: { [questionKey]: answerFor(ANSWER_DESTINATION, fixture, SRC) },
       shield: [],
       futureBlock: { algumCampo: true },
     },
   });
   assert.ok(routing.some((e) => e.decidedBy === "state"));
+});
+
+test("DATA-02: resposta this-run do mesmo runId decide; runId diferente não reusa", () => {
+  const fixture = copyFixture("repo-desorganizado");
+  const fragments = buildFragments(fixture);
+  const questionKey = questionKeyOf(routingQuestionContext(SRC));
+  const answer = answerFor(ANSWER_DESTINATION, fixture, SRC, "this-run");
+  const sameRun = buildRouting(fixture, {
+    fragments,
+    runId: "run-1",
+    runAnswers: { version: 1, runId: "run-1", answers: { [questionKey]: answer } },
+  });
+  const sameEntry = sameRun.routing.find(
+    (e) => e.fragmentId === fragments.find((f) => f.provenance[0].sourcePath === SRC).fragmentId,
+  );
+  assert.equal(sameEntry.destinationPath, ANSWER_DESTINATION);
+  assert.equal(sameEntry.decidedBy, "state");
+
+  const nextRun = buildRouting(fixture, {
+    fragments,
+    runId: "run-2",
+    runAnswers: { version: 1, runId: "run-1", answers: { [questionKey]: answer } },
+  });
+  const nextEntry = nextRun.routing.find(
+    (e) => e.fragmentId === fragments.find((f) => f.provenance[0].sourcePath === SRC).fragmentId,
+  );
+  assert.equal(nextEntry.decidedBy, "catalog");
+  assert.notEqual(nextEntry.destinationPath, ANSWER_DESTINATION);
 });

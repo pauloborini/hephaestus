@@ -1,35 +1,37 @@
-# Route — Resíduo LLM, fila e gate de resíduo
+# Route — LLM residue, queue, and residue gate
 
-> Carregar **somente** quando a cascata estiver no nível 5, na fila de perguntas ou no gate de resíduo.
+> Load **only** when the cascade is at level 5, the question queue, or the residue gate.
 
-### Nível 5 — resíduo da LLM
+### Level 5 — LLM residue
 
-Só o que sobrou dos níveis 1-4, com confiança explícita (`confidence` numérica). **Abaixo do limiar não decide: enfileira pergunta** (D22). O que decide entra com `decidedBy: llm` e é submetido ao Gate de resíduo.
+Only what remains from levels 1–4, with explicit confidence (numeric `confidence`). **Below the threshold it does not decide: enqueue a question** (D22). What decides enters with `decidedBy: llm` and is submitted to the residue gate.
 
-## Fila de perguntas
+## Question queue
 
-Perguntas nascem **enfileiradas** — a cascata nunca pergunta nesta fase (D22). Cada pergunta registra `questionKey = sha256(contexto normalizado)` (contexto: origem do fragmento + o que falta decidir) e o `fragmentId`. A fila é gravada em `.hephaestus/manifests/questions.json` e drenada por `interview` num único lote.
+Questions are born **queued** — the cascade never asks in this phase (D22). Each question records `questionKey`, `contextFingerprint`, `fragmentId`, `reason`, `invalidates`, and `blocking`. The queue is written to `.hephaestus/manifests/questions.json` and drained by `interview` in the initial batch or the single allowed revalidation batch.
 
-**Justifica pergunta** (lista fechada — nada além disto enfileira na cascata):
+**Justifies a question** (closed list — nothing else is queued in the cascade):
 
-- nível 5 abaixo do limiar de confiança (a LLM não decide);
-- catálogo sem match, ou match com `destination: null` ou `confidence: baixa`;
-- path sob `.app-work/` fora da lista fechada §4 (`inventoryProcessHygiene().unknown`) — pergunta pack-candidate (DEC-006);
-- conflito de valor entre fontes para a mesma regra (tratado em `reconcile`);
-- remoção de `DEC-NNN` com citação pendente (tratado em `reconcile`);
-- remoção de conteúdo de terceiros fora da lista `shield` (tratado em `reconcile`/`plan`).
+- level 5 below the confidence threshold (the LLM does not decide);
+- catalog with no match, or a match with `destination: null` or `confidence: baixa`;
+- path under `.app-work/` outside the closed §4 list (`inventoryProcessHygiene().unknown`) — pack-candidate question (DEC-006);
+- value conflict between sources for the same rule (handled in `reconcile`);
+- removal of a `DEC-NNN` with a pending citation (handled in `reconcile`);
+- removal of third-party content outside the `shield` list (handled in `reconcile`/`plan`).
 
-**Nunca pergunta** (lista fechada — decidir em silêncio, com evidência):
+**Never asks** (closed list — decide in silence, with evidence):
 
-- rota com match alto (catálogo `confidence: alta` com destino concreto) — o nível 3 decide;
-- decisão por não-toque (nível 1), identidade congelada (`### DEC-NNN`) ou detector (nível 4) — decidem antes, **exceto** pasta unknown (pack-candidate);
-- nome de arquivo e ordem de seções — detalhe local, nunca ambiguidade genuína;
-- nada já respondido com `scope: this-project` — a resposta é vinculante e reusada por `questionKey`.
+- a high-match route (catalog `confidence: alta` with a concrete destination) — level 3 decides;
+- a non-touch decision (level 1), frozen identity (`### DEC-NNN`), or detector (level 4) — they decide earlier, **except** an unknown folder (pack-candidate);
+- file name and section order — local detail, never genuine ambiguity;
+- anything already answered with applicable scope and current fingerprint — a valid answer is binding.
 
-## Gate de resíduo
+An answer with an obsolete fingerprint enqueues `reason: context-changed` for revalidation; it does not belong to the never-ask list.
 
-Marcar como **degradante** toda entrada com `decidedBy: llm` cujo `destinationPath` seja um **arquivo novo** em `_app-vault/docs/decisions/` (isto é, que vira `DEC-NNN` nova) ou em `project-rules/rules/` (regra nova). Entradas `decidedBy: llm` com destino em `project-rules/reference/`, `project-rules/index/` ou `.app-work/` **não** degradam (D26).
+## Residue gate
 
-Medir e reportar `llmDecidedRatio` (proporção de fragmentos decididos pela LLM) **sempre, sem teto**: o valor vive em `.hephaestus/` (run-state efêmero e `report.md` do closeout), **nunca** no `hephaestus-state.json` (D29).
+Mark as **degrading** every entry with `decidedBy: llm` whose `destinationPath` is a **new file** in `_app-vault/docs/decisions/` (that is, a new `DEC-NNN`) or in `project-rules/rules/` (a new rule). `decidedBy: llm` entries destined for `project-rules/reference/`, `project-rules/index/`, or `.app-work/` **do not** degrade (D26). The `llm` label is provenance only: it does not grant approval to write.
 
-O critério é o **tipo de destino**, nunca o volume: 30 fragmentos de referência classificados pela LLM não degradam; um único destino que vira `DEC-NNN` nova degrada. O closeout converte degradação em `degraded-but-usable` com a lista nominal.
+Measure and report `llmDecidedRatio` (share of fragments decided by the LLM) **always, with no cap**: the value lives in `.hephaestus/` (ephemeral run-state and closeout `report.md`), **never** in `hephaestus-state.json` (D29).
+
+The criterion is **destination type**, never volume: 30 reference fragments classified by the LLM do not degrade; a single destination that becomes a new `DEC-NNN` does. Closeout turns degradation into `degraded-but-usable` with the named list.

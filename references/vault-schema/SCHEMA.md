@@ -144,7 +144,9 @@ Classificação legado → canônico (adoção **e** manutenção) usa `catalog/
 (na raiz do kit Hephaestus). É asset **vivo**: linhas de confiança `alta` evitam reperguntar;
 respostas novas a classificação ambígua viram candidatos e só entram na tabela após promoção
 explícita no gate D42 — handoff da adoção (`/hephaestus` modo `adopt`) **ou** fim da correção /
-modalidade roteamento do modo `maintain` (`/hephaestus`). Destino ilegal (fora da §2) é recusado.
+modalidade roteamento do modo `maintain` (`/hephaestus`). Registro, classificação ou decisão da LLM
+não substituem confirmação humana quando a mudança for destrutiva. Destino ilegal (fora da §2) é
+recusado.
 Ver procedimento nas fases do pipeline do Hephaestus.
 
 ---
@@ -191,6 +193,12 @@ Plano gratuito: 20 exports/mês.
 
 O ID identifica a **regra vigente**: estável, imortal, citável de fora. Ancorar o arquivo inteiro
 não é aceitável — um domínio tem 5–10 regras e "conforme DEC-016" não diria qual.
+
+A identidade da regra é semântica e independente do valor variável: domínio, sujeito/objeto,
+condição ou escopo e tipo de regra formam a chave de casamento. Limite, número, enumeração e demais
+valores são payload; quando só o payload muda, a mesma `DEC-NNN` é alterada in-place. Similaridade
+textual só desempata cláusulas que já têm a mesma identidade; identidade ambígua exige confirmação
+humana.
 
 ### 4.3 Estrutura do arquivo
 
@@ -349,7 +357,10 @@ corrente.
 teste, detalhe interno.
 
 **Backstop:** ao fechar plano ou guide, o executor registra `Candidatos a decisão` no `LEDGER.md`
-do pack, com o texto da regra e onde foi citada. O modo `maintain` de `/hephaestus` apresenta em lote.
+do pack, com o texto da regra e onde foi citada. O modo `maintain` de `/hephaestus` apresenta em lote
+uma pergunta de promoção com `candidateId`, origem, evidência, `questionKey` e
+`contextFingerprint`. O candidato não é insumo de `reconcile` até uma resposta humana explícita
+com `confirmed: true`, `statement` e `domain`; essa resposta preserva a origem apenas como contexto.
 Backstop é rede de segurança, não caminho principal.
 
 ---

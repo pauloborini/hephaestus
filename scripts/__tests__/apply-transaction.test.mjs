@@ -14,12 +14,12 @@ const applyPrompt = () =>
 
 test("AC-2.4.2: gate exige backup completo antes do primeiro byte; bloqueia com backup incompleto e worktree suja", () => {
   const prompt = applyPrompt();
-  assert.match(prompt, /antes do primeiro byte/);
-  assert.match(prompt, /backup completo/);
-  assert.match(prompt, /## Bloqueia se/);
-  assert.match(prompt, /backup incompleto/);
-  assert.match(prompt, /worktree suja/);
-  assert.match(prompt, /sem rotação nem reuso/);
+  assert.match(prompt, /before the first byte/);
+  assert.match(prompt, /complete backup/);
+  assert.match(prompt, /## Blocks if/);
+  assert.match(prompt, /incomplete backup/);
+  assert.match(prompt, /dirty worktree/);
+  assert.match(prompt, /no rotation and no reuse/);
 });
 
 test("AC-2.4.2: staging com artefatos nos quatro regimes e a ordem declarada é relocate -> reconcile -> generate -> keep", () => {
@@ -40,7 +40,7 @@ test("AC-2.4.2: staging com artefatos nos quatro regimes e a ordem declarada é 
 
   const prompt = applyPrompt();
   const orderSection =
-    prompt.split("## Ordem transacional de escrita")[1]?.split("## Lista final")[0] ?? "";
+    prompt.split("## Transactional write order")[1]?.split("## Final list")[0] ?? "";
   const expectedOrder = ["relocate", "condense", "delete", "reconcile", "generate", "keep"];
   let lastIndex = -1;
   for (const regime of expectedOrder) {
@@ -54,13 +54,13 @@ test("apply remove paths de staging-deletions após backup", () => {
   const prompt = applyPrompt();
   assert.match(prompt, /staging-deletions\.json/);
   assert.match(prompt, /condense/);
-  assert.match(prompt, /nota de rastro/);
+  assert.match(prompt, /trail-note/);
 });
 
 test("AC-2.4.3: lista final é o staging-manifest.json inteiro, nunca um subconjunto", () => {
   const prompt = applyPrompt();
   assert.match(prompt, /staging-manifest\.json/);
-  assert.match(prompt, /nunca um subconjunto/);
+  assert.match(prompt, /never a subset/);
   assert.match(prompt, /artifactsWritten/);
 });
 
@@ -68,7 +68,7 @@ test("AC-2.4.3: a exceção de INV1 está declarada — interview grava o state 
   const prompt = applyPrompt();
   assert.match(prompt, /interview/);
   assert.match(prompt, /hephaestus-state\.json/);
-  assert.match(prompt, /fora da transação/);
+  assert.match(prompt, /outside the transaction/);
   assert.match(prompt, /rollback/);
-  assert.match(prompt, /nunca/);
+  assert.match(prompt, /never/);
 });
