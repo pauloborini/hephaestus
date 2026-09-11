@@ -150,3 +150,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: v6.
 - Artifact: hephaestus-6.zip.
 - Content: pure skill packaging; resources/ and scripts/ excluded from release distribution (packExcludes); bundle size optimized to ~107 KB; standard hyphen formatting for skill ecosystem compliance.
+
+## Seventh release (v7)
+
+- Manifest version: `"7"`.
+- Tag: `v7`.
+- Artifact: `hephaestus-7.zip`.
+- Content: English as the canonical kit language (DEC-007): `SKILL.md` + phase prompts are the execution entry; Portuguese lives only in `*.pt-BR.md` pairs (`SKILL.pt-BR.md` replaces `SKILL.en.md`); on procedural divergence, English wins. Also ships the adoption lifecycle already on `develop` (`meta.adoptionStatus`, `run-answers.json`, self-contained `DECISION_PROTOCOL` in the generated package).

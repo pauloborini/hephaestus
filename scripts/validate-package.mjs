@@ -185,6 +185,29 @@ const checkClaudeBridge = (root) => {
   return "CLAUDE.md bridge OK.";
 };
 
+const checkDecisionProtocol = (root) => {
+  const decisionsDir = path.join(root, "_app-vault", "docs", "decisions");
+  if (!fs.existsSync(decisionsDir)) {
+    return "decision protocol: no vault decisions directory (skipped).";
+  }
+  const protocolRel = path.join("_app-vault", "docs", "TEMPLATES", "DECISION_PROTOCOL.md");
+  const protocolPath = path.join(root, protocolRel);
+  if (!fs.existsSync(protocolPath)) {
+    fail(`${protocolRel}: protocolo local de decisões ausente (ARCH-01)`);
+  }
+  const agents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+  if (!agents.includes(protocolRel.replaceAll(path.sep, "/"))) {
+    fail(`AGENTS.md: ponteiro para ${protocolRel} ausente (ARCH-01)`);
+  }
+  const protocol = fs.readFileSync(protocolPath, "utf8");
+  for (const section of ["Fonte de verdade", "Identidade e numeração", "Alteração, adição e remoção", "Promoção humana"]) {
+    if (!protocol.includes(`## ${section}`)) {
+      fail(`${protocolRel}: seção "${section}" ausente (ARCH-01)`);
+    }
+  }
+  return "decision protocol: pacote entregue com protocolo local autossuficiente.";
+};
+
 const globMatch = (rootDir, linkedPath) => {
   const segments = linkedPath.split("/");
   const fileName = segments[segments.length - 1];
@@ -366,6 +389,58 @@ const checkRunState = (root) => {
     fail(`${fileLabel}: pendingActions must be an array when present`);
   }
 
+  if (parsed.interviewBatches !== undefined &&
+      (!Number.isInteger(parsed.interviewBatches) || parsed.interviewBatches < 0 || parsed.interviewBatches > 2)) {
+    fail(`${fileLabel}: interviewBatches must be between 0 and 2`);
+  }
+  if (parsed.stateWrite !== undefined) {
+    const receipt = parsed.stateWrite;
+    if (!receipt || typeof receipt !== "object" || Array.isArray(receipt) ||
+        Object.keys(receipt).some((key) => !["exists", "sha256"].includes(key)) ||
+        typeof receipt.exists !== "boolean" ||
+        (receipt.exists ? typeof receipt.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(receipt.sha256) : receipt.sha256 !== null)) {
+      fail(`${fileLabel}: stateWrite must record existence and the corresponding sha256 (null when absent)`);
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(parsed, "revalidation")) {
+    const revalidation = parsed.revalidation;
+    if (
+      typeof revalidation !== "object" ||
+      revalidation === null ||
+      Array.isArray(revalidation)
+    ) {
+      fail(`${fileLabel}: revalidation must be an object when present`);
+    }
+    if (!new Set(["route", "reconcile", "interview", "plan", "compose"]).has(revalidation.requiredFrom)) {
+      fail(`${fileLabel}: revalidation.requiredFrom is not an allowed phase`);
+    }
+    if (
+      !new Set([
+        "route-ambiguity",
+        "reconcile-conflict",
+        "decision-promotion",
+        "pack-candidate",
+        "compose-shield-adaptation",
+        "approval-scope",
+        "context-changed",
+      ]).has(revalidation.reason)
+    ) {
+      fail(`${fileLabel}: revalidation.reason is not an allowed reason`);
+    }
+    if (!Array.isArray(revalidation.invalidates) || revalidation.invalidates.length === 0) {
+      fail(`${fileLabel}: revalidation.invalidates must be a non-empty array`);
+    }
+    if (
+      !Array.isArray(revalidation.answerKeys) ||
+      revalidation.answerKeys.some((key) => !/^[a-f0-9]{64}$/.test(key))
+    ) {
+      fail(`${fileLabel}: revalidation.answerKeys must contain sha256 question keys`);
+    }
+    if (!Number.isInteger(revalidation.attempt) || revalidation.attempt < 1 || revalidation.attempt > 2) {
+      fail(`${fileLabel}: revalidation.attempt must be 1 or 2`);
+    }
+  }
+
   return "run-state.json: required keys, enums and no unknown properties.";
 };
 
@@ -377,7 +452,8 @@ const checkRunState = (root) => {
 // ignora o que não entende e repergunta o necessário, nunca migra); bloco
 // conhecido malformado reprova nomeando o bloco.
 const STATE_KNOWN_BLOCKS = ["meta", "routing", "answers", "shield"];
-const STATE_ANSWER_SCOPES = ["this-run", "this-project", "promote-to-catalog"];
+const STATE_ANSWER_SCOPES = ["this-project", "promote-to-catalog"];
+const STATE_ADOPTION_STATUSES = ["pending", "applied", "validated"];
 
 const checkStateContract = (root) => {
   const appWorkPath = path.join(root, ".app-work");
@@ -417,17 +493,40 @@ const checkStateContract = (root) => {
       fail(`${fileLabel}: bloco "meta" deve ser um objeto`);
     }
     for (const key of Object.keys(meta)) {
-      if (!["packVersion", "schemaVersion", "lastRunAt", "lastRunId"].includes(key)) {
+      if (
+        ![
+          "packVersion",
+          "schemaVersion",
+          "lastRunAt",
+          "lastRunId",
+          "adoptionStatus",
+          "adoptionRunId",
+          "adoptionUpdatedAt",
+        ].includes(key)
+      ) {
         fail(`${fileLabel}: meta: campo desconhecido "${key}" — nenhuma métrica vive no estado (D29)`);
       }
     }
-    for (const key of ["packVersion", "schemaVersion", "lastRunAt", "lastRunId"]) {
+    for (const key of [
+      "packVersion",
+      "schemaVersion",
+      "lastRunAt",
+      "lastRunId",
+      "adoptionRunId",
+      "adoptionUpdatedAt",
+    ]) {
       if (
         Object.prototype.hasOwnProperty.call(meta, key) &&
         (typeof meta[key] !== "string" || meta[key].length === 0)
       ) {
         fail(`${fileLabel}: meta: ${key} deve ser string não vazia`);
       }
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(meta, "adoptionStatus") &&
+      !STATE_ADOPTION_STATUSES.includes(meta.adoptionStatus)
+    ) {
+      fail(`${fileLabel}: meta.adoptionStatus fora de {pending, applied, validated}`);
     }
   }
 
@@ -484,8 +583,8 @@ const checkStateContract = (root) => {
       fail(`${fileLabel}: bloco "answers" deve ser um objeto (questionKey -> resposta)`);
     }
     for (const [questionKey, answer] of Object.entries(answers)) {
-      if (questionKey.length === 0) {
-        fail(`${fileLabel}: answers: questionKey vazia`);
+      if (!/^[a-f0-9]{64}$/.test(questionKey)) {
+        fail(`${fileLabel}: answers: questionKey "${questionKey}" não é sha256 hexadecimal`);
       }
       if (typeof answer !== "object" || answer === null || Array.isArray(answer)) {
         fail(`${fileLabel}: answers: resposta de "${questionKey}" deve ser um objeto`);
@@ -504,7 +603,7 @@ const checkStateContract = (root) => {
       }
       if (!STATE_ANSWER_SCOPES.includes(answer.scope)) {
         fail(
-          `${fileLabel}: answers: "${questionKey}".scope fora de {this-run, this-project, promote-to-catalog}`,
+          `${fileLabel}: answers: "${questionKey}".scope fora de {this-project, promote-to-catalog}; this-run vive somente em run-answers.json`,
         );
       }
       if (typeof answer.sourceEvidence !== "string" || answer.sourceEvidence.length === 0) {
@@ -515,6 +614,12 @@ const checkStateContract = (root) => {
         (typeof answer.answeredAt !== "string" || answer.answeredAt.length === 0)
       ) {
         fail(`${fileLabel}: answers: "${questionKey}".answeredAt deve ser string não vazia`);
+      }
+      if (
+        Object.prototype.hasOwnProperty.call(answer, "contextFingerprint") &&
+        !/^[a-f0-9]{64}$/.test(answer.contextFingerprint)
+      ) {
+        fail(`${fileLabel}: answers: "${questionKey}".contextFingerprint deve ser sha256 hexadecimal`);
       }
     }
   }
@@ -543,6 +648,62 @@ const checkStateContract = (root) => {
   const observationNote =
     observations.length > 0 ? `; observação: ${observations.join("; ")}` : "";
   return `hephaestus-state.json: contrato OK (4 blocos, sem métricas, nome em minúsculo)${observationNote}.`;
+};
+
+const checkRunAnswers = (root) => {
+  const answersPath = path.join(root, ".hephaestus", "manifests", "run-answers.json");
+  const parsed = readJsonObject(answersPath);
+  if (parsed === null) {
+    return "run-answers.json: not present (skipped).";
+  }
+  const fileLabel = path.relative(root, answersPath);
+  if (!Number.isInteger(parsed.version) || parsed.version < 1) {
+    fail(`${fileLabel}: version must be a positive integer`);
+  }
+  if (typeof parsed.runId !== "string" || parsed.runId.length === 0) {
+    fail(`${fileLabel}: runId must be a non-empty string`);
+  }
+  const runState = readJsonObject(path.join(root, ".hephaestus", "manifests", "run-state.json"));
+  if (runState === null || parsed.runId !== runState.runId) {
+    fail(`${fileLabel}: runId does not match the current run-state; answers from another run cannot be reused`);
+  }
+  if (Object.keys(parsed).some((key) => !["version", "runId", "answers"].includes(key))) {
+    fail(`${fileLabel}: unknown property`);
+  }
+  if (typeof parsed.answers !== "object" || parsed.answers === null || Array.isArray(parsed.answers)) {
+    fail(`${fileLabel}: answers must be an object`);
+  }
+  for (const [questionKey, answer] of Object.entries(parsed.answers)) {
+    if (!/^[a-f0-9]{64}$/.test(questionKey)) {
+      fail(`${fileLabel}: questionKey "${questionKey}" não é sha256 hexadecimal`);
+    }
+    if (typeof answer !== "object" || answer === null || Array.isArray(answer)) {
+      fail(`${fileLabel}: answer de "${questionKey}" deve ser um objeto`);
+    }
+    if (Object.keys(answer).some((key) => !["answer", "scope", "contextFingerprint", "sourceEvidence", "answeredAt"].includes(key))) {
+      fail(`${fileLabel}: answer "${questionKey}" has an unknown property`);
+    }
+    for (const requiredKey of ["answer", "scope", "contextFingerprint", "sourceEvidence", "answeredAt"]) {
+      if (!Object.prototype.hasOwnProperty.call(answer, requiredKey)) {
+        fail(`${fileLabel}: answer "${questionKey}" sem "${requiredKey}"`);
+      }
+    }
+    if (answer.scope !== "this-run") {
+      fail(`${fileLabel}: answer "${questionKey}" deve ter scope this-run`);
+    }
+    if (typeof answer.answer !== "object" || answer.answer === null || Array.isArray(answer.answer)) {
+      fail(`${fileLabel}: answer "${questionKey}".answer deve ser objeto estruturado`);
+    }
+    if (!/^[a-f0-9]{64}$/.test(answer.contextFingerprint)) {
+      fail(`${fileLabel}: answer "${questionKey}".contextFingerprint deve ser sha256 hexadecimal`);
+    }
+    for (const key of ["sourceEvidence", "answeredAt"]) {
+      if (typeof answer[key] !== "string" || answer[key].length === 0) {
+        fail(`${fileLabel}: answer "${questionKey}".${key} deve ser string não vazia`);
+      }
+    }
+  }
+  return `run-answers.json: ${Object.keys(parsed.answers).length} resposta(s) this-run válidas.`;
 };
 
 const checkExternalReferences = (root) => {
@@ -1058,10 +1219,10 @@ const checkEphemeralIgnored = (root) => {
 };
 
 // CN3 / AC-2.3.1 e AC-2.3.2 (INV7): o plano aprovável exige rastreio de toda
-// operação a fragmento ou resposta (`origin`) e reprova operação destrutiva
-// decidida exclusivamente pela LLM sem aprovação registrada. `destructive` é
-// campo derivado no plan.json (nunca preenchido à mão); o gate aplica INV7
-// sobre o resultado derivado.
+// operação a fragmento ou resposta (`origin`) e aprovação humana para qualquer
+// operação destrutiva. `decidedBy` é proveniência, não permissão. `delete` e
+// `condense` são sempre destrutivas; o gate rejeita o plano quando a definição
+// mecânica foi omitida ou quando não há aprovação e evidência de escopo.
 const PLAN_OPERATIONS = new Set([
   "create", "amend", "overwrite", "move", "keep", "skip", "delete", "condense",
 ]);
@@ -1099,10 +1260,41 @@ const checkPlanContract = (root) => {
         `${fileLabel}: entries[${index}] (${entry.artifactPath}) decidedBy "${entry.decidedBy}" not in enum`,
       );
     }
-    if (entry.destructive === true && entry.decidedBy === "llm" && entry.approved !== true) {
+    if (typeof entry.destructive !== "boolean") {
       fail(
-        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive operation decided by llm without recorded approval (INV7)`,
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive must be a boolean derived from the plan context`,
       );
+    }
+    if (["delete", "condense"].includes(entry.operation) && entry.destructive !== true) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) operation ${entry.operation} is always destructive`,
+      );
+    }
+    if (entry.destructive === true && entry.approved !== true) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive operation without recorded human approval (INV7)`,
+      );
+    }
+    if (
+      entry.destructive === true &&
+      (typeof entry.approvalEvidence !== "string" || entry.approvalEvidence.length === 0)
+    ) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive operation without approvalEvidence`,
+      );
+    }
+    if (entry.destructive === true &&
+        (typeof entry.contextFingerprint !== "string" || !/^[a-f0-9]{64}$/.test(entry.contextFingerprint))) {
+      fail(`${fileLabel}: entries[${index}] (${entry.artifactPath}) approval requires a material contextFingerprint`);
+    }
+  }
+  const fields = ["artifactPath", "territory", "regime", "operation", "rationale", "origin", "decidedBy", "destructive", "contextFingerprint"];
+  const fingerprint = createHash("sha256")
+    .update(JSON.stringify(parsed.entries.map((entry) => fields.map((key) => entry[key] ?? null))))
+    .digest("hex");
+  for (const entry of parsed.entries) {
+    if (entry.destructive && entry.planFingerprint !== fingerprint) {
+      fail(`${fileLabel}: ${entry.artifactPath} planFingerprint missing or stale; approval does not cover this plan`);
     }
   }
   return `plan.json: ${parsed.entries.length} entrie(s) contractually valid.`;
@@ -1460,9 +1652,11 @@ const main = (argv) => {
   const reports = [
     checkAgents(root),
     checkClaudeBridge(root),
+    checkDecisionProtocol(root),
     checkIndexes(root),
     checkRunState(root),
     checkStateContract(root),
+    checkRunAnswers(root),
     checkExternalReferences(root),
     checkCoverageMap(root),
     checkTerritoryRegime(root),

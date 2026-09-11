@@ -1,19 +1,19 @@
 ---
 name: hephaestus
-description: Use when o usuario pedir /hephaestus ou transformar fontes cruas em regras de projeto (AGENTS.md, project-rules, _app-vault, .app-work) numa transacao de escrita.
+description: Use when the user asks for /hephaestus or to turn raw sources into project rules (AGENTS.md, project-rules, _app-vault, .app-work) in a single write transaction.
 ---
 
-<!-- Idioma: [English](SKILL.en.md) · **Português** -->
+<!-- Language: **English** · [Português](SKILL.pt-BR.md) -->
 
 # Hephaestus
 
-> Nome grego no umbrella `greek-stack`.
+> Greek name in the `greek-stack` umbrella.
 
-## Objetivo
+## Purpose
 
-Este kit transforma fontes cruas do usuário em um pacote fragmentado, canônico e repo-native de regras de projeto, gravado numa única transação de escrita.
+This kit turns a user's raw sources into a fragmented, canonical, repository-native package of project rules, written in a single write transaction.
 
-Você deve operar com o seguinte pipeline:
+Follow this pipeline:
 
 1. `preflight`
 2. `discover`
@@ -29,174 +29,148 @@ Você deve operar com o seguinte pipeline:
 12. `verify_applied`
 13. `closeout`
 
-## Superfície
+## Surface
 
-Comando único: `/hephaestus`. Sem subcomando obrigatório.
+Single command: `/hephaestus`. No mandatory subcommand.
 
-Uma execução governa os **quatro territórios** documentais do repositório numa única transação de escrita (fase `apply`):
+One run governs the **four documentary territories** of the repository in a single write transaction (the `apply` phase):
 
-| Território | O que vive lá |
-|------------|---------------|
-| `AGENTS.md` | postura do agente, parada, workflow, precedência e roteamento |
-| `project-rules/` | regras operacionais do projeto |
-| `_app-vault/` | decisões de produto (`DEC-NNN`) e specs |
-| `.app-work/` | processo: estado, issues e guias - nunca insumo de regra |
+| Territory | What lives there |
+|-----------|------------------|
+| `AGENTS.md` | agent posture, hard stop, workflow, precedence, and routing |
+| `project-rules/` | operational project rules |
+| `_app-vault/` | product decisions (`DEC-NNN`) and specs |
+| `.app-work/` | process: state, issues, guides — never a rule input |
 
-Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
+Two internal modes, decided by the adoption state in `.app-work/hephaestus-state.json`:
 
-- `adopt` - state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta - closeout `needs-followup`, nunca `ready`;
-- `maintain` - state presente: escopo reduzido. Inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico - presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
+- `adopt` — state absent or adoption not yet validated: **full adoption** of the four territories into the canonical package. Scaffolding folders or “keep”ing content already under a vault root is not enough: product rules found (including under `.app-vault/` / `_app-vault/` outside `docs/decisions/`, `### D\d+` headings, `DECISOES_*`, “Closed decisions” sections, ADRs/specs with observable norms) **become `### DEC-NNN` in `_app-vault/docs/decisions/`** in the same run; vault paths outside the closed list in `references/vault-schema/SCHEMA.md` §2 are recategorized (process → `.app-work/`, spec → `specs/`, decision → `docs/decisions/`); `INDEX.md` is derived from materialized `Afeta:` fields. Empty `docs/decisions/` scaffold while decision material still lives outside the canonical form = incomplete adoption — closeout `needs-followup`, never `ready`;
+- `maintain` — only state present with `meta.adoptionStatus: validated`: reduced scope. Missing, legacy, or `pending`/`applied` adoption remains in `adopt` to complete and validate adoption. In `maintain`, inventories drift and other tools' artifacts (`catalog/drift-catalog.json`) **and** the interior of `.app-work/` (F/STALE packs, loose `.md`, `private/references/`, legacy `done/`, flat archive, duplicates, paths outside the closed list). Non-touch (INV2) applies only to paths **already** on the §2 closed list in canonical form — being under the vault root does **not** imply canonical. Process territory (INV9): only `keep|relocate|delete|condense`. Live schema includes `roadmap/`, `docs/`, `guides/legados/`. A new pattern → `includeInPack` interview → `.hephaestus/pack-candidates.json`; the state overlay does not invent folders; a run never edits the installed skill. The kit does not depend on an auxiliary organization skill.
 
-O fluxo de qualquer execução é o pipeline de 13 fases acima.
+Every run follows the 13-phase pipeline above, with controlled returns through `prompts/interview.md`. Reconciliation awaiting answers remains `produced` and cannot release planning or application. Passing through the interview with no new questions does not consume a batch.
 
-## Agnosticismo de framework
+## Framework agnosticism
 
-O kit é agnóstico de framework e linguagem.
+The kit is framework- and language-agnostic.
 
-- A estrutura gerada (`AGENTS.md` + `project-rules/`) é a mesma para qualquer repositório.
-- Os templates não fixam ferramentas, comandos nem gates de framework específico.
-- Durante a composição, detecte o framework e a linguagem do repositório do usuário (ex.: Flutter, React, Go, Python) e preencha regras, checklists e gates com as ferramentas reais do projeto (analyzer, linter, validador estrutural, comando de teste).
-- Regras específicas de domínio do usuário nunca entram no kit; entram no pacote gerado para o projeto.
+- The generated structure (`AGENTS.md` + `project-rules/`) is the same for every repository.
+- Templates do not prescribe framework-specific tools, commands, or gates.
+- During composition, detect the target repository's framework and language (for example Flutter, React, Go, or Python) and fill rules, checklists, and gates with its real tooling (analyzer, linter, structural validator, test command).
+- User-specific domain rules belong in the generated package, never in this kit.
 
-## Estado De Execução
+## Kit language
 
-Durante o processo, a execução deve manter checkpoint em `.hephaestus/manifests/run-state.json` no workspace do usuário.
+English is the canonical language of this kit (**DEC-007**): `SKILL.md`, phase prompts, and maintainer docs without a locale suffix. Execute from this file, never from `SKILL.pt-BR.md`. Portuguese documentation is the parallel pair `*.pt-BR.md` (`SKILL.pt-BR.md`, `README.pt-BR.md`, `COMMANDS.pt-BR.md`, `RELEASE.pt-BR.md`). On procedural divergence, English wins. There is no `SKILL.en.md`. Vault/AGENTS protocol tokens in `templates/` and SCHEMA (`Afeta:`, `### DEC-NNN`, Portuguese protocol headings) stay as identifiers — they are not a `*.pt-BR.md` pair. Fill project-facing language from the target repository.
 
-Esse arquivo é obrigatório sempre que houver trabalho multi-etapa, para permitir retomada confiável após interrupção. Ele é mecanismo do processo; não faz parte da estrutura canônica do pacote gerado. O diretório `.hephaestus/` é 100% efêmero e gitignored: staging, backup, run-state e ledgers de execução vivem lá, e a linha `.hephaestus/` no `.gitignore` do alvo é garantida pela fase `apply`.
+## Execution state
 
-## Estado do projeto
+For multi-step work, keep a checkpoint at `.hephaestus/manifests/run-state.json` in the user's workspace.
 
-Além do checkpoint efêmero, a execução consulta e grava o estado **versionado** do projeto em `.app-work/hephaestus-state.json` (nome em minúsculo - o gate do validador reprova variante em caixa alta). Ele é editável à mão e dividido em **quatro blocos** (D29), cada um com dono de leitura distinto:
+That file is required whenever work spans multiple phases, so a run can resume after interruption. It is process machinery, not part of the generated canonical structure. The `.hephaestus/` directory is fully ephemeral and gitignored: staging, backup, run-state and execution ledgers live there, and the `.hephaestus/` line in the target `.gitignore` is guaranteed by the `apply` phase.
 
-| Bloco | Lido por | Conteúdo |
-|-------|----------|----------|
-| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` - versões e identidade do último run |
-| `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional - overlay não inventa pasta |
-| `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana com `answer` estruturada, `scope` (`this-run`/`this-project`/`promote-to-catalog`) e `sourceEvidence` |
-| `shield` | `route` (antes do nível 1) e `compose` | blindagem opt-in de conteúdo de terceiros: lista de `{ path, selector }`, vazia por default |
+## Project state
 
-O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui - um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` é a única fase que grava o state, fora da transação: o rollback de `verify(applied)` nunca reverte as respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
+Besides the ephemeral checkpoint, execution reads and writes the project's **versioned** state at `.app-work/hephaestus-state.json` (lowercase name — the validator gate rejects uppercase variants). It is hand-editable and split into **four blocks** (D29), each with a distinct reading owner:
 
-## Regra central
+| Block | Read by | Content |
+|-------|---------|---------|
+| `meta` | `preflight`, `apply`, `verify(applied)` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId`, and `adoptionStatus` (`pending`/`applied`/`validated`) — versions, identity, and adoption cycle |
+| `routing` | `preflight` and `route` | catalog overlay (same shape as `catalog/routing-defaults.json`) plus optional `forbiddenPatterns` — overlay does not invent folders |
+| `answers` | `route` (cascade level 2) and `interview` | map `questionKey` → persistent human answer with structured `answer`, `scope` (`this-project`/`promote-to-catalog`), `contextFingerprint`, and `sourceEvidence`; `this-run` answers live in `.hephaestus/manifests/run-answers.json` |
+| `shield` | `route` (before level 1) and `compose` | opt-in shielding of third-party content: list of `{ path, selector }`, empty by default |
 
-Você não deve improvisar a árvore final livremente.
+The file carries **no metrics**: telemetry (for example `llmDecidedRatio`) lives in `.hephaestus/`, never here — a file that accumulates telemetry stops being hand-editable in practice. Unknown top-level fields are **ignored** and the needed information is asked again, never migrated (D4). `interview` writes answers and may mark adoption as `pending` outside the transaction; `apply` marks `meta.adoptionStatus: applied` before touching the package; `verify(applied)` marks `validated` only after every adoption gate. Those merges preserve the other blocks and update the `stateWrite` receipt for safe resumption. Rollback never reverts human answers (INV1, exception declared in `prompts/apply.md`).
 
-Antes de produzir qualquer artefato final:
+## Core rule
 
-- leia este `SKILL.md`;
-- leia apenas os prompts da fase atual em `prompts/`;
-- use `templates/` como alvo estrutural;
-- use `schemas/` para restringir a forma da saída;
-- use `references/` (plural) como apoio do próprio kit, apenas para leitura; **não confundir** com `reference/` (singular) que é a pasta do pacote gerado dentro de `project-rules/`;
-- matriz anti-invenção por fase: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / pasta / texto - não despejar a matriz neste SKILL);
-- use `manifests/` para nomenclatura, política e metadados.
+Do not invent the final tree freely.
 
-## Estrutura alvo
+Before producing any final artifact:
 
-O pacote final deve seguir a estrutura canônica do kit:
+- read this `SKILL.md`;
+- read only the prompt for the current phase in `prompts/`;
+- use `templates/` as the structural target;
+- use `schemas/` to constrain output shape;
+- use `references/` (plural) only as kit support; do not confuse it with the generated package's `project-rules/reference/` directory;
+- per-phase anti-invention matrix: [references/anti-invention-gates.md](references/anti-invention-gates.md) (DEC / path / folder / text — do not dump the matrix into this SKILL);
+- use `manifests/` for names, policy, and metadata.
+
+## Target structure
+
+The final package follows this canonical structure:
 
 ```text
 AGENTS.md
-CLAUDE.md            (ponte de uma linha: `@AGENTS.md`)
+CLAUDE.md            (one-line bridge: `@AGENTS.md`)
 project-rules/
   index/
   rules/
   reference/
-  contracts/       (opcional)
-.hephaestus/         (checkpoint do processo; opcional no pacote final)
+  contracts/       (optional)
+.hephaestus/         (process checkpoint; optional in the final package)
   manifests/
 ```
 
-Categorias opcionais podem ser omitidas quando não houver material suficiente, mas `AGENTS.md` deve existir.
+Optional categories may be omitted when source material is insufficient. `AGENTS.md` is mandatory.
 
-`CLAUDE.md` é ponte, nunca conteúdo: uma linha `@AGENTS.md` e nada mais. Existe para que cliente que lê só `CLAUDE.md` caia no mesmo contrato, sem manter dois arquivos. Projeto que já tem `CLAUDE.md` com conteúdo próprio: reabsorver o conteúdo no `AGENTS.md`/`project-rules/` e reduzir o arquivo à ponte - nunca deixar dois contratos vivos.
+`CLAUDE.md` is a bridge, never content: one `@AGENTS.md` line and nothing else. It exists so clients that only read `CLAUDE.md` land on the same contract without maintaining two files. If the project already has a `CLAUDE.md` with its own content, reabsorb that content into `AGENTS.md`/`project-rules/` and reduce the file to the bridge — never leave two live contracts.
 
-## Contrato de fragmentação
+## Fragment contract
 
-Classifique cada trecho do material bruto por papel operacional:
+Assign each raw-source fragment an operational role:
 
-- `index`
-  - roteamento por tipo de tarefa, ordem de leitura, gatilhos de contexto
-- `rules`
-  - comportamento obrigatório, recorrente ou normativo
-- `reference`
-  - exemplos, tabelas, contratos longos, apoio
-- `manifest`
-  - metadados de proveniência, cobertura, conflito ou validação
+- `index` — task routing, reading order, context triggers;
+- `rules` — mandatory, recurring, or normative behavior;
+- `reference` — examples, tables, long contracts, supporting material;
+- `manifest` — provenance, coverage, conflict, or validation metadata.
 
-Não existe papel `memory` na estrutura canônica. Preferências persistentes de agente pertencem ao sistema de memória do cliente (ex.: memórias da ferramenta), não ao pacote gerado.
+There is no canonical `memory` role. Persistent agent preferences belong to the client memory system, not to the generated package.
 
-Se a classificação for fraca:
+If the role assignment is weak, mark it `unknown` or low confidence, record the ambiguity, and do not force an arbitrary category.
 
-- marque como `unknown` ou baixa confiança;
-- registre a ambiguidade;
-- não force uma categoria arbitrária.
+## Phases (Progressive Disclosure)
 
-## Fases (Progressive Disclosure)
+**Load rule:** at each step, read **only** the current phase prompt in `prompts/` (+ schemas/refs listed on the row). Do not preload the other `prompts/*.md`. I/O, gates, and procedure live in the prompt — this index does not duplicate them.
 
-**Regra de carga:** em cada passo, leia **somente** o prompt da fase atual em `prompts/` (+ schemas/refs listados na linha). Não pré-carregue os outros `prompts/*.md`. I/O, gates e procedimento vivem no prompt - este índice não os duplica.
+`prompts/validate.md` is **one body, two targets** (`Target: staging` = phase 10 `verify_staging`; `Target: applied` = phase 12 `verify_applied`). Keep both targets in the same file.
 
-`prompts/validate.md` é **um corpo, dois alvos** (`Alvo: staging` = fase 10 `verify_staging`; `Alvo: applied` = fase 12 `verify_applied`). Manter dual no mesmo arquivo.
+| # | Phase | Prompt | Job | Reads (min.) | Produces (min.) |
+|---|-------|--------|-----|--------------|-----------------|
+| 1 | `preflight` | [prompts/preflight.md](prompts/preflight.md) | Gate git/worktree + resolve `mode` | `catalog/*`, state if present | `run-state.mode` |
+| 2 | `discover` | [prompts/discover.md](prompts/discover.md) | Source inventory by mode | naming-policy, drift-catalog | inventory / missing |
+| 3 | `snapshot` | [prompts/snapshot.md](prompts/snapshot.md) | Freeze sources byte-for-byte | discover inventory | `snapshot.json` |
+| 4 | `fragment` | [prompts/fragment.md](prompts/fragment.md) | Cut units with provenance | snapshot | `fragments.json` |
+| 5 | `route` | [prompts/route.md](prompts/route.md) | Territory/regime cascade + evidence | fragments, catalog, state | `routing.json`, queue |
+| 6 | `reconcile` | [prompts/reconcile.md](prompts/reconcile.md) | `DEC-NNN` identity (match/mint) | routing, `docs/decisions/**` | `identity-map.json` |
+| 7 | `interview` | [prompts/interview.md](prompts/interview.md) | Drain queue; writes state outside tx | queue, `answers` block | state `answers` |
+| 8 | `plan` | [prompts/plan.md](prompts/plan.md) | Readable plan + destructiveness | execution ledgers | `plan.json` / `plan.md` |
+| 9 | `compose` | [prompts/compose.md](prompts/compose.md) | Materialize staging (no repo writes) | templates/, references/ | `staging/**` + manifest |
+| 10 | `verify_staging` | [prompts/validate.md](prompts/validate.md) `Target: staging` | Package contract on staging | schemas/, manifests/ | staging verdict |
+| 11 | `apply` | [prompts/apply.md](prompts/apply.md) | Sole repo write (tx + backup) | approved staging-manifest | package on worktree |
+| 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Target: applied` | On-disk hash; rollback if diverge | staging-manifest | applied verdict |
+| 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Report/verdict; does not alter package | templates/, manifests | `report.md` |
 
-| # | Fase | Prompt | Job | Lê (mín.) | Produz (mín.) |
-|---|------|--------|-----|-----------|---------------|
-| 1 | `preflight` | [prompts/preflight.md](prompts/preflight.md) | Gate git/worktree + resolve `mode` | `catalog/*`, state se existir | `run-state.mode` |
-| 2 | `discover` | [prompts/discover.md](prompts/discover.md) | Inventário de fontes por modo | naming-policy, drift-catalog | inventário / ausentes |
-| 3 | `snapshot` | [prompts/snapshot.md](prompts/snapshot.md) | Congelar fontes byte a byte | inventário discover | `snapshot.json` |
-| 4 | `fragment` | [prompts/fragment.md](prompts/fragment.md) | Cortar unidades com proveniência | snapshot | `fragments.json` |
-| 5 | `route` | [prompts/route.md](prompts/route.md) | Cascata territory/regime + evidência | fragments, catalog, state | `routing.json`, fila |
-| 6 | `reconcile` | [prompts/reconcile.md](prompts/reconcile.md) | Identidade `DEC-NNN` (casar/cunhar) | routing, `docs/decisions/**` | `identity-map.json` |
-| 7 | `interview` | [prompts/interview.md](prompts/interview.md) | Drenar fila; grava state fora da tx | fila, bloco `answers` | state `answers` |
-| 8 | `plan` | [prompts/plan.md](prompts/plan.md) | Plano legível + destrutividade | ledgers de execução | `plan.json` / `plan.md` |
-| 9 | `compose` | [prompts/compose.md](prompts/compose.md) | Materializar staging (sem repo) | templates/, references/ | `staging/**` + manifest |
-| 10 | `verify_staging` | [prompts/validate.md](prompts/validate.md) `Alvo: staging` | Contrato do pacote no staging | schemas/, manifests/ | veredito staging |
-| 11 | `apply` | [prompts/apply.md](prompts/apply.md) | Única escrita no repo (tx + backup) | staging-manifest aprovado | pacote no worktree |
-| 12 | `verify_applied` | [prompts/validate.md](prompts/validate.md) `Alvo: applied` | Hash no disco; rollback se diverge | staging-manifest | veredito applied |
-| 13 | `closeout` | [prompts/closeout.md](prompts/closeout.md) | Relatório/veredito; não altera pacote | templates/, manifests | `report.md` |
-
-Modos `adopt` / `maintain` **não** são fases - ver Superfície.
+Modes `adopt` / `maintain` are **not** phases — see Surface.
 
 ## Guardrails
 
-- não citar projetos reais em nenhum artefato distribuível;
-- não copiar textos longos de exemplo sem neutralização;
-- não criar categorias sem papel operacional claro;
-- não inflar a árvore final com arquivos vazios;
-- não marcar `valid` quando houver violação dos contratos mínimos;
-- `AGENTS.md` deve ser centralizador e enxuto, não um depósito de todas as regras;
-- regras de domínio, arquitetura, UI, contrato, segurança e operação devem ficar em `project-rules/rules/*`, não no `AGENTS.md`;
-- regras de engenharia devem ser autocontidas: nada em `AGENTS.md` ou `project-rules/` pode depender de arquivo externo para completar decisão;
-- dependências externas de arquivos dentro de `project-rules/` devem ser mapeadas e reportadas, não escondidas;
-- nada é escrito no repositório fora da fase `apply`; a única exceção é `interview` gravando `.app-work/hephaestus-state.json` fora da transação;
-- fase `in_progress` nunca pode ser tratada como concluída após interrupção;
-- fase só pode ser considerada retomável como concluída quando estiver marcada como `validated` em `.hephaestus/manifests/run-state.json`;
-- não concluir a composição sem mapa de cobertura entre fragmentos e arquivos de destino;
-- não encerrar o trabalho sem explicitar pendências ou confirmar que não há pendências relevantes;
-- a lista final de exclusão do pacote distribuível vive em `manifests/kit-manifest.json:packExcludes`; nenhuma exclusão de conteúdo hard-coded em script.
+- Do not cite real projects in distributable artifacts.
+- Do not copy long examples without neutralization.
+- Do not create categories with no operational role or empty files merely to look complete.
+- Do not mark output `valid` when minimum contracts fail.
+- Keep `AGENTS.md` concise and centralizing. Domain, architecture, UI, contract, security, and operational rules belong in `project-rules/rules/*`.
+- Engineering rules must be self-contained: nothing in `AGENTS.md` or `project-rules/` may depend on an external file to complete a decision. Consulting product DECs and the local vault protocol is allowed without duplicating values.
+- Map and report, never hide, external dependencies cited from `project-rules/`.
+- Nothing is written to the repository outside the explicitly delimited writes: `interview` writes answers/`pending` outside the transaction, `apply` materializes the package and marks `applied`, and `verify(applied)` marks only `validated`.
+- Never treat `in_progress` as complete after interruption, nor `produced` as equivalent to `validated`.
+- Do not conclude composition without a fragment-to-destination coverage map.
+- Do not close work without listing pending items or confirming that none remain.
+- The distributable package's final exclusion list lives in `manifests/kit-manifest.json:packExcludes`; no content exclusion is hard-coded in scripts.
 
-## Quando bloquear
+## When to block
 
-Bloqueie a conclusão quando:
+Block completion when `AGENTS.md` is missing; role assignment is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree has an unproven delta from this run or the backup is incomplete in the `apply` phase; or, in `adopt`, decision sources existed and `docs/decisions/` remains scaffold-only / without matching `### DEC-NNN` in the identity map.
 
-- faltar `AGENTS.md`;
-- a classificação estiver majoritariamente ambígua;
-- o pacote final depender demais de inferência fraca;
-- houver vazamento de identidade real;
-- o estado de execução estiver corrompido ou inconsistente a ponto de impedir retomada segura;
-- os contratos mínimos dos `schemas/` não forem atendidos;
-- a worktree estiver suja ou o backup estiver incompleto na fase `apply`;
-- em `adopt`, houver fonte de decisão de produto (legado ou detector) e `docs/decisions/` permanecer só com scaffold / sem `### DEC-NNN` correspondente no `identity-map`.
+## Mandatory closeout
 
-## Fechamento obrigatório
-
-Ao concluir o fluxo, você deve sempre:
-
-- dizer se ainda existe pendência;
-- recomendar uma decisão quando houver ambiguidade ou conflito;
-- revisar se `AGENTS.md` já centraliza corretamente o novo método;
-- revisar se `AGENTS.md` não recebeu regras que deveriam estar em `project-rules/rules/*`;
-- revisar se a pasta `project-rules/` contém as regras necessárias;
-- revisar se dependências externas de `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`;
-- revisar se `.hephaestus/manifests/run-state.json` marca corretamente fases `validated`, `produced`, `in_progress` ou `failed`;
-- revisar se o mapa de cobertura explica o destino das regras relevantes;
-- dizer explicitamente se o pacote final já pode ser considerado utilizável.
+At completion, always state pending work; recommend a resolution for relevant ambiguity or conflict; confirm that `AGENTS.md` is centralized and not a rules dump; confirm `project-rules/` contains the needed rules; report external references in `.hephaestus/manifests/external-references-report.json`; verify the `run-state.json` phase states; verify coverage-map destinations; and state whether the package is usable.

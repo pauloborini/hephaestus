@@ -1,7 +1,7 @@
 # Route — Shield
 
-> Carregar **somente** quando a cascata estiver no passo shield (precede o nível 1).
+> Load **only** when the cascade is at the shield step (precedes level 1).
 
-### Bloco `shield` (precede o nível 1)
+### `shield` block (precedes level 1)
 
-Antes do nível 1, consultar o bloco `shield` do state. Fragmento cujo caminho de origem casa `path` (+ `selector` de seção, quando declarado) de uma entrada é marcado `regime: keep` com `decidedBy: state` — a blindagem declarada vence qualquer outro nível, e o conteúdo blindado nunca passa pela síntese. Ausência do bloco = lista vazia: nada é blindado e todo conteúdo é reabsorvido (D9).
+Before level 1, consult the state's `shield` block. A fragment whose origin path matches an entry's `path` (+ section `selector`, when declared) is marked `regime: keep` with `decidedBy: state` — declared shielding beats every other level, and shielded content never goes through synthesis. Absence of the block = empty list: nothing is shielded and all content is reabsorbed (D9).

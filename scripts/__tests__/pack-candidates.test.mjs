@@ -26,7 +26,7 @@ test("interview.md pergunta includeInPack e proíbe overlay de pasta", () => {
   const md = fs.readFileSync(path.join(REPO_ROOT, "prompts", "interview.md"), "utf8");
   assert.match(md, /includeInPack/);
   assert.match(md, /pack-candidates\.json/);
-  assert.match(md, /não edita/);
+  assert.match(md, /does not edit/);
   const close = fs.readFileSync(path.join(REPO_ROOT, "prompts", "closeout.md"), "utf8");
-  assert.match(close, /Candidatos a pack/);
+  assert.match(close, /Pack candidates/);
 });

@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "6",
+  "version": "7",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
@@ -18,7 +18,7 @@
     "README.md",
     "README.pt-BR.md",
     "SKILL.md",
-    "SKILL.en.md",
+    "SKILL.pt-BR.md",
     "COMMANDS.md",
     "COMMANDS.pt-BR.md",
     "LICENSE",
@@ -64,6 +64,7 @@
     "references/canonical-structure/README.md",
     "references/vault-schema/SCHEMA.md",
     "templates/vault/DECISION_TEMPLATE.md",
+    "templates/vault/DECISION_PROTOCOL.md.template",
     "templates/vault/INDEX_TEMPLATE.md",
     "templates/vault/ISSUES_README_TEMPLATE.md",
     "templates/vault/ISSUES_INDEX_TEMPLATE.md",
@@ -76,6 +77,7 @@
     "schemas/external-references-report.schema.json",
     "schemas/routing.schema.json",
     "schemas/run-state.schema.json",
+    "schemas/run-answers.schema.json",
     "schemas/hephaestus-state.schema.json",
     "schemas/package.schema.json",
     "schemas/pack-candidates.schema.json",

@@ -15,7 +15,7 @@ import { copyFixture } from "./helpers/fixtures.mjs";
 
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
 
-const QUESTION_KEY = "ab12cd34ef56";
+const QUESTION_KEY = "ab".repeat(32);
 const VALID_STATE = {
   meta: {
     packVersion: "1.0.0",
@@ -126,4 +126,22 @@ test("AC-5.1.x: routing overlay com entrada sem destination reprova nomeando rou
   assert.equal(result.status, 1);
   assert.ok(result.stderr.includes("routing"), result.stderr);
   assert.ok(result.stderr.includes("destination"), result.stderr);
+});
+
+test("DATA-02: resposta this-run no state versionado reprova", () => {
+  const pkg = packageWithState({
+    ...VALID_STATE,
+    answers: {
+      [QUESTION_KEY]: {
+        answer: { destinationPath: ".app-work/archive/guides/" },
+        scope: "this-run",
+        sourceEvidence: "docs/brainstorming/tema-x.md",
+        answeredAt: "2026-08-12T00:00:00.000Z",
+      },
+    },
+  });
+  const result = runValidator(pkg);
+  assert.equal(result.status, 1);
+  assert.ok(result.stderr.includes("this-run"), result.stderr);
+  assert.ok(result.stderr.includes("run-answers.json"), result.stderr);
 });

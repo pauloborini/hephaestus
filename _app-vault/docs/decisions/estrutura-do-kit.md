@@ -57,6 +57,16 @@ no schema; último recurso `.app-work/archive/docs/`. Sem resposta: run `blocked
 recebe pasta nova. `promote-to-catalog` permanece só para linha de catálogo de
 tipo já previsto (ex. glob em `drift-catalog`). Skill instalada não é editada.
 
+### DEC-007 — English is the canonical kit language
+
+The Hephaestus kit is **always** English-first. This does not change per run, locale, or operator preference.
+
+- **Operational source of truth:** `SKILL.md` and every `prompts/**` body. Maintainer docs without a locale suffix (`README.md`, `COMMANDS.md`, `RELEASE.md`) are English. Agents executing `/hephaestus` load `SKILL.md` and the current phase prompt in English. `SKILL.pt-BR.md` is documentation, never the execution entrypoint.
+- **Portuguese:** optional parallel documentation as `*.pt-BR.md` (`SKILL.pt-BR.md`, `README.pt-BR.md`, `COMMANDS.pt-BR.md`, `RELEASE.pt-BR.md`), linked by the reciprocal language header. The pair must list the same 13 phases in the same order. On any divergence of procedure, **English wins**.
+- **There is no `SKILL.en.md`.** English lives in the unsuffixed filenames.
+- **Generated-package protocol (frozen, not a locale pair):** `templates/**`, `references/vault-schema/SCHEMA.md`, `references/anti-invention-gates.md`, `references/canonical-structure/**`, and human `reason`/`pattern` strings in `catalog/*.json` keep the existing Portuguese protocol tokens and headings (`Afeta:`, `### DEC-NNN`, `## Histórico`, `## Domínios`, `## Por feature`, `## Postura`, `## Workflow obrigatório`, and the rest of the fixed AGENTS/vault contract). Translating those files is a breaking contract change, not a docs swap. Project-facing fill (agent contract, gates, examples, decision statements absorbed from the target repo) uses the target repository’s language — not a silent rewrite into English or Portuguese.
+- **This repository’s own vault** may keep historical clauses in Portuguese; new kit-governance clauses follow this DEC and are written in English.
+
 ## Histórico
 
 - 2026-08-11 — DEC-001 removida. Era: blocos delimitados por `hephaestus:immutable` preservados

@@ -1,66 +1,66 @@
 # Fragment
 
-## Objetivo
+## Purpose
 
-Quebrar fontes extensas em unidades menores e utilizáveis.
+Break large sources into smaller, usable units.
 
-O objetivo não é resumir o material.
-O objetivo é preservar todas as regras relevantes em fragmentos menores, rastreáveis e fáceis de classificar.
+The goal is not to summarize the material.
+The goal is to preserve every relevant rule in smaller, traceable fragments that are easy to route.
 
-## Entradas
+## Inputs
 
-- `.hephaestus/manifests/snapshot.json` (e mapa fonte→unidades);
-- `schemas/fragment.schema.json` (forma da saída).
+- `.hephaestus/manifests/snapshot.json` (and source→units map);
+- `schemas/fragment.schema.json` (output shape).
 
-## Delimitadores preferenciais
+## Preferred delimiters
 
 - headings
-- listas
+- lists
 - checklists
-- tabelas
-- seções temáticas
-- blocos claramente normativos
+- tables
+- thematic sections
+- clearly normative blocks
 
-## Procedimento
+## Procedure
 
-1. Ler a fonte inteira antes de fragmentar.
-2. Identificar blocos normativos, exemplos, referências, preferências e metadados.
-3. Quebrar primeiro por seções estruturais.
-4. Dentro de seções grandes, quebrar por regra, checklist, tabela ou tópico.
-5. Manter fragmentos pequenos o suficiente para classificação, mas completos o suficiente para não perder sentido.
-6. Registrar origem, seção e pista de localização sempre que possível.
-7. Marcar fragmentos duplicados ou conflitantes em vez de apagar conteúdo.
+1. Read the entire source before fragmenting.
+2. Identify normative blocks, examples, references, preferences, and metadata.
+3. Split first by structural sections.
+4. Inside large sections, split by rule, checklist, table, or topic.
+5. Keep fragments small enough to route, but complete enough not to lose meaning.
+6. Record origin, section, and location hint whenever possible.
+7. Mark duplicated or conflicting fragments instead of deleting content.
 
-## Regras Obrigatórias
+## Mandatory rules
 
-- preservar vínculo com a origem;
-- preservar o conteúdo operacional, não apenas a ideia geral;
-- não quebrar demais a ponto de perder sentido;
-- não manter blocos enormes quando houver divisões estruturais claras;
-- registrar localização ou pista de origem sempre que possível;
-- não descartar regra porque parece específica demais;
-- não mover decisão para inferência quando a fonte original traz uma regra explícita;
-- quando houver dúvida, manter o fragmento e marcar baixa confiança na classificação posterior.
-- ao iniciar, aplicar a regra única de checkpoint do `SKILL.md`: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `fragment` como `in_progress`; ao finalizar a fase, marcar `fragment` como `produced`; marcar `fragment` como `validated` quando a saída mínima estiver consistente e cobrindo as fontes previstas em `snapshot`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`).
+- preserve the link to the origin;
+- preserve operational content, not only the general idea;
+- do not over-split to the point of losing meaning;
+- do not keep huge blocks when there are clear structural divisions;
+- record location or origin hint whenever possible;
+- do not discard a rule because it looks too specific;
+- do not move a decision to inference when the original source states an explicit rule;
+- when in doubt, keep the fragment and mark low confidence for later routing.
+- on start, apply the single checkpoint rule from `SKILL.md`: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `fragment` as `in_progress`; when the phase finishes, mark `fragment` as `produced`; mark `fragment` as `validated` when the minimum output is consistent and covers the sources planned in `snapshot`; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`).
 
-## Escreve no repositório
+## Writes to the repository
 
-Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` (efêmero, gitignored) e o ledger `.hephaestus/manifests/fragments.json` (efêmero, gitignored).
+No. The only writes are the checkpoint `.hephaestus/manifests/run-state.json` (ephemeral, gitignored) and the ledger `.hephaestus/manifests/fragments.json` (ephemeral, gitignored).
 
-## Saída Mínima Por Fragmento
+## Minimum output per fragment
 
-- identificador estável;
-- fonte original;
-- localização aproximada;
-- texto preservado ou síntese fiel;
-- proveniência (`provenance[]` com `sourcePath`/`startOffset`/`endOffset`) — obrigatória;
-- tipo estrutural inicial: seção, regra, checklist, exemplo, tabela, preferência, metadado ou desconhecido;
-- observações de conflito, duplicidade ou ambiguidade;
-- indicação se o fragmento precisa ser quebrado novamente (`needsSplit`), registrada como campo de observação — fragmento misto marcado `needsSplit` não dividido bloqueia a fase `route`;
-- atualização do checkpoint da fase.
+- stable identifier;
+- original source;
+- approximate location;
+- preserved text or faithful synthesis;
+- provenance (`provenance[]` with `sourcePath`/`startOffset`/`endOffset`) — required;
+- initial structural type: section, rule, checklist, example, table, preference, metadata, or unknown;
+- notes on conflict, duplication, or ambiguity;
+- whether the fragment needs to be split again (`needsSplit`), recorded as an observation field — a mixed fragment marked `needsSplit` and not split blocks the `route` phase;
+- phase checkpoint update.
 
-**Não inventar destino.** Em `fragment`, **não** inventar, estimar nem adivinhar `territory`, `regime` nem path de destino. Esses campos são opcionais no schema nesta fase; a fase `route` (cascata) é quem decide destino/território/regime.
+**Do not invent a destination.** In `fragment`, **do not** invent, estimate, or guess `territory`, `regime`, or destination path. Those fields are optional on the schema in this phase; the `route` phase (cascade) decides destination/territory/regime.
 
-## Saídas
+## Outputs
 
-`.hephaestus/manifests/fragments.json` — um objeto por fragmento (`fragmentId`, `rawText`, `confidence`, `ambiguity`, `provenance[]` com `sourcePath`/`startOffset`/`endOffset`; `territory`/`regime` opcionais e tipicamente ausentes até `route`), válido pelo `schemas/fragment.schema.json` — consumido por `route` (cascata decide destino) e pelos gates `checkCoverage`/`checkKeepBytes` do validador.
+`.hephaestus/manifests/fragments.json` — one object per fragment (`fragmentId`, `rawText`, `confidence`, `ambiguity`, `provenance[]` with `sourcePath`/`startOffset`/`endOffset`; `territory`/`regime` optional and typically absent until `route`), valid against `schemas/fragment.schema.json` — consumed by `route` (cascade decides destination) and by the validator `checkCoverage`/`checkKeepBytes` gates.

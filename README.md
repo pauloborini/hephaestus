@@ -8,7 +8,7 @@
 
 The **Hephaestus** kit is a single command, `/hephaestus`, that governs the four documentary territories of a repository — `AGENTS.md`, `project-rules/`, `_app-vault/` and `.app-work/` — in one run and one write transaction. Its scope is documentation structure, not application code or an editor plugin.
 
-This README is for people. [SKILL.en.md](SKILL.en.md) is the English procedural entrypoint for the LLM.
+This README is for people. [SKILL.md](SKILL.md) is the English procedural entrypoint for the LLM (**DEC-007** — English always wins; there is no `SKILL.en.md`). Portuguese documentation: [SKILL.pt-BR.md](SKILL.pt-BR.md).
 
 ## Why it exists
 
@@ -49,7 +49,7 @@ skills/
 
 Every entry in the zip is prefixed with the fixed folder `hephaestus/` — no version in the folder name — so unpacking an updated release over an existing install overwrites it instead of accumulating. The zip never contains `_app-vault/`, `.app-work/`, the test suite or development artifacts; the final exclusion list lives in `manifests/kit-manifest.json:packExcludes`.
 
-Then run `/hephaestus` inside the target repository. Two internal modes are decided by the presence of `.app-work/hephaestus-state.json`: `adopt` (full scan) when the state is absent, `maintain` (drift plus `.app-work/` hygiene, driven by `catalog/drift-catalog.json` and the closed process schema) when it is present. New process patterns become pack candidates; they do not create folders via overlay.
+Then run `/hephaestus` inside the target repository. Two internal modes are decided by the adoption state in `.app-work/hephaestus-state.json`: `adopt` (full scan and adoption) when the state is absent, legacy, or not `meta.adoptionStatus: validated`; `maintain` (drift plus `.app-work/` hygiene, driven by `catalog/drift-catalog.json` and the closed process schema) only after validated adoption. New process patterns become pack candidates; they do not create folders via overlay.
 
 ## What to provide
 
@@ -84,8 +84,8 @@ See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation,
 
 ## Repository map
 
-- [SKILL.en.md](SKILL.en.md) — English LLM procedure;
-- [SKILL.md](SKILL.md) — Portuguese LLM procedure;
+- [SKILL.md](SKILL.md) — English LLM procedure (canonical);
+- [SKILL.pt-BR.md](SKILL.pt-BR.md) — Portuguese LLM procedure;
 - `prompts/` — phase instructions;
 - `templates/` — canonical output structure;
 - `references/` — neutral format references;

@@ -1,6 +1,6 @@
 ---
 vault_version: 1
-updated: 2026-08-17
+updated: 2026-09-11
 scope: Kit Hephaestus — decisões de produto e contrato do kit
 ---
 
@@ -8,7 +8,7 @@ scope: Kit Hephaestus — decisões de produto e contrato do kit
 
 ## Domínios
 
-- [estrutura-do-kit](docs/decisions/estrutura-do-kit.md) — contratos de preservação, espelho do archive, versionamento do kit e validação
+- [estrutura-do-kit](docs/decisions/estrutura-do-kit.md) — contratos de preservação, espelho do archive, versionamento do kit, idioma canônico e validação
 
 ## Features válidas
 

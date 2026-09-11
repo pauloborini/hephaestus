@@ -10,8 +10,8 @@
 
 Kit de comando único, `/hephaestus`, que governa os quatro territórios documentais de um repositório — `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` — numa execução e numa única transação de escrita.
 
-Este `README.md` é para pessoas.
-O [SKILL.md](SKILL.md) é para a LLM. Referência operacional: [COMMANDS.pt-BR.md](COMMANDS.pt-BR.md).
+Este `README.pt-BR.md` é para pessoas.
+O [SKILL.pt-BR.md](SKILL.pt-BR.md) é o procedimento em português para a LLM. O canônico em inglês — e o único entrypoint de execução — é [SKILL.md](SKILL.md). Referência operacional: [COMMANDS.pt-BR.md](COMMANDS.pt-BR.md).
 
 ## Objetivo
 
@@ -146,10 +146,10 @@ Toda entrada do zip é prefixada com a pasta fixa `hephaestus/` — sem versão 
 
 ### Usar
 
-No repositório alvo, rode `/hephaestus`. Dois modos internos são decididos pela presença de `.app-work/hephaestus-state.json`:
+No repositório alvo, rode `/hephaestus`. Dois modos internos são decididos pelo estado de adoção em `.app-work/hephaestus-state.json`:
 
 - `adopt` — state ausente: varredura integral e adoção dos quatro territórios;
-- `maintain` — state presente: escopo reduzido; drift, artefatos de outras ferramentas (`catalog/drift-catalog.json`) e higiene do interior de `.app-work/` no schema fechado. Padrão novo vira candidato de pack — overlay não cria pasta.
+- `maintain` — somente state com `meta.adoptionStatus: validated`: escopo reduzido; state ausente, legado ou `pending`/`applied` segue em `adopt` para completar a adoção. Padrão novo vira candidato de pack — overlay não cria pasta.
 
 ## O Que Você Precisa Entregar Para A LLM
 

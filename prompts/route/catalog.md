@@ -1,20 +1,20 @@
-# Route — Catálogo e respostas
+# Route — Catalog and answers
 
-> Carregar **somente** quando a cascata estiver no nível 2 (respostas) ou nível 3 (catálogo).
+> Load **only** when the cascade is at level 2 (answers) or level 3 (catalog).
 
-### Nível 2 — respostas de escopo do projeto
+### Level 2 — project-scope answers
 
-Consultar `answers[questionKey]` do state, com `questionKey = sha256(contexto normalizado)` — o **mesmo** contexto usado ao enfileirar (origem do fragmento + o que falta decidir), nunca o texto da pergunta: reformular a prosa não muda a chave (D22). Resposta gravada com destino decide o fragmento: `decidedBy: state`, `destinationPath` o da resposta. Match é **vinculante** (D22): divergir da resposta é violação de gate, não opinião. Ausência de match = sem resposta.
+Consult `run-answers.json` for the same `runId` first, then `answers[questionKey]` on the state. The key is `sha256(normalized identity)` and the answer only matches when its `contextFingerprint` equals the question's current fingerprint. Rewording the prose does not change the key; changing evidence, candidate, scope, or premise invalidates the affected answer. A valid answer with a destination decides the fragment (`decidedBy: state`); no answer = the cascade continues. An obsolete answer enqueues `reason: context-changed` and is not silently replaced by catalog or detector. Between a temporary and a persistent answer, use the first valid one for the current context; the temporary one requires a matching `runId`. A valid match is binding (D22): diverging is a gate violation, not an opinion.
 
-### Nível 3 — catálogo
+### Level 3 — catalog
 
-Resolver o catálogo na ordem: overlay do bloco `routing` do state primeiro, base do pack depois (`catalog/routing-defaults.json`). **Ordenar as entradas por especificidade decrescente do `pattern` antes de procurar match** — match mais específico vence o genérico (ex.: clones OSS em `archive/` → `references/`, não `archive/`). Um único termo genérico em comum (ex.: `docs`, presente no path de quase todo fragmento) não é match.
+Resolve the catalog in order: overlay from the state's `routing` block first, then the pack base (`catalog/routing-defaults.json`). **Sort entries by decreasing `pattern` specificity before matching** — the more specific match beats the generic one (for example OSS clones in `archive/` → `references/`, not `archive/`). A single generic term in common (for example `docs`, present in almost every fragment path) is not a match.
 
-- entrada com `destination: null` **nunca decide** — enfileira pergunta;
-- entrada com `confidence: baixa` **nunca decide** — enfileira pergunta;
-- entrada com `confidence: alta` e destino concreto decide `decidedBy: catalog`;
-- destino `.app-work/archive/guides/` (raiz do catálogo) **não** é o path final: expandir para
-  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (pack) ou
-  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/` (arquivo solto) — espelho datado (DEC-002).
-  Data = Plano F `Status: CONCLUÍDO` senão momento do roteamento. O `destinationPath` emitido
-  é o path expandido (termina em `/`).
+- an entry with `destination: null` **never decides** — enqueue a question;
+- an entry with `confidence: baixa` **never decides** — enqueue a question;
+- an entry with `confidence: alta` and a concrete destination decides `decidedBy: catalog`;
+- destination `.app-work/archive/guides/` (catalog root) is **not** the final path: expand to
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (pack) or
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/` (loose file) — dated mirror (DEC-002).
+  Date = Plan F `Status: CONCLUÍDO`, otherwise routing time. The emitted `destinationPath`
+  is the expanded path (ends in `/`).

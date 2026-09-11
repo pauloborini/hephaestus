@@ -150,3 +150,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: v6.
 - Artefato: hephaestus-6.zip.
 - Conteúdo: empacotamento puro da skill; exclusão de resources/ e scripts/ do pacote de release (packExcludes); redução de tamanho para ~107 KB; conformidade de caracteres (hífens padrão) para instalação limpa no Gemini App e outros hosts.
+
+## Sétima release (v7)
+
+- Versão do manifesto: `"7"`.
+- Tag: `v7`.
+- Artefato: `hephaestus-7.zip`.
+- Conteúdo: inglês como idioma canônico do kit (DEC-007): `SKILL.md` + prompts de fase são o entrypoint de execução; português só no par `*.pt-BR.md` (`SKILL.pt-BR.md` substitui `SKILL.en.md`); em divergência de procedimento, o inglês vence. Também inclui o ciclo de adoção já em `develop` (`meta.adoptionStatus`, `run-answers.json`, `DECISION_PROTOCOL` autocontido no pacote gerado).
