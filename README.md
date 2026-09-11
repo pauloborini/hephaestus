@@ -8,7 +8,7 @@
 
 The **Hephaestus** kit is a single command, `/hephaestus`, that governs the four documentary territories of a repository — `AGENTS.md`, `project-rules/`, `_app-vault/` and `.app-work/` — in one run and one write transaction. Its scope is documentation structure, not application code or an editor plugin.
 
-This README is for people. [SKILL.en.md](SKILL.en.md) is the English procedural entrypoint for the LLM.
+This README is for people. [SKILL.md](SKILL.md) is the English procedural entrypoint for the LLM (**DEC-007** — English always wins; there is no `SKILL.en.md`). Portuguese documentation: [SKILL.pt-BR.md](SKILL.pt-BR.md).
 
 ## Why it exists
 
@@ -84,8 +84,8 @@ See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation,
 
 ## Repository map
 
-- [SKILL.en.md](SKILL.en.md) — English LLM procedure;
-- [SKILL.md](SKILL.md) — Portuguese LLM procedure;
+- [SKILL.md](SKILL.md) — English LLM procedure (canonical);
+- [SKILL.pt-BR.md](SKILL.pt-BR.md) — Portuguese LLM procedure;
 - `prompts/` — phase instructions;
 - `templates/` — canonical output structure;
 - `references/` — neutral format references;

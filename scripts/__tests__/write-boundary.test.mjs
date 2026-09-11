@@ -12,31 +12,31 @@ import { REPO_ROOT } from "./helpers/fs-utils.mjs";
 const promptsDir = path.join(REPO_ROOT, "prompts");
 
 const WRITE_VERBS =
-  /(?:grava(?:r)?|escreve(?:r)?|persist(?:ir|e)?|sobrescreve(?:r)?|sobrescrita|copia(?:r)?)/i;
+  /(?:grava(?:r)?|escreve(?:r)?|write|writes|written|persist(?:ir|e|s)?|overwrite|overwritten|sobrescreve(?:r)?|sobrescrita|copia(?:r)?|copy|copied)/i;
 const REPO_PATHS =
   /(?:AGENTS\.md|project-rules\/|_app-vault\/|\.app-work\/(?!hephaestus-state\.json))/;
 const READ_OR_NEGATED =
-  /(?:^|\s)(?:não|nao|nunca|não-|ler|leia|lê|veja|revisar|revisa|conferir|confirmar|somente leitura|apenas leitura)/i;
+  /(?:^|\s)(?:não|nao|nunca|não-|never|not |no\.|ler|leia|lê|read|veja|revisar|revisa|conferir|confirmar|somente leitura|apenas leitura)/i;
 
 // Prompts que declaram escrita no repositório: apply (transação), interview
 // (respostas fora da transação) e validate (somente marcador meta em applied).
 const WRITE_PROMPTS = new Set(["apply.md", "interview.md", "validate.md"]);
 
-test("AC-2.4.1/INV1: todo prompt declara Escreve no repositório; só apply.md e interview.md (exceção declarada) declaram sim", () => {
+test("AC-2.4.1/INV1: todo prompt declara Writes to the repository; só apply.md e interview.md (exceção declarada) declaram sim", () => {
   const prompts = fs.readdirSync(promptsDir).filter((f) => f.endsWith(".md"));
   assert.ok(prompts.includes("apply.md"), "apply.md deve existir");
   for (const file of prompts) {
     const contents = fs.readFileSync(path.join(promptsDir, file), "utf8");
-    const section = contents.match(/## Escreve no repositório[^\n]*\n([\s\S]*?)(?=\n## |$)/);
-    assert.ok(section, `${file}: seção "Escreve no repositório" ausente`);
+    const section = contents.match(/## Writes to the repository[^\n]*\n([\s\S]*?)(?=\n## |$)/);
+    assert.ok(section, `${file}: seção "Writes to the repository" ausente`);
     const value = section[1]
       .split("\n")
       .map((line) => line.trim())
       .find((line) => line.length > 0) ?? "";
     if (WRITE_PROMPTS.has(file)) {
-      assert.match(value, /sim/i, `${file}: deve declarar escrita`);
+      assert.match(value, /yes/i, `${file}: deve declarar escrita`);
     } else {
-      assert.match(value, /não|nao/i, `${file}: deve declarar que não escreve no repositório`);
+      assert.match(value, /^no\b/i, `${file}: deve declarar que não escreve no repositório`);
     }
   }
 });
@@ -75,34 +75,34 @@ test("AC-2.4.1/INV1: interview.md grava exclusivamente .app-work/hephaestus-stat
   }
   assert.deepEqual(offenders, [], "interview.md não pode escrever em caminho versionado além do state");
   assert.match(interview, /\.app-work\/hephaestus-state\.json/);
-  assert.match(interview, /fora da transação/);
+  assert.match(interview, /outside the transaction|fora da transação/);
   assert.match(interview, /merge/);
-  assert.match(interview, /nunca/);
+  assert.match(interview, /never|nunca/);
 });
 
 test("AC-2.4.1/INV1: validate.md grava somente o marcador meta em Alvo applied", () => {
   const validate = fs.readFileSync(path.join(promptsDir, "validate.md"), "utf8");
-  assert.match(validate, /Alvo: applied/);
+  assert.match(validate, /Target: applied/);
   assert.match(validate, /adoptionStatus: validated/);
-  assert.match(validate, /preservando `answers`/);
-  assert.match(validate, /Alvo: staging/);
+  assert.match(validate, /preserving `answers`|preservando `answers`/);
+  assert.match(validate, /Target: staging/);
 });
 
 test("AC-2.4.1/INV1: a exceção nominal de interview está declarada em apply.md", () => {
   const apply = fs.readFileSync(path.join(promptsDir, "apply.md"), "utf8");
   assert.match(apply, /interview/);
   assert.match(apply, /\.app-work\/hephaestus-state\.json/);
-  assert.match(apply, /fora da transação/);
+  assert.match(apply, /outside the transaction|fora da transação/);
 });
 
 test("AC-2.4.4/LEG4: prompts/synthesize.md não existe", () => {
   assert.equal(fs.existsSync(path.join(promptsDir, "synthesize.md")), false);
 });
 
-test("AC-2.4.4/LEG4: nenhuma ocorrência de synthesize em SKILL.md, SKILL.en.md, manifests/ e prompts/", () => {
+test("AC-2.4.4/LEG4: nenhuma ocorrência de synthesize em SKILL.md, SKILL.pt-BR.md, manifests/ e prompts/", () => {
   const targets = [
     path.join(REPO_ROOT, "SKILL.md"),
-    path.join(REPO_ROOT, "SKILL.en.md"),
+    path.join(REPO_ROOT, "SKILL.pt-BR.md"),
     path.join(REPO_ROOT, "manifests"),
     promptsDir,
   ];

@@ -29,19 +29,19 @@ test("AC-2.1.2/VC2: estrutura canônica presente SEM state entra em adopt", () =
   const prompt = preflightPrompt();
   // resolução por presença de arquivo
   assert.match(prompt, /hephaestus-state\.json/);
-  assert.match(prompt, /ausente/);
+  assert.match(prompt, /absent/);
   assert.match(prompt, /adopt/);
-  assert.match(prompt, /presente/);
+  assert.match(prompt, /present/);
   assert.match(prompt, /maintain/);
   // proibição de heurística por estrutura presente
-  assert.match(prompt, /nunca por heurística/);
+  assert.match(prompt, /never by heuristics/);
   assert.match(prompt, /_app-vault/);
 
   // sink: discover consome o mode com escopo por modo
   const discover = fs.readFileSync(path.join(REPO_ROOT, "prompts", "discover.md"), "utf8");
-  assert.match(discover, /## Escopo por modo/);
+  assert.match(discover, /## Scope by mode/);
   assert.match(discover, /mode: adopt/);
-  assert.match(discover, /varredura integral/);
+  assert.match(discover, /full repository scan/);
   assert.match(discover, /catalog\/drift-catalog\.json/);
 });
 
@@ -60,12 +60,12 @@ test("AC-2.1.2: somente com adoção validada resolve maintain", () => {
   assert.match(prompt, /mode: maintain/);
   assert.match(prompt, /pending/);
   assert.match(prompt, /applied/);
-  assert.match(prompt, /respostas salvas não provam adoção concluída/);
+  assert.match(prompt, /saved answers do not prove completed adoption/);
 });
 
 test("DATA-01: state pending ou legado permanece em adopt", () => {
   const prompt = preflightPrompt();
-  assert.match(prompt, /state presente sem `meta.adoptionStatus`/);
+  assert.match(prompt, /state present without `meta.adoptionStatus`/);
   assert.match(prompt, /pending`\/`applied` ⇒ `mode: adopt/);
-  assert.match(prompt, /tratado conservadoramente como `pending`/);
+  assert.match(prompt, /treated conservatively as `pending`/);
 });

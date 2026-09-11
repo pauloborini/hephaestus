@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "6",
+  "version": "7",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
@@ -18,7 +18,7 @@
     "README.md",
     "README.pt-BR.md",
     "SKILL.md",
-    "SKILL.en.md",
+    "SKILL.pt-BR.md",
     "COMMANDS.md",
     "COMMANDS.pt-BR.md",
     "LICENSE",
