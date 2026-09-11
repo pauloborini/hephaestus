@@ -13,7 +13,7 @@ import { REPO_ROOT, runNode } from "./helpers/fs-utils.mjs";
 
 const PUBLIC_FILES = [
   "SKILL.md",
-  "SKILL.en.md",
+  "SKILL.pt-BR.md",
   "README.md",
   "README.pt-BR.md",
   "COMMANDS.md",
@@ -64,14 +64,33 @@ const pipelinePhases = (skillPath) => {
 };
 
 test("AC-7.2.3: os dois SKILL listam as mesmas 13 fases, na mesma ordem", () => {
-  const pt = pipelinePhases(path.join(REPO_ROOT, "SKILL.md"));
-  const en = pipelinePhases(path.join(REPO_ROOT, "SKILL.en.md"));
-  assert.equal(pt.length, 13, `SKILL.md deve listar 13 fases, listou ${pt.length}`);
-  assert.equal(en.length, 13, `SKILL.en.md deve listar 13 fases, listou ${en.length}`);
-  assert.deepEqual(pt, en, "pipeline divergente entre SKILL.md e SKILL.en.md");
+  const en = pipelinePhases(path.join(REPO_ROOT, "SKILL.md"));
+  const pt = pipelinePhases(path.join(REPO_ROOT, "SKILL.pt-BR.md"));
+  assert.equal(en.length, 13, `SKILL.md deve listar 13 fases, listou ${en.length}`);
+  assert.equal(pt.length, 13, `SKILL.pt-BR.md deve listar 13 fases, listou ${pt.length}`);
+  assert.deepEqual(pt, en, "pipeline divergente entre SKILL.md e SKILL.pt-BR.md");
 });
 
 test("AC-7.2.3: node scripts/check-public-docs.mjs sai 0", () => {
   const result = runNode(["scripts/check-public-docs.mjs"]);
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("DEC-007: SKILL.md is the English execution entry; SKILL.en.md does not exist", () => {
+  assert.equal(fs.existsSync(path.join(REPO_ROOT, "SKILL.en.md")), false);
+  const skill = fs.readFileSync(path.join(REPO_ROOT, "SKILL.md"), "utf8");
+  const skillPt = fs.readFileSync(path.join(REPO_ROOT, "SKILL.pt-BR.md"), "utf8");
+  assert.match(skill, /## Kit language/);
+  assert.match(skill, /DEC-007/);
+  assert.match(skill, /never from `SKILL\.pt-BR\.md`/);
+  assert.match(skillPt, /## Idioma do kit/);
+  assert.match(skillPt, /DEC-007/);
+  assert.doesNotMatch(skillPt, /`Alvo: staging`/);
+});
+
+test("DEC-007: phase prompts use English Target, not Alvo", () => {
+  const validate = fs.readFileSync(path.join(REPO_ROOT, "prompts", "validate.md"), "utf8");
+  assert.match(validate, /Target: staging/);
+  assert.match(validate, /Target: applied/);
+  assert.doesNotMatch(validate, /\bAlvo:/);
 });

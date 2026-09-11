@@ -75,7 +75,7 @@ test("AC-6.1.3: glob do overlay torna o artefato inventariado sem tocar em promp
   const discover = fs.readFileSync(path.join(REPO_ROOT, "prompts", "discover.md"), "utf8");
   assert.match(discover, /catalog\/drift-catalog\.json/);
   assert.match(discover, /overlay/);
-  assert.match(discover, /nunca embutida no prompt/);
+  assert.match(discover, /never embedded in the prompt/);
   // LEG8: nenhum glob de drift embutido em prompt
   const prompts = fs
     .readdirSync(path.join(REPO_ROOT, "prompts"))

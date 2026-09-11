@@ -1,5 +1,5 @@
 // AC-3.1.4 e LEG3: prompts/classify.md não existe e nenhuma ocorrência de
-// "classify" ou "operationalRoleCandidate" sobrevive em SKILL.md, SKILL.en.md,
+// "classify" ou "operationalRoleCandidate" sobrevive em SKILL.md, SKILL.pt-BR.md,
 // prompts/, schemas/ e manifests/ — a taxonomia de uma dimensão não pode
 // coexistir com a cascata.
 import { test } from "node:test";
@@ -10,7 +10,7 @@ import { REPO_ROOT } from "./helpers/fs-utils.mjs";
 
 const targets = [
   path.join(REPO_ROOT, "SKILL.md"),
-  path.join(REPO_ROOT, "SKILL.en.md"),
+  path.join(REPO_ROOT, "SKILL.pt-BR.md"),
   path.join(REPO_ROOT, "prompts"),
   path.join(REPO_ROOT, "schemas"),
   path.join(REPO_ROOT, "manifests"),

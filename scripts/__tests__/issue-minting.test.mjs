@@ -166,13 +166,13 @@ test("AC-6.2.1: INDEX.md ausente cria a partir do max vazio e reporta pendência
 
 test("AC-6.2.1: apply.md contrata a cunhagem (max+1 sobre as três seções, assinatura estável, nunca reusar)", () => {
   const apply = fs.readFileSync(path.join(REPO_ROOT, "prompts", "apply.md"), "utf8");
-  assert.match(apply, /## Cunhagem de ISSUE-NNN/);
+  assert.match(apply, /## ISSUE-NNN minting/);
   assert.match(apply, /max\+1/);
-  assert.match(apply, /Abertos, Em verificação e Fechados|três seções/);
+  assert.match(apply, /three sections|Open \(Abertos\)/);
   assert.match(apply, /findingSignature/);
   assert.match(apply, /sha256/);
-  assert.match(apply, /nunca é reusado|nunca reusado/);
-  assert.match(apply, /não cunha/);
+  assert.match(apply, /never reused/);
+  assert.match(apply, /does not mint/);
   assert.match(apply, /create/);
   assert.match(apply, /amend/);
   assert.match(apply, /overwrite/);

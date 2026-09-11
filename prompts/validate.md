@@ -1,89 +1,89 @@
 # Validate
 
-## Objetivo
+## Purpose
 
-Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com **um corpo, dois alvos**: `verify(staging)` prova a intenção (fase 10) e `verify(applied)` prova o resultado (fase 12).
+Check whether the package meets the kit's minimum contract. A parameterized phase with **one body, two targets**: `verify(staging)` proves intent (phase 10) and `verify(applied)` proves the result (phase 12).
 
-## Entradas
+## Inputs
 
-- parâmetro `Alvo: staging` | `Alvo: applied` (um corpo, dois alvos — não dividir o arquivo);
-- em `staging`: `.hephaestus/staging/` + schemas/manifests;
-- em `applied`: worktree + `.hephaestus/staging-manifest.json` (+ `staging-deletions.json`).
+- parameter `Target: staging` | `Target: applied` (one body, two targets — do not split the file);
+- in `staging`: `.hephaestus/staging/` + schemas/manifests;
+- in `applied`: worktree + `.hephaestus/staging-manifest.json` (+ `staging-deletions.json`).
 
-## Saídas
+## Outputs
 
-- veredito `staging` | `applied` (parametrizado por `Alvo`)
+- verdict `staging` | `applied` (parameterized by `Target`)
 
-## Alvo
+## Target
 
-- `Alvo: staging` — os checks rodam contra `.hephaestus/staging/` (o pacote materializado por `compose`, ainda não gravado);
-- `Alvo: applied` — os checks rodam contra o repositório, acrescidos do check de hash: cada artefato do `.hephaestus/staging-manifest.json` tem o sha256 recomputado no disco; divergência dispara rollback limitado aos paths da transação, conforme o baseline e a regra de recuperação de `prompts/apply.md`. Em sucesso de todos os gates obrigatórios e sem pendência bloqueante de adoção, comparar `stateWrite` e registrar `meta.adoptionStatus: validated` no state sem substituir `answers`, atualizando o recibo; em falha, manter o state e tratar `applied` como adoção incompleta na próxima retomada.
+- `Target: staging` — checks run against `.hephaestus/staging/` (the package materialized by `compose`, not yet written);
+- `Target: applied` — checks run against the repository, plus the hash check: each artifact in `.hephaestus/staging-manifest.json` has sha256 recomputed on disk; divergence triggers rollback limited to the transaction paths, per the baseline and the recovery rule in `prompts/apply.md`. On success of every required gate and with no blocking adoption pending, compare `stateWrite` and record `meta.adoptionStatus: validated` on the state without replacing `answers`, updating the receipt; on failure, keep the state and treat `applied` as incomplete adoption on the next resume.
 
 ## Checklist
 
-- existe `AGENTS.md`;
-- existe `CLAUDE.md` na raiz contendo exatamente a linha `@AGENTS.md`, sem conteúdo próprio (ponte, nunca contrato paralelo);
-- `AGENTS.md` começa com o nome do projeto e o contrato do agente explícitos (formato `<Nome do projeto> — contrato do agente`), sem cabeçalho genérico;
-- `AGENTS.md` é centralizador e enxuto;
-- `AGENTS.md` contém postura, parada, workflow, precedência e roteamento, não regras de domínio;
-- `AGENTS.md` possui triagem, seleção de tipo, parada obrigatória, pré-confirmação e validação final;
-- a parada obrigatória, as premissas, o critério, a simplicidade, a mudança cirúrgica e os invariantes estão dentro das etapas 2 e 3 do workflow, não promovidos a seção própria;
-- `AGENTS.md` não repete o que `project-rules/rules/operational_rules.md` norma (gates, testes, baseline, fechamento, commits);
-- o workflow, a precedência interna e as regras universais base seguem o protocolo fixo do template, sem deriva;
-- os gates da validação em `AGENTS.md` estão preenchidos com ferramentas reais do stack (sem placeholder `<preencher na síntese>`);
-- a seção de estrutura do repositório e documentação referencia os componentes reais de `project-rules/` (índices, regras, referências, contratos) e os docs do projeto;
-- a triagem tenta ler `project-rules/index/<tipo>.md` e bloqueia quando o índice obrigatório não existe, sem forçar contexto por inferência;
-- a pré-confirmação é informativa e usa o índice já carregado, sem aguardar aprovação;
-- as categorias geradas têm papel operacional claro;
-- as regras necessárias estão distribuídas de forma coerente em `project-rules/`;
-- regras obrigatórias foram preservadas em `project-rules/rules/*`;
-- índices em `project-rules/index/*` apontam apenas para regras e referências existentes;
-- regras e referências em `project-rules/` citam apenas arquivos existentes dentro de `project-rules/` ou dependências externas registradas no relatório;
-- contratos em `project-rules/contracts/`, quando existirem, estão referenciados como somente consulta;
-- fragmentos de referência foram preservados ou omitidos com justificativa;
-- a nomenclatura é neutra;
-- não há vazamento de identidade real;
-- os arquivos seguem os schemas mínimos;
-- a árvore final não depende de arquivo vazio para parecer completa;
-- dependências externas citadas por `project-rules/` foram registradas em `.hephaestus/manifests/external-references-report.json`, quando existirem;
-- `.hephaestus/manifests/external-references-report.json`, quando existir, satisfaz `schemas/external-references-report.schema.json`;
-- `.hephaestus/manifests/run-state.json` existe e distingue corretamente `in_progress`, `produced`, `validated` e `failed`;
-- pendências, conflitos e ambiguidades restantes estão explicitados.
+- `AGENTS.md` exists;
+- `CLAUDE.md` exists at the root containing exactly the line `@AGENTS.md`, with no own content (bridge, never a parallel contract);
+- `AGENTS.md` starts with the project name and an explicit agent contract (format `<Project name> — contrato do agente`), with no generic header;
+- `AGENTS.md` is centralizing and concise;
+- `AGENTS.md` contains posture, stop, workflow, precedence, and routing, not domain rules;
+- `AGENTS.md` has triage, type selection, mandatory stop, pre-confirmation, and final validation;
+- the mandatory stop, premises, criterion, simplicity, surgical change, and invariants are inside workflow steps 2 and 3, not promoted to their own section;
+- `AGENTS.md` does not repeat what `project-rules/rules/operational_rules.md` norms (gates, tests, baseline, closeout, commits);
+- workflow, internal precedence, and base universal rules follow the template's fixed protocol, without drift;
+- validation gates in `AGENTS.md` are filled with real stack tools (no `<preencher na síntese>` placeholder);
+- the repository-structure and documentation section references real `project-rules/` components (indexes, rules, references, contracts) and project docs;
+- triage tries to read `project-rules/index/<tipo>.md` and blocks when the required index does not exist, without forcing context by inference;
+- pre-confirmation is informative and uses the already-loaded index, without waiting for approval;
+- generated categories have a clear operational role;
+- needed rules are coherently distributed in `project-rules/`;
+- mandatory rules were preserved in `project-rules/rules/*`;
+- indexes in `project-rules/index/*` point only to existing rules and references;
+- rules and references in `project-rules/` cite only existing files inside `project-rules/` or external dependencies recorded in the report;
+- contracts in `project-rules/contracts/`, when present, are referenced as consult-only;
+- reference fragments were preserved or omitted with justification;
+- naming is neutral;
+- there is no real-identity leak;
+- files follow the minimum schemas;
+- the final tree does not depend on an empty file to look complete;
+- external dependencies cited by `project-rules/` were recorded in `.hephaestus/manifests/external-references-report.json`, when they exist;
+- `.hephaestus/manifests/external-references-report.json`, when present, satisfies `schemas/external-references-report.schema.json`;
+- `.hephaestus/manifests/run-state.json` exists and correctly distinguishes `in_progress`, `produced`, `validated`, and `failed`;
+- remaining pendings, conflicts, and ambiguities are explicit.
 
-## Escreve no repositório
+## Writes to the repository
 
-Sim — somente em `Alvo: applied`, a única escrita permitida é o merge do marcador `meta.adoptionStatus: validated` em `.app-work/hephaestus-state.json`, preservando `answers` e os demais blocos, e atualizar `stateWrite` no run-state; em `Alvo: staging`, não há escrita versionada. O pacote e seus artefatos canônicos não são alterados.
+Yes — only on `Target: applied`, the only allowed write is merging the `meta.adoptionStatus: validated` marker into `.app-work/hephaestus-state.json`, preserving `answers` and the other blocks, and updating `stateWrite` on the run-state; on `Target: staging`, there is no versioned write. The package and its canonical artifacts are not altered.
 
-## Status possíveis
+## Possible statuses
 
 - `valid`
 - `degraded`
 - `blocked`
 
-## Regras
+## Rules
 
-- usar `degraded` quando o pacote é útil, mas há lacunas ou conflito controlado;
-- usar `blocked` quando faltar estrutura essencial ou houver risco relevante;
-- nunca mascarar conflito sério como apenas observação cosmética;
-- usar `blocked` quando `AGENTS.md` receber regras que deveriam estar em `project-rules/rules/*`;
-- usar `blocked` quando o workflow de triagem e pré-confirmação estiver ausente;
-- usar `degraded` quando `AGENTS.md` ainda contiver placeholder de síntese `<...>` no cabeçalho, nos gates ou na seção de estrutura, mesmo com o restante consistente;
-- usar `blocked` quando qualquer índice listar regra ou referência obrigatória inexistente;
-- usar `degraded` quando houver fragmentos relevantes sem destino claro, mas o pacote ainda for operável;
-- usar `degraded` quando houver dependências externas legítimas ainda não internalizadas, mesmo com relatório completo;
-- usar `blocked` quando houver dependências externas quebradas ou não reportadas;
-- usar `blocked` quando o `run-state.json` impedir determinar com segurança quais fases estão realmente validadas;
-- nunca tratar fase `produced` como equivalente a `validated`;
-- distinguir `failed` de `blocked` no run-state: `failed` é estado de fase que terminou a execução mas não pôde ser validada e é reexecutada integralmente na retomada; `blocked` é estado do run (não de fase) que indica impedimento exigindo decisão humana e não é retomado sozinho, conforme a regra de retomada de `prompts/preflight.md`;
-- aplicar a regra única de checkpoint do `SKILL.md` em ambas as passagens: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar `verify_staging` ou `verify_applied`, marcar a fase como `in_progress`; ao concluir, `produced` e depois `validated` quando todos os checks mínimos estiverem consistentes; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
-- em `applied`, conferir o `staging-manifest.json` contra o disco hash a hash (gate `checkAppliedHashes`); qualquer divergência dispara rollback limitado pelo baseline e pelos hashes pós-escrita, sem sobrescrever alteração concorrente, e `.app-work/hephaestus-state.json` nunca é revertido;
-- em `applied`, paths de `.hephaestus/staging-deletions.json` não devem existir no disco após a transação;
-- quando o ambiente do projeto alvo tiver `node` disponível, rodar `node scripts/validate-package.mjs <pasta>` como gate recomendado antes de marcar a fase como `validated` — em `staging`, `<pasta>` é o diretório `.hephaestus/staging`; em `applied`, é o repositório; em ambientes sem node, registrar a não execução do gate como observação no relatório — o gate não bloqueia ambientes sem node e a ausência de execução não muda o status de `validated` automaticamente;
-- ao final, produzir uma revisão objetiva de fechamento com:
-  - pendências em aberto;
-  - decisão recomendada para cada pendência relevante;
-  - confirmação do estado de `AGENTS.md`;
-  - confirmação do estado da pasta `project-rules/`;
-  - resumo explícito das referências externas encontradas e do que deveria ser internalizado;
-  - confirmação de que a retomada futura pode começar após a última fase `validated`;
-  - conclusão final: `ready`, `degraded-but-usable` ou `needs-followup`.
+- use `degraded` when the package is useful but there are gaps or a controlled conflict;
+- use `blocked` when essential structure is missing or there is a relevant risk;
+- never mask a serious conflict as a cosmetic observation;
+- use `blocked` when `AGENTS.md` received rules that should live in `project-rules/rules/*`;
+- use `blocked` when the triage and pre-confirmation workflow is missing;
+- use `degraded` when `AGENTS.md` still contains a synthesis placeholder `<...>` in the header, gates, or structure section, even if the rest is consistent;
+- use `blocked` when any index lists a required rule or reference that does not exist;
+- use `degraded` when relevant fragments lack a clear destination but the package is still operable;
+- use `degraded` when there are legitimate external dependencies not yet internalized, even with a complete report;
+- use `blocked` when there are broken or unreported external dependencies;
+- use `blocked` when `run-state.json` prevents determining which phases are actually validated;
+- never treat a `produced` phase as equivalent to `validated`;
+- distinguish `failed` from `blocked` on the run-state: `failed` is a phase state that finished execution but could not be validated and is fully re-run on resume; `blocked` is a run state (not a phase) that indicates an impediment requiring a human decision and is not resumed on its own, per the resume rule in `prompts/preflight.md`;
+- apply the single checkpoint rule from `SKILL.md` on both passes: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on starting `verify_staging` or `verify_applied`, mark the phase `in_progress`; when done, `produced` and then `validated` when every minimum check is consistent; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`);
+- in `applied`, check `staging-manifest.json` against disk hash by hash (`checkAppliedHashes` gate); any divergence triggers rollback limited by the baseline and post-write hashes, without overwriting a concurrent change, and `.app-work/hephaestus-state.json` is never reverted;
+- in `applied`, paths from `.hephaestus/staging-deletions.json` must not exist on disk after the transaction;
+- when the target project environment has `node` available, run `node scripts/validate-package.mjs <folder>` as a recommended gate before marking the phase `validated` — in `staging`, `<folder>` is `.hephaestus/staging`; in `applied`, it is the repository; in environments without node, record the skipped gate as an observation in the report — the gate does not block environments without node, and skipping it does not automatically change `validated` status;
+- at the end, produce an objective closeout review with:
+  - open pendings;
+  - recommended decision for each relevant pending;
+  - confirmation of `AGENTS.md` state;
+  - confirmation of `project-rules/` state;
+  - explicit summary of external references found and what should be internalized;
+  - confirmation that a future resume can start after the last `validated` phase;
+  - final conclusion: `ready`, `degraded-but-usable`, or `needs-followup`.

@@ -10,8 +10,8 @@
 
 Kit de comando único, `/hephaestus`, que governa os quatro territórios documentais de um repositório — `AGENTS.md`, `project-rules/`, `_app-vault/` e `.app-work/` — numa execução e numa única transação de escrita.
 
-Este `README.md` é para pessoas.
-O [SKILL.md](SKILL.md) é para a LLM. Referência operacional: [COMMANDS.pt-BR.md](COMMANDS.pt-BR.md).
+Este `README.pt-BR.md` é para pessoas.
+O [SKILL.pt-BR.md](SKILL.pt-BR.md) é o procedimento em português para a LLM. O canônico em inglês — e o único entrypoint de execução — é [SKILL.md](SKILL.md). Referência operacional: [COMMANDS.pt-BR.md](COMMANDS.pt-BR.md).
 
 ## Objetivo
 

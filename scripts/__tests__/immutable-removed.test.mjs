@@ -8,7 +8,7 @@ import { REPO_ROOT, runNode } from "./helpers/fs-utils.mjs";
 
 const KIT_PATHS = [
   "SKILL.md",
-  "SKILL.en.md",
+  "SKILL.pt-BR.md",
   "prompts",
   "schemas",
   "scripts",

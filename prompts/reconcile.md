@@ -1,105 +1,105 @@
 # Reconcile
 
-## Objetivo
+## Purpose
 
-Dar ao pipeline o motor de identidade de decisão: **reconciliar e, quando preciso, cunhar**. “Nunca gerar” significa **nunca inventar regra que a fonte não enuncia** — não significa deixar `docs/decisions/` vazio. `DEC-NNN` é cunhado por `max+1`, alterado in-place e nunca reusado (D17). Decisão existente com valor novo mantém o ID e ganha nota inline; decisão sem a quem casar **nasce com ID novo (`create`)** — inclusive quando `inventoriedMax = 0` (projeto verde ou vault legado sem cláusulas canônicas). Remoção é rara e só após checagem de citações pendentes. Prosa reescrita é recuperável; `DEC-NNN` reusado não é.
+Give the pipeline the decision-identity engine: **reconcile and, when needed, mint**. “Never generate” means **never invent a rule the source does not state** — it does not mean leave `docs/decisions/` empty. `DEC-NNN` is minted by `max+1`, amended in place, and never reused (D17). An existing decision with a new value keeps the ID and gains an inline note; a decision with no match **is born with a new ID (`create`)** — including when `inventoriedMax = 0` (greenfield project or legacy vault without canonical clauses). Removal is rare and only after a pending-citation check. Rewritten prose is recoverable; a reused `DEC-NNN` is not.
 
-Em `mode: adopt`, candidato a decisão já roteado para `_app-vault/docs/decisions/**` (ou alias) sai da reconciliação final com `action ∈ {create, amend, keep, remove}` e `decId` preenchido. Antes da entrevista, conflitos ficam exclusivamente na fila, sem inventar `keep` ou ID resolvido. A fase permanece `produced` e transfere o controle à `interview`; somente a passagem final sem pendências pode ser `validated` e liberar `plan`.
+In `mode: adopt`, a decision candidate already routed to `_app-vault/docs/decisions/**` (or alias) leaves final reconciliation with `action ∈ {create, amend, keep, remove}` and `decId` filled. Before the interview, conflicts live only on the queue, without inventing `keep` or a resolved ID. The phase stays `produced` and hands control to `interview`; only the final pass with no pending items may be `validated` and release `plan`.
 
-## Entradas
+## Inputs
 
-- `.hephaestus/manifests/routing.json` — fragmentos roteados (território `vault` com regime `reconcile` ou `keep` são o foco desta fase);
-- `.hephaestus/manifests/fragments.json` — texto e proveniência por fragmento;
-- respostas válidas no bloco `answers` do state e em `run-answers.json` do mesmo `runId`, com `questionKey` e `contextFingerprint` coincidentes com o contexto atual; promoção exige também `answer.confirmed: true`, `answer.statement`, `answer.domain` e `sourceEvidence`;
-- estado atual de `_app-vault/docs/decisions/**` — cláusulas vivas e `## Histórico` (fonte de verdade, `references/vault-schema/SCHEMA.md` §4);
-- `.hephaestus/manifests/run-state.json` (checkpoint da fase).
+- `.hephaestus/manifests/routing.json` — routed fragments (`vault` territory with `reconcile` or `keep` is this phase's focus);
+- `.hephaestus/manifests/fragments.json` — text and provenance per fragment;
+- valid answers in the state's `answers` block and in `run-answers.json` for the same `runId`, with `questionKey` and `contextFingerprint` matching the current context; promotion also requires `answer.confirmed: true`, `answer.statement`, `answer.domain`, and `sourceEvidence`;
+- current state of `_app-vault/docs/decisions/**` — live clauses and `## Histórico` (source of truth, `references/vault-schema/SCHEMA.md` §4);
+- `.hephaestus/manifests/run-state.json` (phase checkpoint).
 
-## Inventário de identidade
+## Identity inventory
 
-Antes de cunhar qualquer ID novo, inventariar o maior `DEC-NNN` do repositório:
+Before minting any new ID, inventory the largest `DEC-NNN` in the repository:
 
-- varrer **todos** os arquivos de `_app-vault/docs/decisions/` (um arquivo por domínio, `kebab-case`); a varredura é por diretório, nunca por lista fixa;
-- coletar os IDs de **duas fontes**: headings `### DEC-NNN` (cláusulas vivas) **e** IDs citados nas linhas da seção `## Histórico` (decisões removidas permanecem imortais);
-- tomar `max` sobre a **união** das duas listas e registrá-lo como `inventoriedMax` no `identity-map.json`;
-- **proibido** restringir a varredura às cláusulas vivas (`rg "^### DEC-"` isolado): remoção é permitida e o ID continua imortal (`SCHEMA.md` §4.7) — um vault com `DEC-002` só no `## Histórico` e nenhuma cláusula viva tem `max = 2`, e a cunhagem seguinte é `DEC-003`, nunca `DEC-001` nem `DEC-002`;
-- projeto verde (sem `_app-vault/docs/decisions/`): `max = 0`, primeira cunhagem `DEC-001`.
+- scan **all** files under `_app-vault/docs/decisions/` (one file per domain, `kebab-case`); the scan is by directory, never by a fixed list;
+- collect IDs from **two sources**: `### DEC-NNN` headings (live clauses) **and** IDs cited on lines in the `## Histórico` section (removed decisions remain immortal);
+- take `max` over the **union** of both lists and record it as `inventoriedMax` in `identity-map.json`;
+- **forbidden** to restrict the scan to live clauses (`rg "^### DEC-"` alone): removal is allowed and the ID stays immortal (`SCHEMA.md` §4.7) — a vault with `DEC-002` only in `## Histórico` and no live clause has `max = 2`, and the next mint is `DEC-003`, never `DEC-001` or `DEC-002`;
+- greenfield (no `_app-vault/docs/decisions/`): `max = 0`, first mint `DEC-001`.
 
-## Identidade
+## Identity
 
-Processar **somente** fragmentos cujo `destinationPath` cai em `docs/decisions/` (após normalizar alias `.app-vault/` → `_app-vault/`). Destinos vault que não são decisão (`INDEX.md`, `docs/TEMPLATES/**`, `specs/**`) registram `action: keep` com `decId: null` e **não** entram na cunhagem.
+Process **only** fragments whose `destinationPath` lands in `docs/decisions/` (after normalizing alias `.app-vault/` → `_app-vault/`). Vault destinations that are not decisions (`INDEX.md`, `docs/TEMPLATES/**`, `specs/**`) record `action: keep` with `decId: null` and **do not** enter minting.
 
-Promoção confirmada entra como novo fragmento de origem humana: `fragmentId` derivado de `questionKey` + `contextFingerprint`, `rawText` igual ao `statement` confirmado e proveniência da resposta. Registrar `candidateId` e o path processual apenas como contexto em `conflicts.json`; o fragmento original de `.app-work/` continua processo. A `interview` congela o `statement` exato em `.hephaestus/manifests/human-decisions/<fragmentId>.md`, acrescenta sua entrada `path`/`sha256`/`size` ao snapshot sem alterar fontes anteriores e gera proveniência com offsets de bytes cobrindo esse arquivo. Assim o novo fragmento respeita `fragment.schema.json` e a cobertura INV5. A `route` atribui ao fragmento humano destino canônico e `decidedBy: human` antes da reconciliação. Não aceitar confirmação legada ou obsoleta por mero `confirmed: true`.
+Confirmed promotion enters as a new human-origin fragment: `fragmentId` derived from `questionKey` + `contextFingerprint`, `rawText` equal to the confirmed `statement`, and provenance from the answer. Record `candidateId` and the process path only as context in `conflicts.json`; the original `.app-work/` fragment remains process. `interview` freezes the exact `statement` in `.hephaestus/manifests/human-decisions/<fragmentId>.md`, adds its `path`/`sha256`/`size` entry to the snapshot without altering prior sources, and generates provenance with byte offsets covering that file. The new fragment thus satisfies `fragment.schema.json` and INV5 coverage. `route` assigns the human fragment a canonical destination and `decidedBy: human` before reconciliation. Do not accept a legacy or obsolete confirmation on mere `confirmed: true`.
 
-Para cada fragmento roteado para `docs/decisions/`, casar nesta ordem e decidir `action ∈ {keep, amend, create, remove}`:
+For each fragment routed to `docs/decisions/`, match in this order and decide `action ∈ {keep, amend, create, remove}`:
 
-1. **Por `DEC-NNN` explícito canônico** — fragmento cujo texto já é heading `### DEC-NNN — <regra>` (em-dash; ID congelado pela cascata, nível 1): o ID é o do heading, nunca outro.
-2. **Por identidade semântica** — fragmento candidato (inclui legado `### D\d+`, `DEC-01` sem em-dash, corpo de `DECISOES_*` ou promoção humana) casa primeiro por domínio, sujeito/objeto, condição/escopo e tipo de regra, com os valores variáveis removidos da comparação. Similaridade textual só desempata dentro dessa mesma identidade. **ID legado não congela numeração** — se não houver cláusula viva casada, cai no passo 3.
-3. Sem a quem casar → `create` com `max+1` sobre o inventário (nunca reusar número, inclusive de decisão removida). Inventário vazio ⇒ primeira cunhagem `DEC-001`, depois sequencial.
+1. **By explicit canonical `DEC-NNN`** — a fragment whose text is already heading `### DEC-NNN — <rule>` (em-dash; ID frozen by the cascade, level 1): the ID is the heading's, never another.
+2. **By semantic identity** — a candidate fragment (including legacy `### D\d+`, `DEC-01` without em-dash, body of `DECISOES_*`, or human promotion) matches first by domain, subject/object, condition/scope, and rule type, with variable values removed from the comparison. Textual similarity only breaks ties inside that same identity. **A legacy ID does not freeze numbering** — if there is no matched live clause, fall through to step 3.
+3. No match → `create` with `max+1` over the inventory (never reuse a number, including a removed decision). Empty inventory ⇒ first mint `DEC-001`, then sequential.
 
-Decisão por caso:
+Per-case decision:
 
-- `keep` — enunciado idêntico ao da cláusula viva; nada é escrito; **`decId` permanece preenchido**;
-- `amend` — o **valor** mudou: o ID permanece (`SCHEMA.md` §4.1: "o valor muda, a DEC-NNN permanece"), o enunciado sob o heading é substituído e a nota inline é acrescentada logo abaixo, no formato fixo:
+- `keep` — statement identical to the live clause; nothing is written; **`decId` stays filled**;
+- `amend` — the **value** changed: the ID remains (`SCHEMA.md` §4.1: "the value changes, the DEC-NNN remains"), the statement under the heading is replaced and the inline note is added immediately below, in the fixed format:
   `_Alterado <data> — era: <valor antigo>. Motivo: <motivo>._`
-  - notas novas empilham **acima** da anterior (mais recente primeiro);
-  - passando de ~3 notas na cláusula, as antigas são **apagadas** (não arquivadas);
-- `create` — cláusula nova com `DEC-NNN` novo; domínio novo ou tag `Afeta:` nova exigem atualizar o `INDEX.md` no mesmo fluxo (`## Domínios`, lista de features válidas, `## Por feature`);
-- identidade semântica ambígua — duas ou mais cláusulas vivas com a mesma chave semântica não são escolhidas por similaridade; registrar conflito e enfileirar `reason: reconcile-conflict` para confirmação humana;
-- `remove` — rara; **antes** de remover, checar citações pendentes do ID no repositório inteiro, **inclusive dentro de `.app-work/`** — a busca sem `--hidden` (ou sem o path citado) devolve zero e a remoção parece segura (`SCHEMA.md` §4.7); sem citação pendente, a remoção é decidida com a linha em `## Histórico` no fim do arquivo do domínio (a única seção de histórico que existe) — a materialização da linha acontece em `compose`/`apply`, nunca nesta fase;
-- alcance cross-domínio: atualizar todos os domínios afetados e citar a `DEC-NNN` irmã na nota de cada arquivo tocado (`_Alterado <data> — era: <antigo>. Motivo: <motivo>; ver DEC-024 em pagamentos.md._`).
+  - new notes stack **above** the previous one (newest first);
+  - after about 3 notes on the clause, old ones are **deleted** (not archived);
+- `create` — new clause with a new `DEC-NNN`; a new domain or new `Afeta:` tag requires updating `INDEX.md` in the same flow (`## Domínios`, valid feature list, `## Por feature`);
+- ambiguous semantic identity — two or more live clauses with the same semantic key are not chosen by similarity; record a conflict and enqueue `reason: reconcile-conflict` for human confirmation;
+- `remove` — rare; **before** removing, check pending citations of the ID in the entire repository, **including inside `.app-work/`** — a search without `--hidden` (or without the cited path) returns zero and removal looks safe (`SCHEMA.md` §4.7); with no pending citation, removal is decided with the line in `## Histórico` at the end of the domain file (the only history section that exists) — materializing the line happens in `compose`/`apply`, never in this phase;
+- cross-domain reach: update every affected domain and cite the sibling `DEC-NNN` in the note of each touched file (`_Alterado <data> — era: <antigo>. Motivo: <motivo>; ver DEC-024 em pagamentos.md._`).
 
-## Verificações
+## Checks
 
-- **Conflito de valor** entre fontes para a mesma regra: **enfileira pergunta** (a cascata e o reconcile nunca escolhem em conflito — `questionKey` + `contextFingerprint` na fila, drenada por `interview`), registrando a divergência em `conflicts.json` com as fontes e os valores;
-- **Duplicação de valor entre territórios** (D18/INV4): valor de decisão que reaparece como valor literal em `project-rules/` é violação — `project-rules/` **referencia** a `DEC-NNN`, nunca copia o valor; o gate `checkDuplicatedValue` do validador reprova a duplicação sem citação;
-- **Split obrigatório do caso híbrido** (`SCHEMA.md` §8): uma frase só com norma de produto e norma de implementação exige divisão — o **efeito observável pelo usuário final** (número, limite, item de enumeração, opção de plano) vai para `docs/decisions/` como `DEC-NNN`; a **norma de como implementar** vai para `project-rules/` referenciando o ID, nunca copiando o número;
-- **Cobertura e citações pendentes** antes de qualquer remoção de ID: nenhum `remove` sem a checagem completa do repositório, incluindo caminhos ocultos.
+- **Value conflict** between sources for the same rule: **enqueue a question** (cascade and reconcile never choose under conflict — `questionKey` + `contextFingerprint` on the queue, drained by `interview`), recording the divergence in `conflicts.json` with sources and values;
+- **Value duplication across territories** (D18/INV4): a decision value that reappears as a literal in `project-rules/` is a violation — `project-rules/` **references** the `DEC-NNN`, never copies the value; the validator `checkDuplicatedValue` gate fails duplication without a citation;
+- **Mandatory split of the hybrid case** (`SCHEMA.md` §8): a single sentence with both a product norm and an implementation norm must split — the **effect observable by the end user** (number, limit, enumeration item, plan option) goes to `docs/decisions/` as `DEC-NNN`; the **how-to-implement norm** goes to `project-rules/` referencing the ID, never copying the number;
+- **Coverage and pending citations** before any ID removal: no `remove` without a complete repository check, including hidden paths.
 
-## Fila de perguntas
+## Question queue
 
-Perguntas nascem **enfileiradas** — esta fase nunca pergunta (D22). Tudo que precisa de decisão humana sai em `questions.json` com `questionKey`, `contextFingerprint`, `reason`, `invalidates` e `blocking`, drenado por `interview` no lote inicial ou no lote único de revalidação.
+Questions are born **queued** — this phase never asks (D22). Everything that needs a human decision leaves in `questions.json` with `questionKey`, `contextFingerprint`, `reason`, `invalidates`, and `blocking`, drained by `interview` in the initial batch or the single revalidation batch.
 
-**Justifica pergunta** (lista fechada — nada além disto enfileira no reconcile):
+**Justifies a question** (closed list — nothing else is queued in reconcile):
 
-- conflito de valor entre fontes para a mesma regra — registrado em `conflicts.json`, nunca escolhido aqui;
-- identidade semântica ambígua entre cláusulas vivas;
-- mudança de decisão vigente com valor divergente entre fontes;
-- remoção de `DEC-NNN` com citação pendente não resolvida;
-- remoção de conteúdo de terceiros fora da lista `shield` do state.
+- value conflict between sources for the same rule — recorded in `conflicts.json`, never chosen here;
+- ambiguous semantic identity among live clauses;
+- change of a living decision with divergent values between sources;
+- removal of a `DEC-NNN` with an unresolved pending citation;
+- removal of third-party content outside the state's `shield` list.
 
-**Nunca pergunta** (lista fechada — decidir em silêncio, com evidência):
+**Never asks** (closed list — decide in silence, with evidence):
 
-- rota com match alto já decidida pela cascata (território e regime fixos);
-- decisão por não-toque, identidade congelada (`### DEC-NNN`) ou detector;
-- nome de arquivo, ordem de seções e forma da nota inline;
-- nada já respondido com escopo aplicável e `contextFingerprint` atual — vinculante; resposta obsoleta exige revalidação;
-- candidato de processo sem confirmação humana — permanece candidato e não entra no inventário de decisões;
+- a high-match route already decided by the cascade (territory and regime fixed);
+- a non-touch decision, frozen identity (`### DEC-NNN`), or detector;
+- file name, section order, and inline-note form;
+- anything already answered with applicable scope and current `contextFingerprint` — binding; an obsolete answer requires revalidation;
+- a process candidate without human confirmation — stays a candidate and does not enter the decision inventory;
 
 ## Gate
 
-- na passagem final, todo fragmento com destino em `docs/decisions/` sai com `action` decidida e `decId` **não nulo**; na passagem pré-entrevista, cada pendência tem pergunta bloqueante e não entra como decisão resolvida no mapa;
-- fragmento vault fora de `docs/decisions/` (INDEX / TEMPLATES / specs) sai com `action: keep` e `decId: null`;
-- `identity-map.json` registra `inventoriedMax` e uma entrada por fragmento processado (`fragmentId`, `decId`, `action`, `domain`, `matchedId` — o ID pré-existente casado, `null` para `create` — e `evidence`);
-- nenhum ID é renumerado, reusado ou presente ao mesmo tempo como cláusula viva e em `## Histórico` (INV3);
-- `scripts/validate-package.mjs` roda `checkDecIdentity` sobre o pacote (`identity-map.json` + `_app-vault/docs/decisions/**`);
-- fragmento com origem em `.app-work/` nunca vira `DEC-NNN` (D19/INV9): regra que só existe lá é lacuna a promover, nunca insumo — se um fragmento de `.app-work/` chegou aqui como candidato a decisão, é bug de roteamento, não decisão;
-- em `adopt`, após a entrevista, se a cascata roteou ≥1 candidato a `docs/decisions/` e o mapa final fecha com zero `create`/`amend`/`keep` com `decId`, a fase marca `failed`.
-- promoção humana sempre registra origem processual, `questionKey`, `contextFingerprint` e evidência da confirmação; sem esses quatro elementos, a entrada é rejeitada.
+- on the final pass, every fragment destined for `docs/decisions/` leaves with a decided `action` and a **non-null** `decId`; on the pre-interview pass, each pending item has a blocking question and does not enter the map as a resolved decision;
+- a vault fragment outside `docs/decisions/` (INDEX / TEMPLATES / specs) leaves with `action: keep` and `decId: null`;
+- `identity-map.json` records `inventoriedMax` and one entry per processed fragment (`fragmentId`, `decId`, `action`, `domain`, `matchedId` — the pre-existing matched ID, `null` for `create` — and `evidence`);
+- no ID is renumbered, reused, or present at the same time as a live clause and in `## Histórico` (INV3);
+- `scripts/validate-package.mjs` runs `checkDecIdentity` on the package (`identity-map.json` + `_app-vault/docs/decisions/**`);
+- a fragment originating in `.app-work/` never becomes a `DEC-NNN` (D19/INV9): a rule that exists only there is a gap to promote, never an input — if an `.app-work/` fragment arrived here as a decision candidate, it is a routing bug, not a decision;
+- in `adopt`, after the interview, if the cascade routed ≥1 candidate to `docs/decisions/` and the final map closes with zero `create`/`amend`/`keep` with `decId`, the phase marks `failed`.
+- human promotion always records process origin, `questionKey`, `contextFingerprint`, and confirmation evidence; without those four, the entry is rejected.
 
-## Bloqueia se
+## Blocks if
 
-- remoção de `DEC-NNN` com citação pendente não resolvida após a entrevista — bloqueia **com a lista das citações** (arquivo + linha), incluindo as de `.app-work/`;
-- inventário que registra `create` com ID menor ou igual ao `max` inventariado — cunhagem reusaria ID existente;
-- fragmento com destino em `docs/decisions/` sem `action`/`decId` na passagem final, ou pendência pré-entrevista sem pergunta registrada;
-- evidência “keep pending” / “no canonical decisions” em entrada de `docs/decisions/`.
+- removal of a `DEC-NNN` with an unresolved pending citation after the interview — block **with the citation list** (file + line), including those in `.app-work/`;
+- an inventory that records `create` with an ID less than or equal to inventoried `max` — minting would reuse an existing ID;
+- a fragment destined for `docs/decisions/` without `action`/`decId` on the final pass, or a pre-interview pending item without a recorded question;
+- “keep pending” / “no canonical decisions” evidence on a `docs/decisions/` entry.
 
-## Escreve no repositório
+## Writes to the repository
 
-Não. A única escrita é o checkpoint `.hephaestus/manifests/run-state.json` e os ledgers `.hephaestus/manifests/identity-map.json`, `.hephaestus/manifests/conflicts.json` e `.hephaestus/manifests/coverage-map.json` (efêmeros, gitignored).
+No. The only writes are the checkpoint `.hephaestus/manifests/run-state.json` and the ledgers `.hephaestus/manifests/identity-map.json`, `.hephaestus/manifests/conflicts.json`, and `.hephaestus/manifests/coverage-map.json` (ephemeral, gitignored).
 
-## Saídas
+## Outputs
 
-- `.hephaestus/manifests/identity-map.json` — `inventoriedMax` + uma entrada por fragmento (`fragmentId`, `decId`, `action`, `domain`, `matchedId`, `evidence`), consumido por `plan` (Plano 02) e por `compose`;
-- `.hephaestus/manifests/conflicts.json` — divergências de valor entre fontes registradas para a entrevista (`questionKey`, fontes, valores), nunca resolvidas aqui;
-- `.hephaestus/manifests/coverage-map.json` — entradas de decisão (território `vault`) com destino em `_app-vault/docs/decisions/**`; as demais entradas entram na composição (`compose`);
-- checkpoint da fase: ao iniciar, marcar `reconcile` como `in_progress`; ao concluir, `produced`. Se houver perguntas, seguir para `interview`, sem marcar `failed` nem liberar `plan`. Após respostas e retorno, marcar `validated` somente com mapa completo, nenhum conflito bloqueante e `checkDecIdentity` verde; falha que não seja pendência de entrevista marca `failed`.
+- `.hephaestus/manifests/identity-map.json` — `inventoriedMax` + one entry per fragment (`fragmentId`, `decId`, `action`, `domain`, `matchedId`, `evidence`), consumed by `plan` and `compose`;
+- `.hephaestus/manifests/conflicts.json` — value divergences between sources recorded for the interview (`questionKey`, sources, values), never resolved here;
+- `.hephaestus/manifests/coverage-map.json` — decision entries (`vault` territory) destined for `_app-vault/docs/decisions/**`; remaining entries enter composition (`compose`);
+- phase checkpoint: on start, mark `reconcile` as `in_progress`; when done, `produced`. If there are questions, proceed to `interview` without marking `failed` or releasing `plan`. After answers and return, mark `validated` only with a complete map, no blocking conflict, and `checkDecIdentity` green; a failure that is not an interview pending marks `failed`.
