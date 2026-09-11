@@ -7,11 +7,11 @@
 - Padrão de branches: gitflow
 - Branch de release: `release/v7`
 - SHA-base: `c4eb71199c38a25e17a91fd24b2346c8f25de9bf` (`develop` no corte)
-- SHA final na `main`: _pendente — integração não executada_
+- SHA final na `main`: `e7e67d45f56a796fbc687024e35a522aa5bcdd3a`
 - Alvo da integração: `main`
 - Artefato: `hephaestus-7.zip`
-- GitHub Release: _pendente — `gh` não autenticado_
-- Status: Preparada localmente; publicação remota bloqueada
+- GitHub Release: https://github.com/pauloborini/hephaestus/releases/tag/v7
+- Status: Publicada
 
 ## O que há de novo
 
