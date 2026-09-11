@@ -19,6 +19,7 @@ import {
   buildFragments,
   questionKeyOf,
   routingQuestionContext,
+  routingContextFingerprint,
 } from "./helpers/routing-engine.mjs";
 
 const NOW = "2026-08-12";
@@ -27,7 +28,13 @@ const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 const ADR_SRC = "docs/adr/0001-formato-pagamentos.md";
 
-const stateWithAnswer = () => ({
+const stateWithAnswer = () => {
+  const fixture = path.join(
+    path.dirname(new URL(import.meta.url).pathname),
+    "fixtures",
+    "repo-desorganizado",
+  );
+  return ({
   meta: {
     packVersion: "1.0.0",
     schemaVersion: "1",
@@ -39,12 +46,17 @@ const stateWithAnswer = () => ({
     [questionKeyOf(routingQuestionContext(ADR_SRC))]: {
       answer: { destinationPath: "_app-vault/docs/decisions/formatos-de-pagamento.md" },
       scope: "this-project",
+      contextFingerprint: routingContextFingerprint(
+        ADR_SRC,
+        fs.readFileSync(path.join(fixture, ADR_SRC), "utf8"),
+      ),
       sourceEvidence: "docs/adr/0001-formato-pagamentos.md",
       answeredAt: `${NOW}T00:00:00.000Z`,
     },
   },
   shield: [],
-});
+  });
+};
 
 const addStagingManifest = (pkg) => {
   // a transação cobre apenas artefatos do pacote — o state NUNCA entra no
@@ -90,7 +102,7 @@ test("AC-5.2.2: verify(applied) falha dispara rollback e o estado permanece inta
     "",
     "Conteúdo mínimo de exemplo, sem marcadores.",
     "",
-    "Produto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`.",
+    "Produto vigente: `_app-vault/docs/decisions/`; mapa: `_app-vault/INDEX.md`; protocolo local de decisões: `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`.",
     "Processo: `.app-work/`; mapa: `.app-work/INDEX.md`. `.app-work/` é processo: nunca insumo de regra.",
     "",
   ].join("\n");

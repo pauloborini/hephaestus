@@ -4,12 +4,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { REPO_ROOT, mkdtemp, runNode, writeJson } from "./helpers/fs-utils.mjs";
-import { makeValidPackage } from "./helpers/package-fixture.mjs";
+import { makeValidPackage, approvedPlanEntries } from "./helpers/package-fixture.mjs";
 
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
 
 const withPlan = (pkg, entries) => {
-  writeJson(pkg, ".hephaestus/plan.json", { version: 1, entries });
+  writeJson(pkg, ".hephaestus/plan.json", { version: 1, entries: approvedPlanEntries(entries) });
 };
 
 const entry = (overrides = {}) => ({
@@ -21,6 +21,8 @@ const entry = (overrides = {}) => ({
   origin: "frag-123",
   decidedBy: "detector",
   destructive: false,
+  approved: true,
+  approvalEvidence: "autorização de teste para o run e os paths do plano",
   ...overrides,
 });
 
@@ -44,28 +46,35 @@ test("AC-2.3.1: com origin rastreável a fragmento passa", () => {
 test("AC-2.3.2/INV7: destrutiva decidida por llm sem aprovação reprova", () => {
   const pkg = mkdtemp("hep-plan-");
   makeValidPackage(pkg);
-  withPlan(pkg, [entry({ operation: "overwrite", decidedBy: "llm", destructive: true })]);
+  withPlan(pkg, [entry({ operation: "overwrite", decidedBy: "llm", destructive: true, approved: false })]);
   const result = runValidator(pkg);
   assert.equal(result.status, 1, result.stdout);
-  assert.ok(result.stderr.includes("approval"), result.stderr);
+  assert.ok(/aprovação|approval/i.test(result.stderr), result.stderr);
 });
 
 test("AC-2.3.2: destrutiva decidida por llm com aprovação registrada passa", () => {
   const pkg = mkdtemp("hep-plan-");
   makeValidPackage(pkg);
   withPlan(pkg, [
-    entry({ operation: "overwrite", decidedBy: "llm", destructive: true, approved: true }),
+    entry({
+      operation: "overwrite",
+      decidedBy: "llm",
+      destructive: true,
+      approved: true,
+      approvalEvidence: "aprovação humana explícita para overwrite no escopo do run",
+    }),
   ]);
   const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);
 });
 
-test("AC-2.3.2: destrutiva decidida por human sem aprovação passa", () => {
+test("AC-2.3.2: destrutiva decidida por human sem aprovação reprova", () => {
   const pkg = mkdtemp("hep-plan-");
   makeValidPackage(pkg);
-  withPlan(pkg, [entry({ operation: "overwrite", decidedBy: "human", destructive: true })]);
+  withPlan(pkg, [entry({ operation: "overwrite", decidedBy: "human", destructive: true, approved: false })]);
   const result = runValidator(pkg);
-  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.status, 1, result.stdout);
+  assert.ok(/aprovação|approval/i.test(result.stderr), result.stderr);
 });
 
 test("higiene: operation delete com origin passa; llm destrutivo sem approved falha", () => {
@@ -93,6 +102,7 @@ test("higiene: operation delete com origin passa; llm destrutivo sem approved fa
       operation: "delete",
       decidedBy: "llm",
       destructive: true,
+      approved: false,
     }),
   ]);
   const r = runValidator(pkg2);

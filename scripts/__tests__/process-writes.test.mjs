@@ -9,7 +9,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeJson, runNode } from "./helpers/fs-utils.mjs";
-import { makeValidPackage } from "./helpers/package-fixture.mjs";
+import { makeValidPackage, approvedPlanEntries } from "./helpers/package-fixture.mjs";
 
 const runValidator = (pkgDir) => runNode(["scripts/validate-package.mjs", pkgDir]);
 
@@ -23,13 +23,14 @@ const planEntry = (overrides = {}) => ({
   decidedBy: "catalog",
   destructive: true,
   approved: true,
+  approvalEvidence: "autorização de teste para o run e os paths do plano",
   ...overrides,
 });
 
 const packageWithPlan = (entries) => {
   const pkg = mkdtemp("hep-procw-");
   makeValidPackage(pkg);
-  writeJson(pkg, ".hephaestus/plan.json", { version: 1, entries });
+  writeJson(pkg, ".hephaestus/plan.json", { version: 1, entries: approvedPlanEntries(entries) });
   return pkg;
 };
 

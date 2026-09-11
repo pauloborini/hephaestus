@@ -45,13 +45,27 @@ test("AC-2.1.2/VC2: estrutura canônica presente SEM state entra em adopt", () =
   assert.match(discover, /catalog\/drift-catalog\.json/);
 });
 
-test("AC-2.1.2: com o state presente resolve maintain", () => {
+test("AC-2.1.2: somente com adoção validada resolve maintain", () => {
   const tmp = mkdtemp("hep-mode-");
   canonicalStructure(tmp);
-  writeFile(tmp, ".app-work/hephaestus-state.json", "{}\n");
+  writeFile(
+    tmp,
+    ".app-work/hephaestus-state.json",
+    JSON.stringify({ meta: { adoptionStatus: "validated" } }) + "\n",
+  );
   assert.equal(fs.existsSync(path.join(tmp, ".app-work", "hephaestus-state.json")), true);
 
   const prompt = preflightPrompt();
-  assert.match(prompt, /presente/);
-  assert.match(prompt, /maintain/);
+  assert.match(prompt, /adoptionStatus: validated/);
+  assert.match(prompt, /mode: maintain/);
+  assert.match(prompt, /pending/);
+  assert.match(prompt, /applied/);
+  assert.match(prompt, /respostas salvas não provam adoção concluída/);
+});
+
+test("DATA-01: state pending ou legado permanece em adopt", () => {
+  const prompt = preflightPrompt();
+  assert.match(prompt, /state presente sem `meta.adoptionStatus`/);
+  assert.match(prompt, /pending`\/`applied` ⇒ `mode: adopt/);
+  assert.match(prompt, /tratado conservadoramente como `pending`/);
 });

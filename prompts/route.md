@@ -11,9 +11,11 @@ Substituir a classificação de uma dimensão por uma cascata determinística de
 - catálogo base do pack: `catalog/routing-defaults.json`;
 - `.hephaestus/manifests/run-state.json` (checkpoint da fase).
 
+Promoção humana confirmada é uma entrada explícita adicional: consumir apenas o fragmento humano congelado pela entrevista, com confirmação e fingerprint atuais; atribuir `territory: vault`, `regime: reconcile`, `decidedBy: human`, destino por domínio confirmado e evidência da resposta. O fragmento processual original não é promovido.
+
 ## Cascata
 
-Para cada fragmento, percorrer os níveis na ordem e **parar no primeiro que decide**. Cada fragmento roteado registra `territory`, `regime`, `destinationPath`, `confidence`, `decidedBy ∈ {keep, state, catalog, detector, llm, human}`, `evidence` (o que decidiu: caminho de origem, `questionKey`, `pattern` do catálogo ou detector acionado) e `needsSplit`.
+Para cada fragmento, percorrer os níveis na ordem e **parar no primeiro que decide**. Cada fragmento roteado registra `territory`, `regime`, `destinationPath`, `confidence`, `decidedBy ∈ {keep, state, catalog, detector, llm, human}`, `evidence` (o que decidiu: caminho de origem, `questionKey` + `contextFingerprint`, `pattern` do catálogo ou detector acionado) e `needsSplit`. Toda pergunta enfileirada registra também `reason`, `invalidates`, `blocking` e o fingerprint do contexto.
 
 **Regra de carga (Progressive Disclosure):** carregar **somente** o subdoc do passo da cascata em execução — não pré-carregar os outros.
 
@@ -32,6 +34,7 @@ Ordem dos passos (links relativos a `prompts/route/`):
 - `destinationPath` sempre cai em `AGENTS.md`, em `project-rules/` ou na lista fechada de `references/vault-schema/SCHEMA.md` §2 (`_app-vault/**` e `.app-work/**`) — os quatro territórios;
 - fragmento com origem em `.app-work/` nunca recebe `regime: generate` nem `reconcile` (D19/INV9): só `keep`, `relocate`, `delete` ou `condense`;
 - nenhum fragmento com `needsSplit: true` segue sem divisão — dividir é trabalho da fase `fragment`, não do usuário;
+- resposta reaproveitada sem `contextFingerprint` coincidente não decide rota;
 - a saída é validada por `schemas/routing.schema.json`.
 
 ## Bloqueia se
