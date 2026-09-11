@@ -21,6 +21,7 @@ const ADOPTED_STATE = {
     schemaVersion: "1.0.0",
     lastRunAt: "2026-08-11T00:00:00.000Z",
     lastRunId: "run-anterior",
+    adoptionStatus: "validated",
   },
   routing: { overlay: [] },
   answers: {},

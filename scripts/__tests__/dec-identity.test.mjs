@@ -522,3 +522,61 @@ test("DEC-004: legado ### D1 sob features vira create DEC-001 (não keep sem dec
     /### DEC-001/,
   );
 });
+
+test("DATA-03: fonte sem ID que muda só o valor amenda a DEC existente", () => {
+  const repo = mkdtemp("hep-dec-semantic-amend-");
+  writeFile(
+    repo,
+    "_app-vault/docs/decisions/planos.md",
+    decisionFile("planos", {
+      title: "Planos",
+      afeta: ["billing"],
+      clauses: [
+        {
+          decId: "DEC-016",
+          title: "Cota de export do plano gratuito",
+          statement: "Plano gratuito: 10 exports/mês.",
+        },
+      ],
+    }),
+  );
+  const fragment = fragmentOf("Plano gratuito: 20 exports/mês.\n", "docs/cota.md");
+  const { identityMap, decisions } = reconcileVault({
+    fragments: [fragment],
+    routing: [vaultRoute(fragment, "_app-vault/docs/decisions/planos.md")],
+    repoRoot: repo,
+    now: NOW,
+  });
+  assert.equal(identityMap.entries[0].action, "amend");
+  assert.equal(identityMap.entries[0].decId, "DEC-016");
+  assert.match(decisions.get("_app-vault/docs/decisions/planos.md"), /20 exports/);
+  assert.match(decisions.get("_app-vault/docs/decisions/planos.md"), /era: 10 exports/);
+});
+
+test("DATA-03: cota de outro plano não é absorvida por número semelhante", () => {
+  const repo = mkdtemp("hep-dec-semantic-create-");
+  writeFile(
+    repo,
+    "_app-vault/docs/decisions/planos.md",
+    decisionFile("planos", {
+      title: "Planos",
+      clauses: [
+        {
+          decId: "DEC-016",
+          title: "Cota de export do plano gratuito",
+          statement: "Plano gratuito: 20 exports/mês.",
+        },
+      ],
+    }),
+  );
+  const fragment = fragmentOf("Plano pro: 20 exports/mês.\n", "docs/cota-pro.md");
+  const { identityMap } = reconcileVault({
+    fragments: [fragment],
+    routing: [vaultRoute(fragment, "_app-vault/docs/decisions/planos.md")],
+    repoRoot: repo,
+    now: NOW,
+  });
+  assert.equal(identityMap.entries[0].action, "create");
+  assert.equal(identityMap.entries[0].decId, "DEC-017");
+  assert.equal(identityMap.entries[0].matchedId, null);
+});

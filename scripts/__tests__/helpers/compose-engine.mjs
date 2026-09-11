@@ -17,9 +17,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { buildFragments, buildRouting } from "./routing-engine.mjs";
+import { approvedPlanEntries } from "./package-fixture.mjs";
 import { reconcileVault, parseDecisionFile, statementOfFragment } from "./reconcile-engine.mjs";
 
 const readFile = (root, rel) => fs.readFileSync(path.join(root, rel), "utf8");
+
+const DECISION_PROTOCOL = readFile(
+  path.join(import.meta.dirname, "..", "..", ".."),
+  "templates/vault/DECISION_PROTOCOL.md.template",
+);
 
 const sha256Hex = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
@@ -109,7 +115,7 @@ Antes de iniciar qualquer tarefa, leia \`project-rules/index/README.md\`, apliqu
 - \`project-rules/rules/\` — regras obrigatórias
 - \`project-rules/reference/\` — exemplos e notas
 - \`project-rules/contracts/\` — contratos externos (somente consulta)
-- Produto vigente: \`_app-vault/docs/decisions/\` (\`### DEC-NNN\`); mapa: \`_app-vault/INDEX.md\`. Processo: \`.app-work/\`; mapa e regra de organização: \`.app-work/INDEX.md\`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui.
+- Produto vigente: \`_app-vault/docs/decisions/\` (\`### DEC-NNN\`); mapa: \`_app-vault/INDEX.md\`; protocolo local de decisões: \`_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md\`. Processo: \`.app-work/\`; mapa e regra de organização: \`.app-work/INDEX.md\`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui.
 
 ## Produto
 
@@ -218,6 +224,7 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
   for (const [rel, content] of decisions) {
     files.set(rel, content);
   }
+  files.set("_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md", DECISION_PROTOCOL);
   files.set("_app-vault/INDEX.md", deriveIndex(decisions, { projectName, now }));
 
   // --- Território process (.app-work): scaffold da lista fechada + realocação ---
@@ -325,11 +332,12 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
       decidedBy: entry.decidedBy,
       destructive: true,
       approved: true,
+      approvalEvidence: "autorização de teste para o run e os paths do plano",
     };
   });
   files.set(
     ".hephaestus/plan.json",
-    `${JSON.stringify({ version: 1, entries: planEntries }, null, 2)}\n`,
+    `${JSON.stringify({ version: 1, entries: approvedPlanEntries(planEntries) }, null, 2)}\n`,
   );
 
   // run-state: 13 fases validades, modo adopt, métrica efêmera, escrita só em apply.
@@ -364,6 +372,7 @@ export const runAdoptPipeline = (fixtureRoot, { now = "2026-08-12" } = {}) => {
     ...kept,
     ...prGenerated,
     ...decisions.keys(),
+    "_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md",
     "_app-vault/INDEX.md",
     ".app-work/.gitignore",
     ...processFiles,

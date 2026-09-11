@@ -52,6 +52,12 @@ export const questionKeyOf = (context) =>
 // Contexto de roteamento de um fragmento: origem + destino em aberto.
 export const routingQuestionContext = (sourcePath) => `route:${sourcePath}`;
 
+// Fingerprint do contexto material: a identidade da pergunta é estável, mas
+// a resposta só é válida para a mesma origem congelada. Mudança no conteúdo do
+// fragmento produz outro fingerprint e força reavaliação localizada.
+export const routingContextFingerprint = (sourcePath, rawText = "") =>
+  createHash("sha256").update(JSON.stringify([sourcePath, rawText])).digest("hex");
+
 const sha256Hex = (buffer) => createHash("sha256").update(buffer).digest("hex");
 
 // --- Destinos legais (lista fechada: AGENTS.md + project-rules/ +
@@ -298,11 +304,16 @@ const structuralDestination = (fragment, ctx = {}) => {
   if (isCanonicalDecisionsFile(src, text)) {
     return src;
   }
+  // vault INDEX / TEMPLATES / specs → keep no lugar. O formato do protocolo
+  // local contém exemplos `### DEC-NNN`, mas continua sendo template, não
+  // uma decisão vigente.
+  if (normalizeVaultPath(src).startsWith("_app-vault/docs/TEMPLATES/")) {
+    return src;
+  }
   // candidato a decisão legado (DECISOES_*, ### D1, etc.) → decisions/
   if (isLegacyDecisionShape(src, text)) {
     return `_app-vault/docs/decisions/${domainFromDecisionSource(src)}.md`;
   }
-  // vault INDEX / TEMPLATES / specs → keep no lugar
   if (isCanonicalVaultKeep(src)) {
     return src;
   }
@@ -397,6 +408,7 @@ const expandCatalogDestination = (destination, sourcePath) => {
 const routeFragment = (fragment, ctx) => {
   const src = fragment.provenance[0].sourcePath;
   const fragmentId = fragment.fragmentId;
+  const contextFingerprint = routingContextFingerprint(src, fragment.rawText);
 
   // Bloco shield do state precede o nível 1 (Plano 05): blindagem declarada
   // (path + selector opcional) vence e decide keep com decidedBy: state — a
@@ -425,9 +437,6 @@ const routeFragment = (fragment, ctx) => {
   // private/roadmap, PRD sem consumidor, brainstorm fechado, done/, flat
   // archive); unknown → pergunta pack-candidate (não keep).
   const hyg = hygieneMatch(src, ctx.hygiene);
-  if (hyg?.kind === "unknown") {
-    return { question: { fragmentId, sourcePath: src } };
-  }
   if (hyg?.kind === "delete") {
     return {
       entry: {
@@ -475,7 +484,7 @@ const routeFragment = (fragment, ctx) => {
   // estrutural == origem atual ⇒ keep, decidido por POSIÇÃO (nunca por
   // comparação com execução anterior).
   const structural = structuralDestination(fragment, ctx);
-  if (structural !== null && structural === src) {
+  if (hyg?.kind !== "unknown" && structural !== null && structural === src) {
     return {
       entry: {
         fragmentId,
@@ -496,8 +505,13 @@ const routeFragment = (fragment, ctx) => {
   // chave). Vinculante (D22): divergir do catálogo é violação, não opinião;
   // decide decidedBy: state. Ausência = sem match.
   const questionKey = questionKeyOf(routingQuestionContext(src));
-  const answer = ctx.answers[questionKey];
-  if (answer && typeof answer.answer?.destinationPath === "string") {
+  const candidates = [ctx.runAnswers[questionKey], ctx.answers[questionKey]].filter(Boolean);
+  const answer = candidates.find((candidate) => candidate.contextFingerprint === contextFingerprint);
+  if (
+    answer &&
+    answer.contextFingerprint === contextFingerprint &&
+    typeof answer.answer?.destinationPath === "string"
+  ) {
     const destinationPath = expandArchiveGuideDestination(
       answer.answer.destinationPath,
       src,
@@ -515,8 +529,21 @@ const routeFragment = (fragment, ctx) => {
         destinationPath,
         confidence: 1,
         decidedBy: "state",
-        evidence: `resposta de escopo do projeto (questionKey ${questionKey})`,
+        evidence: `resposta de escopo do projeto (questionKey ${questionKey}, contextFingerprint ${contextFingerprint})`,
         needsSplit: false,
+      },
+    };
+  }
+
+  if (hyg?.kind === "unknown" || (candidates.length > 0 && !answer)) {
+    return {
+      question: {
+        fragmentId,
+        sourcePath: src,
+        contextFingerprint,
+        reason: candidates.length > 0 && !answer ? "context-changed" : "pack-candidate",
+        invalidates: "route",
+        blocking: true,
       },
     };
   }
@@ -531,7 +558,16 @@ const routeFragment = (fragment, ctx) => {
   const match = skipCatalogForLegacyDecision ? null : matchCatalog(fragment, ctx.catalog);
   if (match !== null) {
     if (match.entry.destination === null || match.entry.confidence === "baixa") {
-      return { question: { fragmentId, sourcePath: src } };
+      return {
+        question: {
+          fragmentId,
+          sourcePath: src,
+          contextFingerprint,
+          reason: "route-ambiguity",
+          invalidates: "route",
+          blocking: true,
+        },
+      };
     }
     const destinationPath = expandCatalogDestination(
       match.entry.destination,
@@ -601,7 +637,16 @@ const routeFragment = (fragment, ctx) => {
       },
     };
   }
-  return { question: { fragmentId, sourcePath: src } };
+  return {
+    question: {
+      fragmentId,
+      sourcePath: src,
+      contextFingerprint,
+      reason: "route-ambiguity",
+      invalidates: "route",
+      blocking: true,
+    },
+  };
 };
 
 // --- Entrada: fragments.json do fixture (1 fragmento por arquivo) ---
@@ -670,6 +715,8 @@ export const buildRouting = (root, options = {}) => {
   const overlay = Array.isArray(state.routing?.overlay) ? state.routing.overlay : [];
   const ctx = {
     catalog: [...overlay, ...catalogEntries],
+    runAnswers: options.runId && options.runAnswers?.runId === options.runId
+      ? options.runAnswers.answers ?? {} : {},
     answers: state.answers ?? {},
     shield: state.shield ?? [],
     residue: options.residue ?? DEFAULT_RESIDUE,
@@ -692,6 +739,10 @@ export const buildRouting = (root, options = {}) => {
         questionKey: questionKeyOf(routingQuestionContext(result.question.sourcePath)),
         fragmentId: result.question.fragmentId,
         sourcePath: result.question.sourcePath,
+        contextFingerprint: result.question.contextFingerprint,
+        reason: result.question.reason,
+        invalidates: result.question.invalidates,
+        blocking: result.question.blocking,
       });
     } else {
       routing.push(result.entry);

@@ -30,7 +30,8 @@ Plano anual inclui 2 meses de cortesia.
 
 <!--
   ─────────────────────────────────────────────────────────────────────────
-  REGRAS DE ESCRITA (resumo; contrato completo em SCHEMA.md §4 e §5)
+  REGRAS DE ESCRITA (resumo; contrato entregue em
+  _app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md)
 
   ÂNCORA
     Cada regra tem heading próprio: `### DEC-NNN — <regra>`, ID colado ao enunciado.
@@ -64,6 +65,8 @@ Plano anual inclui 2 meses de cortesia.
   REMOÇÃO (rara)
     Procurar citações pendentes do ID antes (inclusive em .app-work/, que exige --hidden).
     Registrar em `## Histórico` no fim do arquivo — a única seção de histórico que existe.
+  O arquivo DECISION_PROTOCOL.md materializado no pacote é a referência
+  operacional completa. Este comentário é removido ao instanciar o template.
   ─────────────────────────────────────────────────────────────────────────
 -->
 

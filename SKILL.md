@@ -42,12 +42,12 @@ Uma execução governa os **quatro territórios** documentais do repositório nu
 | `_app-vault/` | decisões de produto (`DEC-NNN`) e specs |
 | `.app-work/` | processo: estado, issues e guias - nunca insumo de regra |
 
-Dois modos internos, decididos pela presença de `.app-work/hephaestus-state.json`:
+Dois modos internos, decididos pelo estado de adoção em `.app-work/hephaestus-state.json`:
 
-- `adopt` - state ausente: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta - closeout `needs-followup`, nunca `ready`;
-- `maintain` - state presente: escopo reduzido. Inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico - presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
+- `adopt` - state ausente ou adoção ainda não validada: **adoção completa** dos quatro territórios até o pacote canônico. Não basta scaffoldar pastas nem “keep” de conteúdo já sob um root de vault: regras de produto encontradas (inclusive sob alias `.app-vault/` / `_app-vault/` fora de `docs/decisions/`, headings `### D\d+`, `DECISOES_*`, seções “Decisões fechadas”, ADRs/especificações com norma observável) **viram `### DEC-NNN` em `_app-vault/docs/decisions/`** na mesma execução; pastas do vault fora da lista fechada de `references/vault-schema/SCHEMA.md` §2 são reclassificadas (processo → `.app-work/`, spec → `specs/`, decisão → `docs/decisions/`); `INDEX.md` deriva dos `Afeta:` materializados. Scaffold vazio de `docs/decisions/` com material de decisão ainda vivo fora do canônico = adoção incompleta - closeout `needs-followup`, nunca `ready`;
+- `maintain` - somente state presente com `meta.adoptionStatus: validated`: escopo reduzido. State ausente, legado ou com adoção `pending`/`applied` permanece em `adopt` para completar e validar a adoção. Em `maintain`, inventaria drift e artefatos de outras ferramentas (`catalog/drift-catalog.json`) **e** o interior de `.app-work/` (packs F/STALE, `.md` solto, `private/references/`, `done/` legado, archive flat, duplicatas, path fora da lista fechada). Não-toque (INV2) vale só para paths **já** na lista fechada §2 no formato canônico - presença sob o root do vault **não** implica canônico. Território `process` (INV9): só `keep|relocate|delete|condense`. Schema vivo inclui `roadmap/`, `docs/`, `guides/legados/`. Padrão novo → entrevista `includeInPack` → `.hephaestus/pack-candidates.json`; overlay do state não inventa pasta; a skill instalada é imutável. O kit não depende de skill auxiliar de organização.
 
-O fluxo de qualquer execução é o pipeline de 13 fases acima.
+O fluxo segue as 13 fases acima, com retorno controlado à entrevista e às fases afetadas conforme `prompts/interview.md`. Reconciliação com pergunta pendente permanece `produced` até a resposta; não libera plano nem aplicação. Passagem sem perguntas novas não consome lote.
 
 ## Agnosticismo de framework
 
@@ -70,12 +70,12 @@ Além do checkpoint efêmero, a execução consulta e grava o estado **versionad
 
 | Bloco | Lido por | Conteúdo |
 |-------|----------|----------|
-| `meta` | `preflight` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` - versões e identidade do último run |
+| `meta` | `preflight`, `apply`, `verify(applied)` | `packVersion`, `schemaVersion`, `lastRunAt`, `lastRunId` e `adoptionStatus` (`pending`/`applied`/`validated`) - versões, identidade e ciclo de adoção |
 | `routing` | `preflight` e `route` | overlay do catálogo (mesmo shape de `catalog/routing-defaults.json`) + `forbiddenPatterns` opcional - overlay não inventa pasta |
-| `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana com `answer` estruturada, `scope` (`this-run`/`this-project`/`promote-to-catalog`) e `sourceEvidence` |
+| `answers` | `route` (nível 2 da cascata) e `interview` | mapa `questionKey` → resposta humana persistente com `answer` estruturada, `scope` (`this-project`/`promote-to-catalog`), `contextFingerprint` e `sourceEvidence`; respostas `this-run` vivem em `.hephaestus/manifests/run-answers.json` |
 | `shield` | `route` (antes do nível 1) e `compose` | blindagem opt-in de conteúdo de terceiros: lista de `{ path, selector }`, vazia por default |
 
-O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui - um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` é a única fase que grava o state, fora da transação: o rollback de `verify(applied)` nunca reverte as respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
+O arquivo é **sem métricas**: telemetria (ex.: `llmDecidedRatio`) vive em `.hephaestus/`, nunca aqui - um arquivo que acumula telemetria deixa de ser editável à mão. Campo de topo que o schema não conhece é **ignorado** e o necessário é reperguntado, nunca migrado (D4). `interview` grava respostas e pode marcar adoção como `pending` fora da transação; `apply` marca `meta.adoptionStatus: applied` antes de tocar o pacote; `verify(applied)` marca `validated` somente após todos os gates de adoção. Esses merges preservam os outros blocos e atualizam o recibo `stateWrite` para retomada segura. O rollback nunca reverte respostas humanas (INV1, exceção declarada em `prompts/apply.md`).
 
 ## Regra central
 
@@ -165,9 +165,9 @@ Modos `adopt` / `maintain` **não** são fases - ver Superfície.
 - não marcar `valid` quando houver violação dos contratos mínimos;
 - `AGENTS.md` deve ser centralizador e enxuto, não um depósito de todas as regras;
 - regras de domínio, arquitetura, UI, contrato, segurança e operação devem ficar em `project-rules/rules/*`, não no `AGENTS.md`;
-- regras de engenharia devem ser autocontidas: nada em `AGENTS.md` ou `project-rules/` pode depender de arquivo externo para completar decisão;
+- regras de engenharia devem ser autocontidas: nenhuma decisão de engenharia depende de arquivo externo. Consultar DEC de produto e protocolo local do vault é permitido, sem duplicar valores;
 - dependências externas de arquivos dentro de `project-rules/` devem ser mapeadas e reportadas, não escondidas;
-- nada é escrito no repositório fora da fase `apply`; a única exceção é `interview` gravando `.app-work/hephaestus-state.json` fora da transação;
+- nada é escrito no repositório fora das escritas explicitamente delimitadas: `interview` grava respostas/pending fora da transação, `apply` materializa o pacote e marca `applied`, e `verify(applied)` marca apenas `validated`;
 - fase `in_progress` nunca pode ser tratada como concluída após interrupção;
 - fase só pode ser considerada retomável como concluída quando estiver marcada como `validated` em `.hephaestus/manifests/run-state.json`;
 - não concluir a composição sem mapa de cobertura entre fragmentos e arquivos de destino;
@@ -184,7 +184,7 @@ Bloqueie a conclusão quando:
 - houver vazamento de identidade real;
 - o estado de execução estiver corrompido ou inconsistente a ponto de impedir retomada segura;
 - os contratos mínimos dos `schemas/` não forem atendidos;
-- a worktree estiver suja ou o backup estiver incompleto na fase `apply`;
+- a worktree contiver delta não comprovado do próprio run ou o backup estiver incompleto na fase `apply`;
 - em `adopt`, houver fonte de decisão de produto (legado ou detector) e `docs/decisions/` permanecer só com scaffold / sem `### DEC-NNN` correspondente no `identity-map`.
 
 ## Fechamento obrigatório

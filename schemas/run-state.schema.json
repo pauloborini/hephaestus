@@ -94,6 +94,23 @@
         "minLength": 1
       }
     },
+    "revalidation": {
+      "$ref": "#/$defs/revalidation"
+    },
+    "interviewBatches": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "stateWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exists", "sha256"],
+      "properties": {
+        "exists": { "type": "boolean" },
+        "sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
     "lastUpdatedAt": {
       "type": "string",
       "minLength": 1
@@ -148,6 +165,43 @@
         "validationStatus": {
           "type": "string",
           "enum": ["valid", "degraded", "blocked", "unknown"]
+        }
+      }
+    },
+    "revalidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredFrom", "reason", "invalidates", "answerKeys", "attempt"],
+      "properties": {
+        "requiredFrom": {
+          "type": "string",
+          "enum": ["route", "reconcile", "interview", "plan", "compose"]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "route-ambiguity",
+            "reconcile-conflict",
+            "decision-promotion",
+            "pack-candidate",
+            "compose-shield-adaptation",
+            "approval-scope",
+            "context-changed"
+          ]
+        },
+        "invalidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "answerKeys": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
         }
       }
     }

@@ -4,7 +4,7 @@
 
 ### Nível 2 — respostas de escopo do projeto
 
-Consultar `answers[questionKey]` do state, com `questionKey = sha256(contexto normalizado)` — o **mesmo** contexto usado ao enfileirar (origem do fragmento + o que falta decidir), nunca o texto da pergunta: reformular a prosa não muda a chave (D22). Resposta gravada com destino decide o fragmento: `decidedBy: state`, `destinationPath` o da resposta. Match é **vinculante** (D22): divergir da resposta é violação de gate, não opinião. Ausência de match = sem resposta.
+Consultar primeiro `run-answers.json` do mesmo `runId` e depois `answers[questionKey]` do state. A chave é `sha256(identidade normalizada)` e a resposta só casa quando seu `contextFingerprint` é igual ao fingerprint atual da pergunta. Reformular a prosa não muda a chave; mudar evidência, candidato, escopo ou premissa invalida a resposta afetada. Resposta válida com destino decide o fragmento (`decidedBy: state`); ausência de resposta = a cascata continua. Resposta obsoleta enfileira `reason: context-changed` e não é substituída silenciosamente por catálogo ou detector. Entre respostas temporária e persistente, usar a primeira válida para o contexto atual; a temporária exige `runId` coincidente. Match válido é vinculante (D22): divergir é violação de gate, não opinião.
 
 ### Nível 3 — catálogo
 

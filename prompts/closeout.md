@@ -13,7 +13,7 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 ## Regras
 
 - aplicar a regra única de checkpoint do `SKILL.md` em toda a fase: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar, marcar `closeout` como `in_progress`; ao concluir o relatório, marcar `closeout` como `produced`; marcar `closeout` como `validated` quando a saída mínima estiver consistente com os manifests e os artefatos do `apply`; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
-- conferir o estado de `.hephaestus/manifests/run-state.json` antes de iniciar: se a fase anterior `apply` não estiver `validated`, registrar pendência e reexecutar o que faltar;
+- conferir o estado de `.hephaestus/manifests/run-state.json` antes de iniciar: se a fase anterior `apply` não estiver `validated`, registrar pendência e reexecutar o que faltar; em `mode: adopt`, `meta.adoptionStatus` também deve estar `validated`, ou o resultado é `needs-followup`;
 - conferir o estado de `.hephaestus/manifests/coverage-map.json`: cada fragmento relevante precisa ter destino (`artifactType` + `outputPath`); pendência por fragmento sem destino;
 - conferir o estado de `.hephaestus/manifests/external-references-report.json` quando existir; pendência por referência externa sem internalização registrada;
 - revisar `AGENTS.md` e `project-rules/` para detectar regras que deveriam ter ido para `project-rules/rules/*` mas ficaram no `AGENTS.md`, ou árvore final inflada com arquivos vazios;
@@ -27,7 +27,7 @@ Fazer a revisão final do que foi gerado após `apply` e entregar ao usuário um
 
 ## Veredito
 
-- `ready` — sem entrada degradante e sem pendência bloqueante; em `adopt`, vault canônico completo (decisões materializadas quando havia fonte);
+- `ready` — sem entrada degradante e sem pendência bloqueante; em `adopt`, vault canônico completo e `meta.adoptionStatus: validated` (decisões materializadas quando havia fonte);
 - `degraded-but-usable` — há entrada degradante (lista nominal obrigatória) ou pendência controlada; o pacote é utilizável com ressalvas; **não** use este veredito para “decisions/ vazio na primeira adoção” quando havia material de decisão — isso é `needs-followup`;
 - `needs-followup` — pendência bloqueante em aberto (ex.: fila de entrevista não drenada; adoção incompleta do vault: decisões legadas não promovidas a `DEC-NNN`); o run não é dado como concluído.
 

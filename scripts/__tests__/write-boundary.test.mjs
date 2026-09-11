@@ -18,9 +18,9 @@ const REPO_PATHS =
 const READ_OR_NEGATED =
   /(?:^|\s)(?:não|nao|nunca|não-|ler|leia|lê|veja|revisar|revisa|conferir|confirmar|somente leitura|apenas leitura)/i;
 
-// Prompts que declaram escrita no repositório: apply (transação) e interview
-// (exceção de INV1 — estado versionado fora da transação).
-const WRITE_PROMPTS = new Set(["apply.md", "interview.md"]);
+// Prompts que declaram escrita no repositório: apply (transação), interview
+// (respostas fora da transação) e validate (somente marcador meta em applied).
+const WRITE_PROMPTS = new Set(["apply.md", "interview.md", "validate.md"]);
 
 test("AC-2.4.1/INV1: todo prompt declara Escreve no repositório; só apply.md e interview.md (exceção declarada) declaram sim", () => {
   const prompts = fs.readdirSync(promptsDir).filter((f) => f.endsWith(".md"));
@@ -78,6 +78,14 @@ test("AC-2.4.1/INV1: interview.md grava exclusivamente .app-work/hephaestus-stat
   assert.match(interview, /fora da transação/);
   assert.match(interview, /merge/);
   assert.match(interview, /nunca/);
+});
+
+test("AC-2.4.1/INV1: validate.md grava somente o marcador meta em Alvo applied", () => {
+  const validate = fs.readFileSync(path.join(promptsDir, "validate.md"), "utf8");
+  assert.match(validate, /Alvo: applied/);
+  assert.match(validate, /adoptionStatus: validated/);
+  assert.match(validate, /preservando `answers`/);
+  assert.match(validate, /Alvo: staging/);
 });
 
 test("AC-2.4.1/INV1: a exceção nominal de interview está declarada em apply.md", () => {

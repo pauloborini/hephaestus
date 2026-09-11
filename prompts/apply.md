@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Única fase que escreve no repositório. Materializa o staging aprovado em transação única, com backup completo antes do primeiro byte, ordem `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. Lista final = `staging-manifest.json` inteiro mais deletions aplicadas.
+Única fase que materializa o pacote no repositório. Executa o staging aprovado em transação única, com backup completo antes do primeiro byte, baseline revalidado e ordem `relocate` → `condense` → `delete` → `reconcile` → `generate` → `keep`. Lista final = `staging-manifest.json` inteiro mais deletions aplicadas.
 
 ## Entradas
 
@@ -16,7 +16,9 @@ Sim — única fase que escreve no repositório. Exceção declarada de INV1: `i
 ## Gate
 
 - backup completo em `.hephaestus/backup/<YYYYMMDDTHHMMSS>/` **antes do primeiro byte**: todo arquivo do repositório que será sobrescrito ou removido (incluindo paths de `.hephaestus/staging-deletions.json`) é copiado preservando a estrutura relativa (ex.: `project-rules/rules/x.md` vira `.hephaestus/backup/<ts>/project-rules/rules/x.md`); um diretório por execução, com timestamp no formato `YYYYMMDDTHHMMSS`, sem rotação nem reuso entre execuções (semântica append);
-- worktree revalidada desde o `preflight`: `git status --porcelain` vazio — suja desde o `preflight` bloqueia, porque o rollback por git arrastaria trabalho alheio;
+- baseline revalidado imediatamente antes da transação: para cada path do `transaction-baseline.json`, existência e sha256 atuais devem coincidir com o baseline. O state não pertence ao baseline; conferir seu hash separadamente contra `run-state.stateWrite`. Qualquer delta não comprovado bloqueia;
+- worktree revalidada desde o `preflight`: `git status --porcelain --untracked-files=all` deve conter somente o delta autorizado do state e os artefatos efêmeros próprios em `.hephaestus/`; qualquer outro path sujo bloqueia. Retomada de aplicação parcial exige recuperação pelos recibos antes de reaplicar;
+- `revalidation` deve estar resolvida e ausente; nenhuma pergunta bloqueante nem fase anterior pendente libera escrita;
 - plano com aprovação registrada quando exigida (ver `plan`).
 
 ## Ordem transacional de escrita
@@ -30,7 +32,7 @@ Sim — única fase que escreve no repositório. Exceção declarada de INV1: `i
 
 ## Lista final
 
-Os artefatos gravados são **exatamente** os do `staging-manifest.json` — a lista inteira, nunca um subconjunto — **mais** as deletions aplicadas a partir de `.hephaestus/staging-deletions.json`. Cada artefato gravado, cada backup e cada path deletado são registrados em `artifactsWritten` do run-state (`outputPath`, `phase: apply`, `validationStatus: valid`; operação `delete` nos removidos).
+Os artefatos gravados são **exatamente** os do `staging-manifest.json` — a lista inteira, nunca um subconjunto — **mais** as deletions aplicadas a partir de `.hephaestus/staging-deletions.json`. Cada artefato gravado, cada backup e cada path deletado são registrados em `artifactsWritten` do run-state (`outputPath`, `phase: apply`, `validationStatus: valid`; operação `delete` nos removidos). Antes da primeira alteração do pacote, `apply` faz merge em `meta`: `adoptionStatus: applied`, `adoptionRunId` e `adoptionUpdatedAt`; isso indica transação iniciada, ainda não validada, inclusive em manutenção. Preservar os outros campos e blocos, comparar e atualizar `stateWrite` a cada merge. Falha parcial nunca conserva marcador `validated` do pacote anterior. O state não entra no staging-manifest.
 
 ## Cunhagem de ISSUE-NNN
 
@@ -50,7 +52,16 @@ Defeito detectado nas fases anteriores chega aqui **enfileirado** com `findingSi
 
 ## Rollback
 
-`verify(applied)` com divergência de hash dispara rollback imediato: primeiro `git`, depois `.hephaestus/backup/<ts>/`, nesta ordem. `.app-work/hephaestus-state.json` nunca é revertido. O staging órfão é descartado na retomada.
+Falha durante `apply` ou divergência em `verify(applied)` inicia recuperação limitada aos paths efetivamente tocados, com autorização aplicável. Antes de cada escrita, revalidar existência/hash contra o baseline e registrar a operação pretendida em `.hephaestus/manifests/transaction-writes.json`; após a escrita, registrar resultado real `{ path, before: { exists, sha256 }, after: { exists, sha256 } }`. Ausência usa `exists: false, sha256: null`. O ledger é vinculado ao `runId`; escrita interrompida sem resultado comprovado bloqueia recuperação automática daquele path.
+
+- Se o estado atual já coincide com `before`, o path está recuperado; não tocar.
+- Se não coincide com `after`, há alteração concorrente ou escrita não comprovada: bloquear aquele path sem sobrescrever.
+- Baseline existente: restaurar os bytes do backup correspondente, verificando seu hash antes e depois. Isso inclui arquivos removidos pelo run, cujo `after` é ausência.
+- Baseline ausente: remover somente o arquivo criado pelo run cujo hash ainda coincide com `after`; não existe backup a restaurar nesse caso. Nunca apagar recursivamente a pasta nem arquivos vizinhos.
+- Recuperar em ordem inversa das escritas. Revalidar imediatamente antes de cada mutação; se não houver exclusividade de escrita no boundary, bloquear recuperação automática e relatar os paths para coordenação.
+- Não executar `git restore`, `reset`, `checkout` ou comandos mutativos sem autorização explícita aplicável. Backup delimitado é o mecanismo padrão; não há reversão global de Git.
+- `.app-work/hephaestus-state.json` e respostas humanas nunca são revertidos. O marcador permanece incompleto até nova validação. Staging/recibos necessários à recuperação são preservados até encerrá-la; só depois descartar derivados obsoletos.
+
 
 ## Saídas
 

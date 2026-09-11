@@ -17,7 +17,7 @@ Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com *
 ## Alvo
 
 - `Alvo: staging` — os checks rodam contra `.hephaestus/staging/` (o pacote materializado por `compose`, ainda não gravado);
-- `Alvo: applied` — os checks rodam contra o repositório, acrescidos do check de hash: cada artefato do `.hephaestus/staging-manifest.json` tem o sha256 recomputado no disco; divergência dispara rollback imediato por `git` e por `.hephaestus/backup/<ts>/`, nesta ordem, e `.app-work/hephaestus-state.json` nunca é revertido.
+- `Alvo: applied` — os checks rodam contra o repositório, acrescidos do check de hash: cada artefato do `.hephaestus/staging-manifest.json` tem o sha256 recomputado no disco; divergência dispara rollback limitado aos paths da transação, conforme o baseline e a regra de recuperação de `prompts/apply.md`. Em sucesso de todos os gates obrigatórios e sem pendência bloqueante de adoção, comparar `stateWrite` e registrar `meta.adoptionStatus: validated` no state sem substituir `answers`, atualizando o recibo; em falha, manter o state e tratar `applied` como adoção incompleta na próxima retomada.
 
 ## Checklist
 
@@ -52,7 +52,7 @@ Verificar se o pacote atende o contrato mínimo do kit. Fase parametrizada com *
 
 ## Escreve no repositório
 
-Não. A verificação lê o pacote (staging ou disco) e os manifests; nenhum byte do repositório é alterado nesta fase.
+Sim — somente em `Alvo: applied`, a única escrita permitida é o merge do marcador `meta.adoptionStatus: validated` em `.app-work/hephaestus-state.json`, preservando `answers` e os demais blocos, e atualizar `stateWrite` no run-state; em `Alvo: staging`, não há escrita versionada. O pacote e seus artefatos canônicos não são alterados.
 
 ## Status possíveis
 
@@ -76,7 +76,7 @@ Não. A verificação lê o pacote (staging ou disco) e os manifests; nenhum byt
 - nunca tratar fase `produced` como equivalente a `validated`;
 - distinguir `failed` de `blocked` no run-state: `failed` é estado de fase que terminou a execução mas não pôde ser validada e é reexecutada integralmente na retomada; `blocked` é estado do run (não de fase) que indica impedimento exigindo decisão humana e não é retomado sozinho, conforme a regra de retomada de `prompts/preflight.md`;
 - aplicar a regra única de checkpoint do `SKILL.md` em ambas as passagens: toda gravação de `.hephaestus/manifests/run-state.json` atualiza o campo `lastUpdatedAt`; ao iniciar `verify_staging` ou `verify_applied`, marcar a fase como `in_progress`; ao concluir, `produced` e depois `validated` quando todos os checks mínimos estiverem consistentes; fase executada e não validável marca `failed` (reexecução integral na retomada, conforme `prompts/preflight.md`);
-- em `applied`, conferir o `staging-manifest.json` contra o disco hash a hash (gate `checkAppliedHashes`); qualquer divergência dispara rollback imediato por `git` e por `.hephaestus/backup/<ts>/`, nesta ordem, e `.app-work/hephaestus-state.json` nunca é revertido;
+- em `applied`, conferir o `staging-manifest.json` contra o disco hash a hash (gate `checkAppliedHashes`); qualquer divergência dispara rollback limitado pelo baseline e pelos hashes pós-escrita, sem sobrescrever alteração concorrente, e `.app-work/hephaestus-state.json` nunca é revertido;
 - em `applied`, paths de `.hephaestus/staging-deletions.json` não devem existir no disco após a transação;
 - quando o ambiente do projeto alvo tiver `node` disponível, rodar `node scripts/validate-package.mjs <pasta>` como gate recomendado antes de marcar a fase como `validated` — em `staging`, `<pasta>` é o diretório `.hephaestus/staging`; em `applied`, é o repositório; em ambientes sem node, registrar a não execução do gate como observação no relatório — o gate não bloqueia ambientes sem node e a ausência de execução não muda o status de `validated` automaticamente;
 - ao final, produzir uma revisão objetiva de fechamento com:

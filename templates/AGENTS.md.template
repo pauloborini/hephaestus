@@ -14,7 +14,7 @@ Insistência em aviso (dívida, solução inferior, preferência, risco só do u
 
 ### 1. Triagem
 
-- Pergunta/opinião sem alteração explícita: responder em modo discussão; não editar; não ler regras salvo pedido. Analisar, explicar ou diagnosticar não autoriza mutação nem remoção.
+- Pergunta/opinião sem alteração explícita: responder em modo discussão; consultar os contratos necessários à resposta dentro do boundary; não editar. Analisar, explicar ou diagnosticar não autoriza mutação, registro em arquivo nem remoção.
 - Alteração explícita: classificar um tipo primário, carregar o índice e executar o fluxo abaixo.
 
 | Tipo | Escopo dominante |
@@ -54,6 +54,8 @@ Decisão de produto não aciona PARADA — é confirmação no mesmo fluxo (`## 
 MDs: <arquivos>
 Escopo: <uma linha>
 ```
+
+6. Separar no registro da pré-confirmação: consulta de contexto, registro de defeito/candidato, alteração autorizada e aprovação. Registrar um defeito ou uma decisão de rota nunca concede permissão para escrever.
 
 ### 3. Execução
 
@@ -98,7 +100,7 @@ Teste: toda linha alterada rastreia direto ao pedido do usuário.
 
 Contratos e código comprovam o estado real. Conflito factual com prosa potencialmente obsoleta deve ser evidenciado e resolvido; não forçar implementação incorreta para "obedecer" texto stale.
 
-Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índice/regra/referência não pode depender de `.md`, `.json` ou `.yaml` externo para completar decisão. PRD/spec externa informa requisito de produto, mas não substitui regra estrutural; invariante reutilizável deve ser registrado em `project-rules/`.
+Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índice/regra/referência não pode depender de arquivo externo para completar uma decisão de engenharia. Consultar uma `DEC-NNN` de produto ou o protocolo local do vault é permitido e não duplica seu valor. PRD/spec externa informa requisito de produto, mas não substitui regra estrutural; invariante reutilizável deve ser registrado em `project-rules/`.
 
 ## Estrutura do repositório e documentação
 
@@ -106,22 +108,22 @@ Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índic
 
 - <Apps/packages/pastas principais e seus papéis; para repositório de app único, a raiz e as pastas relevantes>.
 - `project-rules/`: <listar os índices, regras, referências e contratos gerados — todo componente existente deve ser alcançável pela precedência interna ou referenciado aqui>.
-- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui. Templates: `_app-vault/docs/TEMPLATES/`.
+- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`; protocolo local de decisões: `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui. Templates: `_app-vault/docs/TEMPLATES/`.
 - Não criar docs de produto em `project-rules/`. `reference/` contém somente exemplo, catálogo ou configuração estrutural acionada por índice.
 
 ## Produto
 
 - Verdade vigente só em `_app-vault/docs/decisions/` (cláusulas `### DEC-NNN`). `INDEX.md` é mapa — ponteiro, não conteúdo.
 - `.app-work/` é processo: nunca insumo de regra. Responsabilidades: `_app-vault/` guarda produto/decisão (via `INDEX.md`); `.app-work/` guarda execução/processo (via `INDEX.md`).
-- Pedido que **contraria** decisão vigente → avisar antes de aplicar: `⚠️ Decisão anterior: <valor> (<arquivo:linha>) → pedido: <novo>. Também afetado: <o que mais depende disso>. Confirma?` Confirmado → alterar o texto sob a `DEC-NNN` existente (**o ID não muda**) e acrescentar a nota de rastro (`SCHEMA.md` §4.4). Negado → não aplicar.
-- Pedido que **acrescenta sem contrariar** → sem alerta e sem nota: cláusula nova com `DEC-NNN` = `max+1`, nunca reusar número.
+- Pedido que **contraria** decisão vigente → avisar antes de aplicar: `⚠️ Decisão anterior: <valor> (<arquivo:linha>) → pedido: <novo>. Também afetado: <o que mais depende disso>. Confirma?` Confirmado → alterar o texto sob a `DEC-NNN` existente (**o ID não muda**) e acrescentar a nota de rastro conforme o protocolo local em `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Negado → não aplicar.
+- Antes de escrever decisões, ler o protocolo local acima, inclusive inventário de IDs vivos/removidos e atualização do índice. Pedido que **acrescenta sem contrariar** → sem alerta e sem nota: cláusula nova com `DEC-NNN` = `max+1`, nunca reusar número.
 - Não relitigar decisão fechada.
-- Defeito encontrado ou relatado (UI, comportamento, regressão), em qualquer tipo de tarefa → registrar em `.app-work/issues/` (`ISSUE-NNN`; protocolo no `README.md` da pasta). Isso é escrita de processo; `.app-work/` continua proibido como insumo de regra.
+- Defeito encontrado ou relatado (UI, comportamento, regressão) → relatar na resposta. Registrar em `.app-work/issues/` (`ISSUE-NNN`; protocolo no `README.md` da pasta) somente quando a tarefa autorizar essa escrita de processo. Diagnóstico ou discussão sem alteração explícita não autoriza criar issue. `.app-work/` continua proibido como insumo de regra.
 
 ## Regras universais
 
 - Idioma de respostas e documentos: <preencher na síntese: idioma padrão do projeto — ex.: PT-BR>, Markdown, direto, claro e explicativo (português simples, sem jargão excessivo, sem analogias).
 - Nunca expor segredo, credencial, token, URL privada ou PII.
 - `.env*` real fora do Git; `.env.example` pode ser versionado somente com placeholders.
-- Antes de remoção autorizada: listar alvos, dependências e efeitos. Remoção derivada fora do recorte aprovado exige nova confirmação.
+- Antes de remoção autorizada: listar alvos, dependências e efeitos; para remoção de decisão, aplicar também o protocolo local do vault. Remoção derivada fora do recorte aprovado exige nova confirmação.
 - <preencher na síntese: regras universais específicas do projeto, quando houver — ex.: contrato de DTO e IDs semânticos com allowlist de exceções legadas>.

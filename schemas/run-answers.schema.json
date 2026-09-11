@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Ephemeral Run Answers",
+  "description": "Respostas de escopo this-run. Persistem apenas durante o runId em .hephaestus/ e nunca habilitam o próximo run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "runId", "answers"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "answers": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-f0-9]{64}$": { "$ref": "#/$defs/answer" }
+      }
+    }
+  },
+  "$defs": {
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["answer", "scope", "contextFingerprint", "sourceEvidence", "answeredAt"],
+      "properties": {
+        "answer": { "type": "object" },
+        "scope": { "const": "this-run" },
+        "contextFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sourceEvidence": { "type": "string", "minLength": 1 },
+        "answeredAt": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

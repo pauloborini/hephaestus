@@ -34,9 +34,10 @@ Referências externas reais podem continuar existindo quando o projeto depender 
 - todo destino é `.hephaestus/staging/<caminho relativo>`, nunca o caminho real do repositório — o staging espelha o pacote final inteiro, incluindo os manifests do pacote sob `.hephaestus/staging/.hephaestus/manifests/`;
 - a saída inclui `.hephaestus/staging-manifest.json` com sha256 por artefato (um artefato por entrada: `outputPath` + `sha256`), que `apply` grava como lista final e `verify(applied)` confere hash a hash;
 - o próprio `staging-manifest.json` não entra na lista que descreve;
+- `.app-work/hephaestus-state.json` não entra no staging, staging-manifest ou deletions: sua persistência usa merge e recibo próprio;
 - materializar canônicos condensados no staging; emitir `.hephaestus/staging-deletions.json` `{ version: 1, paths: string[] }` com paths relativos a remover. Arquivo marcado `delete` **não** entra no `staging-manifest.json`;
 - entradas `keep` inalteradas (keep-bytes); `delete` não entra no check de hash do staging-manifest;
-- nenhuma pergunta aqui: dúvida nesta fase é bug de fase anterior, nunca pergunta ao usuário.
+- nenhuma decisão silenciosa aqui: adaptação impossível de conteúdo blindado enfileira `reason: compose-shield-adaptation`, com `invalidates: plan`, e retorna ao lote de revalidação da `interview`; as demais dúvidas são bug de fase anterior.
 
 ## Territórios de produto (`_app-vault/`)
 
@@ -62,12 +63,15 @@ Materializar o scaffold de processo conforme a lista fechada de `references/vaul
 
 ## Blindagem (shield)
 
-Conteúdo declarado no bloco `shield` do state (`{ path, selector }`) **vence a estrutura canônica**: o artefato blindado é composto byte a byte do que está no repositório e o template se adapta em volta dele. Adaptação impossível sem alterar os bytes do bloco ⇒ registrar pendência e enfileirar pergunta — nunca "melhorar" o bloco. Conteúdo de terceiros **não** coberto pela lista `shield` é fonte como qualquer outra: reabsorvido e reescrito no padrão (D9), e a remoção aparece no `plan.md` antes de aplicar.
+Conteúdo declarado no bloco `shield` do state (`{ path, selector }`) **vence a estrutura canônica**: o artefato blindado é composto byte a byte do que está no repositório e o template se adapta em volta dele. Adaptação impossível sem alterar os bytes do bloco ⇒ registrar pendência e enfileirar `reason: compose-shield-adaptation`, com `invalidates: plan`, no lote de revalidação — nunca "melhorar" o bloco. Conteúdo de terceiros **não** coberto pela lista `shield` é fonte como qualquer outra: reabsorvido e reescrito no padrão (D9), e a remoção aparece no `plan.md` antes de aplicar.
+
+Após qualquer resposta de revalidação, descartar staging, coverage-map e plano derivados do contexto anterior; recompor a árvore inteira a partir do primeiro estágio invalidado. Não existe composição parcialmente aprovada.
 
 ## Regras
 
 - começar por `AGENTS.md`;
 - usar `templates/AGENTS.md.template` como base operacional do `AGENTS.md`;
+- materializar `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md` a partir do template do kit; o agente consumidor deve conseguir operar decisões sem resolver `references/vault-schema/SCHEMA.md` dentro da instalação;
 - preencher o cabeçalho com o nome real do projeto e o contrato do agente no stack real (ex.: "Atue como engenheiro Flutter sênior. Preserve arquitetura feature-first, contratos explícitos..."); nunca deixar o cabeçalho genérico do template no arquivo final;
 - manter `## Postura`, `## Workflow obrigatório` (incluindo parada obrigatória, premissas, critério, simplicidade, mudança cirúrgica e invariantes dentro das etapas 2 e 3), `## Precedência interna`, `## Produto` e as regras universais base idênticos ao template (protocolo fixo, igual em todos os projetos); preencher somente os pontos marcados como `<preencher na síntese>`: gates da validação, idioma, estrutura do repositório e regras universais específicas do projeto;
 - não promover a H2 própria o que o template mantém dentro das etapas do workflow: postura de conversa fica no topo, o resto dispara na etapa em que é lido ou aplicado;
