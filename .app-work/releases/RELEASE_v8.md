@@ -7,11 +7,11 @@
 - Padrão de branches: gitflow
 - Branch de release: `release/v8`
 - SHA-base: `87be4012458c6cf124ec92d50c5f221c81e2eff2` (`develop` no corte)
-- SHA final na `main`: <a confirmar pós-integração>
+- SHA final na `main`: `6595c05a05c12e9be4f4be78c88f035ef6cf47f1`
 - Alvo da integração: `main`
 - Artefato: `hephaestus-8.zip`
-- GitHub Release: <a confirmar>
-- Status: Em preparação
+- GitHub Release: https://github.com/pauloborini/hephaestus/releases/tag/v8
+- Status: Publicada
 
 ## O que há de novo
 
@@ -39,8 +39,12 @@ Não aplicável (kit zip / GitHub Release; sem lojas).
 - Descrição: Descompacte `hephaestus-8.zip` na pasta de skills. Pasta resultante: `hephaestus/`.
 
 ## Prova de validação
-- `node scripts/validate-skill-kit.mjs`: <a executar>
-- `node scripts/check-public-docs.mjs`: <a executar>
-- `node --test "scripts/__tests__/**/*.test.mjs"`: <a executar>
-- `node scripts/pack-release.mjs --dry-run`: <a executar>
-- `node scripts/pack-release.mjs`: <a executar>
+- `node scripts/validate-skill-kit.mjs`: OK (exit 0)
+- `node scripts/check-public-docs.mjs`: OK (exit 0)
+- `node --test "scripts/__tests__/**/*.test.mjs"`: 219 testes passando (0 falhas)
+- `node scripts/pack-release.mjs --dry-run`: OK (70 entradas sob `hephaestus/`, com `LICENSE`/`SKILL.md`/`SKILL.pt-BR.md`, sem `packExcludes`)
+- `node scripts/pack-release.mjs`: OK (`hephaestus-8.zip`, 69 arquivos, 121922 bytes, sha256 `b65265f8172ca29b4efece95398b5d2da020380c445e639c97d1abf4176b4dcc`)
+- Smoke de descompactação: OK (`SKILL.md`, `SKILL.pt-BR.md`, `LICENSE`, `findings.schema.json`, `templates/appwork/ISSUES_*`; manifest `"version": "8"`)
+- Tag `v8` anotada em `6595c05a05c12e9be4f4be78c88f035ef6cf47f1` (`main`); `develop` sincronizada em `80f4729`
+- `gh release view v8 --json assets`: `hephaestus-8.zip`
+- Sincronização da árvore pública (`publish-hephaestus.sh`): não aplicável — nunca usada nas releases anteriores; a árvore pública segue via merge normal
