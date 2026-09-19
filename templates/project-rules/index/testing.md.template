@@ -1,20 +1,20 @@
 # INDEX: TESTING
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `architecture_rules.md`: o teste exige reestruturação ou revela acoplamento.
-- `domain_rules.md`: o teste cobre contrato/mapeamento.
-- `error_handling_rules.md`: o teste cobre fluxo de erro.
-- `auth_rules.md`: o teste cobre acesso/permissão.
-- `ui_rules.md`: o teste cobre apresentação/interação.
+- `architecture_rules.md`: the test requires restructuring or reveals coupling.
+- `domain_rules.md`: the test covers contract/mapping.
+- `error_handling_rules.md`: the test covers error flow.
+- `auth_rules.md`: the test covers access/permission.
+- `ui_rules.md`: the test covers presentation/interaction.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `domain_examples.md`: cenário ou fixture não trivial.
-- Omitir esta seção quando não houver referência acionável.
+- `domain_examples.md`: non-trivial scenario or fixture.
+- Omit this section when there is no actionable reference.

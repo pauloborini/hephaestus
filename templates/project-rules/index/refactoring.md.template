@@ -1,21 +1,21 @@
 # INDEX: REFACTORING
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/architecture_rules.md`
 2. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `ui_rules.md`: a reorganização toca apresentação.
-- `domain_rules.md`: a reorganização toca contrato/mapeamento.
-- `error_handling_rules.md`: a reorganização toca fluxo de erro.
-- `auth_rules.md`: a reorganização toca acesso/permissão.
-- `security_rules.md`: a reorganização toca dado sensível.
+- `ui_rules.md`: the reorganization touches presentation.
+- `domain_rules.md`: the reorganization touches contract/mapping.
+- `error_handling_rules.md`: the reorganization touches error flow.
+- `auth_rules.md`: the reorganization touches access/permission.
+- `security_rules.md`: the reorganization touches sensitive data.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `domain_examples.md`: padrão de mapeamento/copyWith ao reorganizar contrato ou modelo compartilhado.
-- Omitir esta seção quando não houver referência acionável.
+- `domain_examples.md`: mapping/copyWith pattern when reorganizing a contract or shared model.
+- Omit this section when there is no actionable reference.

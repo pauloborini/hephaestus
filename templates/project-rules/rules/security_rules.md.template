@@ -1,17 +1,17 @@
 # RULES: SECURITY
 
-## Papel
+## Role
 
-Definir normas de segredos, PII e ambientes.
+Define secrets, PII, and environment norms.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- proibições de exposição (segredo, token, URL privada, PII);
-- regras de `.env` e configuração por ambiente;
-- logs e telemetria sem payload sensível;
-- storage sensível e dados em trânsito.
+- exposure prohibitions (secrets, tokens, private URLs, PII);
+- `.env` and per-environment configuration rules;
+- logs and telemetry without sensitive payloads;
+- sensitive storage and data in transit.
 
-## Gatilhos típicos
+## Typical triggers
 
-- segredo, PII, permissão, ambiente ou dado sensível;
-- logs, telemetria ou serialização de payload.
+- secrets, PII, permissions, environment, or sensitive data;
+- logs, telemetry, or payload serialization.

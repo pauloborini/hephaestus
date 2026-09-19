@@ -2,8 +2,8 @@
 // fora do pack (scripts/__tests__). Materializa em código executável o
 // contrato de `prompts/apply.md:Cunhagem de ISSUE-NNN`: inventário do maior
 // `ISSUE-NNN` percorrendo as TRÊS seções de `.app-work/issues/INDEX.md`
-// (Abertos, Em verificação, Fechados) + campo `Próximo ID livre`; cunhagem
-// `max+1` (ID nunca reusado — varrer só a seção Abertos reusaria ID de issue
+// (Open, In verification, Closed) + campo `Next free ID`; cunhagem
+// `max+1` (ID nunca reusado — varrer só a seção Open reusaria ID de issue
 // encerrada); assinatura estável do achado (`sha256` de tipo + path
 // normalizado + enunciado normalizado) com dedupe — o mesmo achado em duas
 // rodadas produz uma linha só (VC6/CN11). Escrita upsert de linha: `create`
@@ -32,7 +32,7 @@ export const findingSignatureOf = ({ type, path: sourcePath, statement }) =>
 const ISSUE_ID_RE = /^ISSUE-(\d+)$/;
 const ROW_RE = /^\|\s*(ISSUE-\d+)\s*\|/;
 const SIGNATURE_RE = /<!--\s*findingSignature:\s*([0-9a-f]{64})\s*-->/;
-const COUNTER_RE = /\*\*Próximo ID livre:\s*`(ISSUE-(\d+))`\*\*/;
+const COUNTER_RE = /\*\*Next free ID:\s*`(ISSUE-(\d+))`\*\*/;
 
 export const issueNumber = (id) => {
   const match = ISSUE_ID_RE.exec(id);
@@ -85,23 +85,23 @@ const renderRow = (id, finding, signature, now) => {
 const DEFAULT_INDEX = [
   "# INDEX — Issues",
   "",
-  "Registro único de issues/defeitos. Protocolo: [`README.md`](README.md).",
+  "Single issues/defects record. Protocol: [`README.md`](README.md).",
   "",
-  "**Próximo ID livre: `ISSUE-001`**",
+  "**Next free ID: `ISSUE-001`**",
   "",
-  "## Abertos",
+  "## Open",
   "",
-  "| ID | Sev | Feature | Tela | Problema → Esperado | Origem | Estado |",
+  "| ID | Sev | Feature | Screen | Problem → Expected | Origin | State |",
   "|----|-----|---------|------|---------------------|--------|--------|",
   "",
-  "## Em verificação",
+  "## In verification",
   "",
-  "| ID | Sev | Feature | Correção | Teste de regressão | Estado |",
+  "| ID | Sev | Feature | Fix | Regression test | State |",
   "|----|-----|---------|----------|--------------------|--------|",
   "",
-  "## Fechados",
+  "## Closed",
   "",
-  "| ID | Sev | Feature | Síntese | Estado |",
+  "| ID | Sev | Feature | Summary | State |",
   "|----|-----|---------|---------|--------|",
   "",
 ].join("\n");
@@ -123,7 +123,7 @@ export const mintIssues = ({ indexPath, findings, now = "2026-08-12" } = {}) => 
   const parsed = parseIssueIndex(content ?? "");
   if (parsed.counter !== null && parsed.max + 1 !== issueNumber(parsed.counter)) {
     pendencies.push(
-      `contador "Próximo ID livre" (${parsed.counter}) inconsistente com o max das três tabelas (${issueIdOf(parsed.max)}) — inventário usa o max das tabelas, sem bloquear`,
+      `counter "Next free ID" (${parsed.counter}) inconsistent with the max of the three tables (${issueIdOf(parsed.max)}) — inventory uses the tables' max, without blocking`,
     );
   }
 
@@ -153,12 +153,12 @@ export const mintIssues = ({ indexPath, findings, now = "2026-08-12" } = {}) => 
     return { index: content, minted, skipped, pendencies };
   }
 
-  // Conteúdo final: linha nova na seção Abertos + contador atualizado.
+  // Conteúdo final: linha nova na seção Open + contador atualizado.
   const lines = (content ?? DEFAULT_INDEX).split("\n");
   const newRows = minted.map((m) => renderRow(m.id, m.finding, m.signature, now));
 
-  const openIndex = lines.findIndex((l) => l.trim() === "## Abertos");
-  const verificationIndex = lines.findIndex((l) => l.trim() === "## Em verificação");
+  const openIndex = lines.findIndex((l) => l.trim() === "## Open");
+  const verificationIndex = lines.findIndex((l) => l.trim() === "## In verification");
   const nextSection = verificationIndex === -1 ? lines.length : verificationIndex;
   let lastRow = -1;
   for (let i = openIndex + 1; i < nextSection; i += 1) {
@@ -183,7 +183,7 @@ export const mintIssues = ({ indexPath, findings, now = "2026-08-12" } = {}) => 
   const finalContent = output
     .map((line) =>
       COUNTER_RE.test(line)
-        ? line.replace(COUNTER_RE, `**Próximo ID livre: \`${nextCounter}\`**`)
+        ? line.replace(COUNTER_RE, `**Next free ID: \`${nextCounter}\`**`)
         : line,
     )
     .join("\n");

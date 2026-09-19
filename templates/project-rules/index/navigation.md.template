@@ -1,20 +1,20 @@
 # INDEX: NAVIGATION
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/architecture_rules.md`
 2. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `auth_rules.md`: guard, rota restrita, sessão ou redirect.
-- `ui_rules.md`: fluxo entre telas, diálogo ou overlay.
-- `error_handling_rules.md`: falha de navegação ou fluxo de erro.
+- `auth_rules.md`: guard, restricted route, session, or redirect.
+- `ui_rules.md`: flow across screens, dialog, or overlay.
+- `error_handling_rules.md`: navigation failure or error flow.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `api_contract_reference.md`: rota, guard ou fluxo de navegação versus endpoint/contrato.
-- `project-rules/contracts/*.openapi.json`: divergência de rota/guard com contrato REST — somente consulta.
-- Omitir esta seção quando não houver referência acionável.
+- `api_contract_reference.md`: route, guard, or navigation flow versus endpoint/contract.
+- `project-rules/contracts/*.openapi.json`: route/guard divergence from the REST contract — consult-only.
+- Omit this section when there is no actionable reference.

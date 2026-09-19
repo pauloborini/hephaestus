@@ -165,7 +165,7 @@ const isTable = (text) => /^\|.*\|$/m.test(text);
 // vêm ANTES dos detectores de conteúdo (openapi, candidato a decisão). Sem
 // essa ordem, um repositório adotado não é estável sob a cascata. Presença
 // sob `_app-vault/**` ou `.app-vault/**` NÃO é keep — só INDEX / decisions
-// canônicas / TEMPLATES / specs. DECISOES_* e headings ### D\d+ sobem para
+// canônicas / TEMPLATES / specs. DECISIONS_* e headings ### D\d+ sobem para
 // docs/decisions/ antes do archive de casca.
 //
 // Regras de agente de outras ferramentas (globs de `catalog/drift-catalog.json`,
@@ -194,7 +194,7 @@ const isCanonicalDecisionsFile = (src, text) => {
 
 const isLegacyDecisionShape = (src, text) => {
   const base = path.basename(src);
-  if (/^DECISOES_/i.test(base)) return true;
+  if (/^DECISIONS_/i.test(base)) return true;
   if (/^###\s+D\d+\b/m.test(text)) return true;
   if (/^###\s+DEC-\d+(?!\s*—)/m.test(text)) return true;
   if (/decis[oõ]es fechadas|closed decisions/i.test(text)) return true;
@@ -205,12 +205,12 @@ const domainFromDecisionSource = (src) => {
   const n = normalizeVaultPath(src);
   const parts = n.split("/");
   const base = path.basename(n).replace(/\.md$/i, "");
-  if (/^DECISOES_/i.test(base)) {
+  if (/^DECISIONS_/i.test(base)) {
     const featureIdx = parts.indexOf("features");
     if (featureIdx >= 0 && parts[featureIdx + 1]) {
       return parts[featureIdx + 1].toLowerCase().replace(/_/g, "-");
     }
-    return base.replace(/^DECISOES_/i, "").toLowerCase().replace(/_/g, "-") || "produto";
+    return base.replace(/^DECISIONS_/i, "").toLowerCase().replace(/_/g, "-") || "produto";
   }
   const featureIdx = parts.indexOf("features");
   if (featureIdx >= 0 && parts[featureIdx + 1]) {
@@ -310,7 +310,7 @@ const structuralDestination = (fragment, ctx = {}) => {
   if (normalizeVaultPath(src).startsWith("_app-vault/docs/TEMPLATES/")) {
     return src;
   }
-  // candidato a decisão legado (DECISOES_*, ### D1, etc.) → decisions/
+  // candidato a decisão legado (DECISIONS_*, ### D1, etc.) → decisions/
   if (isLegacyDecisionShape(src, text)) {
     return `_app-vault/docs/decisions/${domainFromDecisionSource(src)}.md`;
   }
@@ -552,7 +552,7 @@ const routeFragment = (fragment, ctx) => {
   // match mais específico vence o genérico. `destination: null` ou confiança
   // baixa NUNCA decide: enfileira pergunta. Raiz `.app-work/archive/guides/`
   // expande para o pack (DEC-002).
-  // DEC-004: candidato a decisão legado (DECISOES_*, ### D\d+) não passa pelo
+  // DEC-004: candidato a decisão legado (DECISIONS_*, ### D\d+) não passa pelo
   // catálogo de archive — cai no detector de promoção a docs/decisions/.
   const skipCatalogForLegacyDecision = isLegacyDecisionShape(src, fragment.rawText);
   const match = skipCatalogForLegacyDecision ? null : matchCatalog(fragment, ctx.catalog);

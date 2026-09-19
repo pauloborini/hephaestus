@@ -76,7 +76,7 @@ export const checkVaultIntegrity = (root) => {
   const vaultRoot = path.join(root, "_app-vault");
   if (!fs.existsSync(vaultRoot)) return { ok: true, issues };
   if (!fs.existsSync(path.join(vaultRoot, "INDEX.md"))) {
-    issues.push("_app-vault/INDEX.md ausente — índice derivável dos campos Afeta: não existe");
+    issues.push("_app-vault/INDEX.md ausente — índice derivável dos campos Affects: não existe");
   }
   for (const entry of fs.readdirSync(vaultRoot, { withFileTypes: true })) {
     if (!VAULT_CLOSED.has(entry.name)) {
@@ -95,7 +95,7 @@ export const checkVaultIntegrity = (root) => {
     const inventory = inventoryDecisions(decisionsDir);
     for (const id of inventory.clauses.map((c) => c.decId)) {
       if (inventory.historico.includes(id)) {
-        issues.push(`${id} presente como cláusula viva e em ## Histórico — ID removido não pode ser reusado`);
+        issues.push(`${id} presente como cláusula viva e em ## History — ID removido não pode ser reusado`);
       }
     }
     const indexPath = path.join(vaultRoot, "INDEX.md");
@@ -104,7 +104,7 @@ export const checkVaultIntegrity = (root) => {
       for (const domain of inventory.files) {
         const name = path.basename(domain).replace(/\.md$/, "");
         if (!indexContent.includes(`docs/decisions/${name}.md`)) {
-          issues.push(`_app-vault/INDEX.md não lista o domínio ${name} — índice não derivável dos Afeta:`);
+          issues.push(`_app-vault/INDEX.md não lista o domínio ${name} — índice não derivável dos Affects:`);
         }
       }
     }
@@ -138,7 +138,7 @@ export const pendingDecisionCandidates = (root) => {
       }
       if (entry.name !== "LEDGER.md") continue;
       const content = fs.readFileSync(abs, "utf8");
-      const section = content.split("## Candidatos a decisão")[1]?.split(/^## /m)[0] ?? "";
+      const section = content.split("## Decision candidates")[1]?.split(/^## /m)[0] ?? "";
       for (const line of section.split("\n")) {
         if (!line.startsWith("|") || !line.includes("|")) continue;
         const cells = line.split("|").map((c) => c.trim());

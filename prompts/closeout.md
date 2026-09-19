@@ -13,7 +13,8 @@ Do the final review of what was generated after `apply` and deliver a consistent
 ## Rules
 
 - apply the single checkpoint rule from `SKILL.md` throughout the phase: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `closeout` as `in_progress`; when the report is done, mark `closeout` as `produced`; mark `closeout` as `validated` when the minimum output is consistent with the manifests and `apply` artifacts; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`);
-- check `.hephaestus/manifests/run-state.json` before starting: if the previous `apply` phase is not `validated`, record a pending and re-run what is missing; in `mode: adopt`, `meta.adoptionStatus` must also be `validated`, or the result is `needs-followup`;
+- check `.hephaestus/manifests/run-state.json` before starting: if the previous `apply` phase is not `validated`, record a pending with the observed phase state (`produced`, `failed`, or earlier) and let the verdict reflect it — `needs-followup` when the gap blocks use of the package; returning to `apply` happens on the next authorized run — closeout re-executes no write; in `mode: adopt`, `meta.adoptionStatus` must also be `validated`, or the result is `needs-followup`;
+- when the run ends `blocked` or `interrupted` with `.app-work/hephaestus-state.json` written outside the transaction (interview answers, `adoptionStatus: pending`), the report informs the user of the state closing step: commit or discard the versioned state before starting a new run (handoff rule in `prompts/preflight.md`) — recorded as a pending with the expected action; the kit never cleans or reverts the state on its own (INV1);
 - check `.hephaestus/manifests/coverage-map.json`: every relevant fragment needs a destination (`artifactType` + `outputPath`); pending per fragment without a destination;
 - check `.hephaestus/manifests/external-references-report.json` when present; pending per external reference without recorded internalization;
 - review `AGENTS.md` and `project-rules/` for rules that should have gone to `project-rules/rules/*` but stayed in `AGENTS.md`, or a final tree inflated with empty files;
@@ -22,7 +23,7 @@ Do the final review of what was generated after `apply` and deliver a consistent
 - **never alter `AGENTS.md`, `project-rules/`, `_app-vault/`, or `.app-work/` during closeout** — closeout reviews and points; corrections return to `apply` on the next run;
 - check `.hephaestus/manifests/routing.json`: `decidedBy: llm` entries whose destination is a new file in `_app-vault/docs/decisions/` or `project-rules/rules/` are **degrading** (D26) and enter the report's named list; residue entries in `project-rules/reference/`, `project-rules/index/`, or `.app-work/` do not degrade;
 - report `llmDecidedRatio` (share of fragments decided by the LLM) **always, with no cap** — the degradation criterion is destination type, never volume;
-- do not pin a stack tool: the review records what was used, without recommending replacement of analyzer/linter/validator outside a `<preencher na síntese>` placeholder;
+- do not pin a stack tool: the review records what was used, without recommending replacement of analyzer/linter/validator outside a `<fill in during synthesis>` placeholder;
 - do not cite a real project in any closeout item.
 
 ## Verdict
@@ -43,7 +44,7 @@ Do the final review of what was generated after `apply` and deliver a consistent
 6. `## Confirmations` — final `AGENTS.md` state; final `project-rules/` state; confirmation that relevant fragments have a destination on the coverage map (`.hephaestus/manifests/coverage-map.json`); explicit summary of external references found and what should be internalized; confirmation of the final `.hephaestus/manifests/run-state.json` state;
 7. `## Verdict` — final line with `ready`, `degraded-but-usable`, or `needs-followup`.
 
-The report is consumed by the `checkResidueGate` gate in `scripts/validate-package.mjs` (coherence between degrading `routing.json` entries and the verdict/list).
+The report is consumed by the `checkResidueGate` gate in `scripts/validate-package.mjs` (coherence between degrading `routing.json` entries and the verdict/list) when the script is present in the install: a development checkout runs the gate; a zip-release install does not ship `scripts/`, so the skip is recorded with reason "script not shipped in this install" (no `node`: skip recorded as an observation) — never a failure, a guessed alternate path, or a validation that ran (shared gate rule in `prompts/validate.md`).
 
 ## Writes to the repository
 

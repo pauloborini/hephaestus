@@ -1,11 +1,11 @@
 // AC-6.2.1 (CN11/VC6): cunhagem determinística de `ISSUE-NNN` por `max+1`
-// sobre as TRÊS seções de `.app-work/issues/INDEX.md` (Abertos, Em
-// verificação, Fechados) + campo `Próximo ID livre`, com assinatura estável
+// sobre as TRÊS seções de `.app-work/issues/INDEX.md` (Open, In
+// verification, Closed) + campo `Next free ID`, com assinatura estável
 // do achado (`sha256` de tipo + path normalizado + enunciado normalizado) e
 // dedupe — o mesmo achado em duas rodadas produz uma linha só. Seam S6
 // (Staging -> disco), ancorada: o motor de referência (issue-engine.mjs)
 // materializa o contrato de `prompts/apply.md:Cunhagem de ISSUE-NNN`.
-// Falsificadores: varrer só a seção Abertos reusaria ID de issue encerrada;
+// Falsificadores: varrer só a seção Open reusaria ID de issue encerrada;
 // assinatura derivada do texto livre reabriria a issue a cada reformulação.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -28,23 +28,23 @@ const FINDING = {
 const indexWithClosed004 = () => [
   "# INDEX — Issues",
   "",
-  "Registro único de issues/defeitos. Protocolo: [`README.md`](README.md).",
+  "Single issues/defects record. Protocol: [`README.md`](README.md).",
   "",
-  "**Próximo ID livre: `ISSUE-005`**",
+  "**Next free ID: `ISSUE-005`**",
   "",
-  "## Abertos",
+  "## Open",
   "",
-  "| ID | Sev | Feature | Tela | Problema → Esperado | Origem | Estado |",
+  "| ID | Sev | Feature | Screen | Problem → Expected | Origin | State |",
   "|----|-----|---------|------|---------------------|--------|--------|",
   "",
-  "## Em verificação",
+  "## In verification",
   "",
-  "| ID | Sev | Feature | Correção | Teste de regressão | Estado |",
+  "| ID | Sev | Feature | Fix | Regression test | State |",
   "|----|-----|---------|----------|--------------------|--------|",
   "",
-  "## Fechados",
+  "## Closed",
   "",
-  "| ID | Sev | Feature | Síntese | Estado |",
+  "| ID | Sev | Feature | Summary | State |",
   "|----|-----|---------|---------|--------|",
   "| ISSUE-004 | S2 | governanca-kit | publicada em release 1.0 | CLOSED |",
   "",
@@ -63,11 +63,11 @@ test("AC-6.2.1: achado novo cunha ISSUE-005 (max das três seções) e o mesmo a
   assert.equal(first.minted[0].id, "ISSUE-005");
   assert.equal(first.skipped.length, 0);
   const firstParsed = parseIssueIndex(first.index);
-  const openRows = firstParsed.rows.filter((r) => r.section === "Abertos");
+  const openRows = firstParsed.rows.filter((r) => r.section === "Open");
   assert.deepEqual(
     openRows.map((r) => r.id),
     ["ISSUE-005"],
-    `linha nova deve estar em Abertos: ${JSON.stringify(openRows)}`,
+    `linha nova deve estar em Open: ${JSON.stringify(openRows)}`,
   );
   assert.equal(firstParsed.counter, "ISSUE-006");
   assert.equal(
@@ -150,7 +150,7 @@ test("AC-6.2.1: contador inconsistente não bloqueia — usa o max das três tab
   const result = mintIssues({ indexPath, findings: [FINDING] });
   assert.equal(result.minted[0].id, "ISSUE-005", "max das tabelas manda, não o contador");
   assert.ok(
-    result.pendencies.some((p) => p.includes("inconsistente")),
+    result.pendencies.some((p) => p.includes("inconsistent")),
     `pendência de contador ausente: ${JSON.stringify(result.pendencies)}`,
   );
 });
@@ -168,7 +168,7 @@ test("AC-6.2.1: apply.md contrata a cunhagem (max+1 sobre as três seções, ass
   const apply = fs.readFileSync(path.join(REPO_ROOT, "prompts", "apply.md"), "utf8");
   assert.match(apply, /## ISSUE-NNN minting/);
   assert.match(apply, /max\+1/);
-  assert.match(apply, /three sections|Open \(Abertos\)/);
+  assert.match(apply, /three sections|Open/);
   assert.match(apply, /findingSignature/);
   assert.match(apply, /sha256/);
   assert.match(apply, /never reused/);

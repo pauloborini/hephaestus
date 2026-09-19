@@ -14,7 +14,7 @@ Resolve the catalog in order: overlay from the state's `routing` block first, th
 - an entry with `confidence: baixa` **never decides** — enqueue a question;
 - an entry with `confidence: alta` and a concrete destination decides `decidedBy: catalog`;
 - destination `.app-work/archive/guides/` (catalog root) is **not** the final path: expand to
-  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (pack) or
+  `.app-work/archive/guides/<YYYY-MM>/semana-<N>/<NAME>_GUIDE/` (pack) or
   `.app-work/archive/guides/<YYYY-MM>/semana-<N>/` (loose file) — dated mirror (DEC-002).
   Date = Plan F `Status: CONCLUÍDO`, otherwise routing time. The emitted `destinationPath`
   is the expanded path (ends in `/`).
