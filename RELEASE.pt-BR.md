@@ -33,6 +33,17 @@ testes nem o publicador.
 - [ ] Versão em `kit-manifest.json` já é o `N` desta release (bump commitado).
 - [ ] `main` receberá o SHA final antes da tag (merge/PR).
 
+## Receber mudanças upstream aprovadas
+
+A ordem das mudanças do kit é Atlas → Shared → este repositório. Depois dos gates do Atlas e do passe de paridade no Shared, execute na raiz deste repositório:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+Revise o diff resultante e atualize a documentação pública em português quando a mudança em inglês afetar o par correspondente. Esse script de handoff altera somente a working tree. Ele não gera zip, não commita, não faz push e não publica. A release continua sendo uma operação separada, executada diretamente aqui.
+
 ## Gates (obrigatórios)
 
 Na raiz do repositório:

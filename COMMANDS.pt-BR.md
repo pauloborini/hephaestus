@@ -46,6 +46,17 @@ node scripts/validate-package.mjs /caminho/para/pacote-gerado
 
 Roda os gates de pacote contra um repositório produzido pelo Hephaestus — cabeçalho e âncora dupla do `AGENTS.md`, ponte `CLAUDE.md`, alvos dos índices, run state, identidade DEC, território×regime, cobertura, keep bytes, resíduo e conferência de hash aplicado. Manifest ausente em `.hephaestus/` é reportado como pulado, não como falha: o pacote é julgado pelo que declara. `--help` lista todos os gates.
 
+## Sincronizar a partir do Shared
+
+Execute na raiz do repositório Hephaestus, depois da validação no Atlas e da promoção para o Shared:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+O script atualiza os arquivos ingleses gerenciados do kit e preserva os arquivos públicos em português, a documentação de release, os scripts de desenvolvimento e os recursos. Ele nunca cria zip nem publica release. Use [RELEASE.pt-BR.md](RELEASE.pt-BR.md) para o procedimento de release depois de revisar o diff.
+
 ## Gerar o zip de release
 
 ```bash
