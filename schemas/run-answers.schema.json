@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Hephaestus Ephemeral Run Answers",
-  "description": "Respostas de escopo this-run. Persistem apenas durante o runId em .hephaestus/ e nunca habilitam o próximo run.",
+  "description": "this-run scope answers. They persist only during the runId in .hephaestus/ and never enable the next run.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "runId", "answers"],
