@@ -30,10 +30,10 @@ if (!Array.isArray(manifest.requiredFiles) || manifest.requiredFiles.length === 
   fail("kit-manifest.json must declare requiredFiles");
 }
 
-// Arquivos em `packExcludes` existem na árvore de desenvolvimento mas não
-// viajam no zip nem no repositório público (VC4) — a checagem de
-// `requiredFiles` vale para o kit distribuído, então entradas excluídas
-// deixam de ser obrigatórias aqui.
+// Files in `packExcludes` exist in the development tree but do not
+// travel in the zip nor in the public repository (VC4) — the
+// `requiredFiles` check applies to the distributed kit, so excluded entries
+// are not required here.
 const packExcludes = Array.isArray(manifest.packExcludes) ? manifest.packExcludes : [];
 const isPackExcluded = (relativePath) => {
   return packExcludes.some((entry) => {
@@ -70,9 +70,9 @@ const languageHeader = (contents) => {
 };
 
 for (const [english, portuguese] of publicDocumentationPairs) {
-  // Par inteiro em `packExcludes` não viaja no kit distribuído — mesma razão
-  // que já dispensa a entrada em `requiredFiles` acima. Par só parcialmente
-  // excluído continua checado: essa assimetria é erro de manifest.
+  // An entire pair in `packExcludes` does not travel in the distributed kit —
+  // same reason that already waives the entry in `requiredFiles` above.
+  // A only partially excluded pair remains checked: this asymmetry is a manifest error.
   if (isPackExcluded(english) && isPackExcluded(portuguese)) {
     continue;
   }
@@ -103,7 +103,7 @@ const legacyPatterns = ["project-context", "extended-memory"];
 const allowedExtensions = new Set([".md", ".template", ".json", ".mjs", ".png"]);
 const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
-// Arquivos do repo de desenvolvimento que não fazem parte do pacote distribuído.
+// Development repo files that are not part of the distributed package.
 const skippedRelativePaths = new Set([
   ".gitignore",
   path.join("scripts", "publish-hephaestus.sh"),
@@ -121,8 +121,8 @@ const walk = (dirPath) => {
 
     const absolutePath = path.join(dirPath, entry.name);
     const relativePath = path.relative(rootDir, absolutePath);
-    // Apenas o artefato de release na raiz é saída, não conteúdo. Qualquer
-    // outro .zip precisa reprovar como tipo não suportado.
+    // Only the release artifact itself at the root is output, not content. Any
+    // other .zip must fail as an unsupported type.
     const isOwnReleaseZip =
       path.dirname(relativePath) === "." && /^hephaestus-[^/]+\.zip$/.test(path.basename(relativePath));
     if (isOwnReleaseZip) {
@@ -185,7 +185,7 @@ for (const filePath of collectedFiles) {
     }
   }
 
-  // O próprio validador contém os padrões de busca; não pode se auto-violar.
+  // The validator itself contains search patterns; it must not fail itself.
   const isSelfCheck = relativePath === path.join("scripts", "validate-skill-kit.mjs");
   if (!isSelfCheck) {
     for (const legacy of legacyPatterns) {
@@ -240,8 +240,8 @@ if (missingTargets.length > 0) {
   fail(`templates reference missing rule/reference templates:\n${missingTargets.join("\n")}`);
 }
 
-// Catálogo base de roteamento: destino ilegal (fora dos quatro territórios)
-// reprova o kit — a cascata não pode gravar fora deles (AC-1.5.2).
+// Base routing catalog: illegal destination (outside the four territories)
+// rejects the kit — the cascade cannot write outside them (AC-1.5.2).
 const routingCatalogPath = path.join(rootDir, "catalog", "routing-defaults.json");
 let routingCatalog;
 try {
@@ -283,9 +283,9 @@ for (const [index, entry] of routingCatalog.entries.entries()) {
   }
 }
 
-// Catálogo de drift: lista de paths/globs vigiados em maintain, com a
-// ferramenta de origem e a data/ref de inclusão por entrada (D28). Cada
-// entrada é objeto {glob, tool, since} — glob de arquivo ou pasta vigiada.
+// Drift catalog: list of watched paths/globs in maintain, with the
+// origin tool and inclusion date/ref per entry (D28). Each
+// entry is an object {glob, tool, since} — glob of watched file or folder.
 const driftCatalogPath = path.join(rootDir, "catalog", "drift-catalog.json");
 let driftCatalog;
 try {

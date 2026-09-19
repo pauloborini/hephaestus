@@ -5,7 +5,7 @@
   Not per feature, screen, sprint, or date. Not one file per decision.
 
   File name: docs/decisions/<domain>.md, kebab-case.
-  E.g.: planos-e-cotas.md, autenticacao.md, pagamentos.md.
+  E.g.: plans-and-quotas.md, authentication.md, payments.md.
 
   Remove these comments when instantiating.
 -->
@@ -60,7 +60,7 @@ Annual plan includes 2 courtesy months.
 
   CROSS-DOMAIN
     Cite the sibling DEC inside the note of each touched file:
-      _Changed 2026-08-05 — was: R$ 99/yr. Reason: price adjustment; see DEC-024 in pagamentos.md._
+      _Changed 2026-08-05 — was: R$ 99/yr. Reason: price adjustment; see DEC-024 in payments.md._
 
   REMOVAL (rare)
     Search for pending citations of the ID first (including in .app-work/, which requires --hidden).
