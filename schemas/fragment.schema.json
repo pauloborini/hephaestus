@@ -38,7 +38,7 @@
     },
     "structuralType": {
       "type": "string",
-      "enum": ["seção", "regra", "checklist", "exemplo", "tabela", "preferência", "metadado", "desconhecido"]
+      "enum": ["section", "rule", "checklist", "example", "table", "preference", "metadata", "unknown"]
     },
     "provenance": {
       "type": "array",

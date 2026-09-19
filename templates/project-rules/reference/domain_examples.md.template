@@ -1,10 +1,10 @@
 # REFERENCE: DOMAIN EXAMPLES
 
-Exemplos de contrato de domínio para consulta sob gatilho.
+Domain-contract examples for on-trigger consultation.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- exemplos reais de DTO ↔ Entity e mapeamento não trivial;
-- padrões de VO/enum válidos no projeto;
-- snippets de copyWith/factory/construção aceitos;
-- contra-exemplos do que não deve ser feito, quando existirem.
+- real DTO ↔ Entity examples and non-trivial mapping;
+- valid VO/enum patterns in the project;
+- accepted copyWith/factory/construction snippets;
+- counter-examples of what not to do, when present.

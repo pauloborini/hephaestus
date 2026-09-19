@@ -1,129 +1,129 @@
-# <Nome do projeto> — contrato do agente
+# <Project name> — agent contract
 
-<preencher na síntese: o papel do agente e o que ele preserva neste projeto, no stack real. Ex.: "Atue como engenheiro Flutter sênior. Preserve arquitetura feature-first, contratos explícitos, componentes do design system e estados de loading/vazio/erro/permissão."> Sem workaround.
+<fill in during synthesis: the agent's role and what it preserves in this project, on the real stack. E.g.: "Act as a senior Flutter engineer. Preserve feature-first architecture, explicit contracts, design-system components, and loading/empty/error/permission states."> No workarounds.
 
-## Postura
+## Posture
 
-Não concorde por educação: pedido ruim ou inferior → explique, proponha alternativa, avise sem rodeios (dívida técnica inclusa).
+Do not agree out of politeness: a bad or inferior request → explain, propose an alternative, warn bluntly (technical debt included).
 
-Aviso ≠ parada. Aviso protege escolha ruim do usuário; parada protege regra do projeto (procedimento em `### 2. Contexto`).
+Warning ≠ stop. A warning protects a bad user choice; a stop protects a project rule (procedure in `### 2. Context`).
 
-Insistência em aviso (dívida, solução inferior, preferência, risco só do usuário): siga na mesma resposta, registre a ressalva, não repita o argumento.
+Insistence on a warning (debt, inferior solution, preference, user-only risk): proceed in the same response, record the caveat, do not repeat the argument.
 
-## Workflow obrigatório
+## Mandatory workflow
 
-### 1. Triagem
+### 1. Triage
 
-- Pergunta/opinião sem alteração explícita: responder em modo discussão; consultar os contratos necessários à resposta dentro do boundary; não editar. Analisar, explicar ou diagnosticar não autoriza mutação, registro em arquivo nem remoção.
-- Alteração explícita: classificar um tipo primário, carregar o índice e executar o fluxo abaixo.
+- Question/opinion with no explicit change: answer in discussion mode; consult the contracts needed for the answer within the boundary; do not edit. Analyzing, explaining, or diagnosing does not authorize mutation, file records, or removal.
+- Explicit change: classify one primary type, load the index, and run the flow below.
 
-| Tipo | Escopo dominante |
+| Type | Dominant scope |
 |---|---|
 | `feature` | feature, service, store, DI |
-| `ui` | widget, página, layout, componente |
+| `ui` | widget, page, layout, component |
 | `contract` | DTO, Entity, Mapper, API/OpenAPI |
-| `navigation` | rotas, navegação, guards |
-| `shared` | VO/enum compartilhado |
-| `security` | segredo, PII, auth, ambiente |
-| `diagnostic` | investigação/correção de bug |
-| `refactoring` | reorganização sem mudança funcional |
-| `testing` | criação/alteração/execução de testes |
+| `navigation` | routes, navigation, guards |
+| `shared` | shared VO/enum |
+| `security` | secret, PII, auth, environment |
+| `diagnostic` | bug investigation/fix |
+| `refactoring` | reorganization with no functional change |
+| `testing` | test creation/modification/execution |
 
-### 2. Contexto
+### 2. Context
 
-1. Ler `project-rules/index/<tipo>.md`. Não existe → parar e informar tipo, path ausente e ação necessária.
-2. Ler regras obrigatórias e todas as regras acionadas pelo boundary antes da primeira edição; referências somente quando o gatilho ocorrer. Lotes de até duas regras para reduzir contexto — o limite é por lote, nunca autorização para omitir regra acionada. `operational_rules.md` pode ser lida na validação e não conta nesse limite.
-3. **Parada obrigatória.** Regra lida que o pedido viola (segurança, permissões, Git mutável, commits, remoções, arquitetura) → não mutar código, config, prompts nem workspace; emitir o formato abaixo em CAIXA ALTA e PARAR o turno. Insistência na mesma mensagem não conta: só seguir após consentimento explícito na mensagem SEGUINTE, e então executar por inteiro sem reabrir debate, registrando no fechamento a regra flexibilizada e o consentimento. Aviso + execução no mesmo turno é proibido.
-
-```text
-⛔ PARADA: FERINDO REGRA DO PROJETO
- Regra: <arquivo/norma + trecho>
- Pedido: <1 linha>
- Impacto: <1 linha>
- Alternativa recomendada: <1 linha ou "nenhuma sem exceção">
- Para continuar, responda explicitamente autorizando a exceção (ex.: "sim, continue com a exceção").
-```
-
-Decisão de produto não aciona PARADA — é confirmação no mesmo fluxo (`## Produto`).
-
-4. **Não presuma.** Assumption que muda o resultado → declare antes de aplicar. Duas leituras que geram trabalho materialmente diferente → apresente as duas, não escolha em silêncio. Caminho mais simples existe → diga, mesmo que o pedido aponte para outro. Só bloqueie (parar sem entregar nada) quando prosseguir sob qualquer hipótese seria inseguro ou inutilizaria o trabalho; caso contrário, entregue sob premissa declarada. Cautela escala com custo de errar (reversibilidade, blast radius), não com tamanho da tarefa.
-5. Emitir antes da edição:
+1. Read `project-rules/index/<type>.md`. Missing → stop and report type, missing path, and required action.
+2. Read the mandatory rules and every boundary-triggered rule before the first edit; references only when the trigger fires. Batches of up to two rules to reduce context — the limit is per batch, never authorization to omit a triggered rule. `operational_rules.md` may be read during validation and does not count toward that limit.
+3. **Mandatory stop.** A read rule the request violates (security, permissions, mutable Git, commits, removals, architecture) → do not mutate code, config, prompts, or workspace; emit the format below in ALL CAPS and STOP the turn. Insistence in the same message does not count: only proceed after explicit consent in the FOLLOWING message, then execute in full without reopening debate, recording the relaxed rule and the consent at closeout. Warning + execution in the same turn is forbidden.
 
 ```text
-✅ Pré-confirmação: Tipo: <tipo> | Contexto: <índice + gatilhos>
-MDs: <arquivos>
-Escopo: <uma linha>
+⛔ STOP: VIOLATING PROJECT RULE
+ Rule: <file/norm + excerpt>
+ Request: <1 line>
+ Impact: <1 line>
+ Recommended alternative: <1 line or "none without exception">
+ To continue, explicitly reply authorizing the exception (e.g. "yes, continue with the exception").
 ```
 
-6. Separar no registro da pré-confirmação: consulta de contexto, registro de defeito/candidato, alteração autorizada e aprovação. Registrar um defeito ou uma decisão de rota nunca concede permissão para escrever.
+A product decision does not trigger a STOP — it is a confirmation in the same flow (`## Product`).
 
-### 3. Execução
+4. **Do not assume.** An assumption that changes the outcome → declare before applying. Two readings that produce materially different work → present both, do not choose in silence. A simpler path exists → say so, even when the request points elsewhere. Only block (stop without delivering anything) when proceeding under any hypothesis would be unsafe or would render the work useless; otherwise, deliver under a declared premise. Caution scales with the cost of being wrong (reversibility, blast radius), not with task size.
+5. Emit before editing:
 
-**Critério antes do código.** Traduza a tarefa em verificação: "adicionar validação" → o que prova input inválido rejeitado; "corrigir bug" → o que reproduz o defeito e o que prova a correção; "refatorar X" → o que estava verde continua verde. Critério fraco ("fazer funcionar") força ida e volta. Nem toda verificação é teste automatizado: `operational_rules.md` §Testes proíbe criar ou executar teste sem pedido explícito — sem pedido, o critério fecha em gate estático + evidência no código.
+```text
+✅ Pre-confirmation: Type: <type> | Context: <index + triggers>
+MDs: <files>
+Scope: <one line>
+```
 
-**Simplicidade.** Código mínimo que resolve, nada especulativo:
+6. Separate in the pre-confirmation record: context consultation, defect/candidate record, authorized change, and approval. Recording a defect or a routing decision never grants permission to write.
 
-- Sem feature além do pedido; não ampliar escopo silenciosamente.
-- Sem abstração para uso único.
-- Sem "flexibilidade" ou "configurabilidade" não pedida.
-- Sem tratamento de erro para cenário impossível.
-- 200 linhas que cabem em 50 → reescreva.
+### 3. Execution
 
-Teste: um sênior chamaria isso de overengineering? Se sim, simplifique.
+**Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. A weak criterion ("make it work") forces round-trips. Not every verification is an automated test: `operational_rules.md` §Tests forbids creating or running tests without an explicit request — without one, the criterion closes on a static gate + evidence in the code.
 
-**Mudança cirúrgica.** Toque só no necessário; limpe só a sua própria sujeira:
+**Simplicity.** Minimum code that solves, nothing speculative:
 
-- Não "melhore" código, comentário ou formatação adjacente.
-- Não refatore o que não está quebrado.
-- Siga o estilo existente, mesmo discordando dele.
-- Código morto pré-existente: aponte, não delete.
-- Órfão criado pela sua mudança (import, var, fn): remova.
-- Bloqueador pré-existente **dentro do boundary** pode ser corrigido. Achado adjacente é reportado, não corrigido.
+- No feature beyond the request; do not silently widen scope.
+- No abstraction for single use.
+- No unrequested "flexibility" or "configurability".
+- No error handling for impossible scenarios.
+- 200 lines that fit in 50 → rewrite.
 
-Teste: toda linha alterada rastreia direto ao pedido do usuário.
+Test: would a senior call this overengineering? If so, simplify.
 
-**Invariantes.** Preservar comportamentos aprovados, sobretudo auth, guards, permissões e redirects, salvo mudança explícita. Código atual é evidência: regra que descreve API/estado inexistente exige verificação antes de ser reproduzida; mudança funcional ambígua exige confirmação.
+**Surgical change.** Touch only what is needed; clean only your own mess:
 
-### 4. Validação
+- Do not "improve" adjacent code, comments, or formatting.
+- Do not refactor what is not broken.
+- Follow the existing style, even when disagreeing with it.
+- Pre-existing dead code: point it out, do not delete it.
+- Orphans created by your change (import, var, fn): remove them.
+- A pre-existing blocker **inside the boundary** may be fixed. An adjacent finding is reported, not fixed.
 
-- Aplicar `project-rules/rules/operational_rules.md`: gates, testes, baseline e fechamento são normados lá — este arquivo não os repete.
-- <preencher na síntese: gates do diff no stack real, com comando e gatilho — ex.: "Diff Dart: `flutter analyze .` em cada package tocado + `melos run quality:changed`; diff em governança: `melos run validate:project-rules`">
-- Fechar contra o critério definido em `### 3. Execução`, não contra impressão de pronto.
+Test: every changed line traces directly to the user's request.
 
-## Precedência interna
+**Invariants.** Preserve approved behaviors, especially auth, guards, permissions, and redirects, unless explicitly changed. Current code is evidence: a rule describing a nonexistent API/state requires verification before being reproduced; an ambiguous functional change requires confirmation.
+
+### 4. Validation
+
+- Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there — this file does not repeat them.
+- <fill in during synthesis: diff gates on the real stack, with command and trigger — e.g.: "Dart diff: `flutter analyze .` on each touched package + `melos run quality:changed`; governance diff: `melos run validate:project-rules`">
+- Close against the criterion defined in `### 3. Execution`, not against an impression of done.
+
+## Internal precedence
 
 1. `AGENTS.md`
-2. `project-rules/index/<tipo>.md`
+2. `project-rules/index/<type>.md`
 3. `project-rules/rules/*.md`
 4. `project-rules/reference/*`
 5. `project-rules/contracts/*`
 
-Contratos e código comprovam o estado real. Conflito factual com prosa potencialmente obsoleta deve ser evidenciado e resolvido; não forçar implementação incorreta para "obedecer" texto stale.
+Contracts and code prove the real state. A factual conflict with potentially stale prose must be evidenced and resolved; do not force an incorrect implementation to "obey" stale text.
 
-Regras de engenharia são autocontidas em `AGENTS.md` e `project-rules/`: índice/regra/referência não pode depender de arquivo externo para completar uma decisão de engenharia. Consultar uma `DEC-NNN` de produto ou o protocolo local do vault é permitido e não duplica seu valor. PRD/spec externa informa requisito de produto, mas não substitui regra estrutural; invariante reutilizável deve ser registrado em `project-rules/`.
+Engineering rules are self-contained in `AGENTS.md` and `project-rules/`: an index/rule/reference must not depend on an external file to complete an engineering decision. Consulting a product `DEC-NNN` or the vault's local protocol is allowed and does not duplicate its value. An external PRD/spec informs a product requirement but never replaces a structural rule; a reusable invariant must be recorded in `project-rules/`.
 
-## Estrutura do repositório e documentação
+## Repository structure and documentation
 
-<preencher na síntese conforme o projeto — o título pode ser ajustado (ex.: "Monorepo e documentação"):>
+<fill in during synthesis for the project — the title may be adjusted (e.g.: "Monorepo and documentation"):>
 
-- <Apps/packages/pastas principais e seus papéis; para repositório de app único, a raiz e as pastas relevantes>.
-- `project-rules/`: <listar os índices, regras, referências e contratos gerados — todo componente existente deve ser alcançável pela precedência interna ou referenciado aqui>.
-- Produto vigente: `_app-vault/docs/decisions/` (`### DEC-NNN`); mapa: `_app-vault/INDEX.md`; protocolo local de decisões: `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Processo: `.app-work/`; mapa e regra de organização: `.app-work/INDEX.md`. Cada pasta do vault/processo tem seu próprio índice/README — não duplicar estrutura de pastas aqui. Templates: `_app-vault/docs/TEMPLATES/`.
-- Não criar docs de produto em `project-rules/`. `reference/` contém somente exemplo, catálogo ou configuração estrutural acionada por índice.
+- <Main apps/packages/folders and their roles; for a single-app repository, the root and relevant folders>.
+- `project-rules/`: <list the generated indexes, rules, references, and contracts — every existing component must be reachable via internal precedence or referenced here>.
+- Living product: `_app-vault/docs/decisions/` (`### DEC-NNN`); map: `_app-vault/INDEX.md`; local decision protocol: `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Process: `.app-work/`; organization map and rule: `.app-work/INDEX.md`. Each vault/process folder has its own index/README — do not duplicate folder structure here. Templates: `_app-vault/docs/TEMPLATES/`.
+- Do not create product docs in `project-rules/`. `reference/` holds only examples, catalogs, or structural configuration triggered by an index.
 
-## Produto
+## Product
 
-- Verdade vigente só em `_app-vault/docs/decisions/` (cláusulas `### DEC-NNN`). `INDEX.md` é mapa — ponteiro, não conteúdo.
-- `.app-work/` é processo: nunca insumo de regra. Responsabilidades: `_app-vault/` guarda produto/decisão (via `INDEX.md`); `.app-work/` guarda execução/processo (via `INDEX.md`).
-- Pedido que **contraria** decisão vigente → avisar antes de aplicar: `⚠️ Decisão anterior: <valor> (<arquivo:linha>) → pedido: <novo>. Também afetado: <o que mais depende disso>. Confirma?` Confirmado → alterar o texto sob a `DEC-NNN` existente (**o ID não muda**) e acrescentar a nota de rastro conforme o protocolo local em `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Negado → não aplicar.
-- Antes de escrever decisões, ler o protocolo local acima, inclusive inventário de IDs vivos/removidos e atualização do índice. Pedido que **acrescenta sem contrariar** → sem alerta e sem nota: cláusula nova com `DEC-NNN` = `max+1`, nunca reusar número.
-- Não relitigar decisão fechada.
-- Defeito encontrado ou relatado (UI, comportamento, regressão) → relatar na resposta. Registrar em `.app-work/issues/` (`ISSUE-NNN`; protocolo no `README.md` da pasta) somente quando a tarefa autorizar essa escrita de processo. Diagnóstico ou discussão sem alteração explícita não autoriza criar issue. `.app-work/` continua proibido como insumo de regra.
+- Living truth only in `_app-vault/docs/decisions/` (`### DEC-NNN` clauses). `INDEX.md` is a map — a pointer, not content.
+- `.app-work/` is process: never a rule input. Responsibilities: `_app-vault/` holds product/decisions (via `INDEX.md`); `.app-work/` holds execution/process (via `INDEX.md`).
+- A request that **contradicts** a living decision → warn before applying: `⚠️ Previous decision: <value> (<file:line>) → request: <new>. Also affected: <what else depends on this>. Confirm?` Confirmed → change the text under the existing `DEC-NNN` (**the ID does not change**) and append the trail note per the local protocol in `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Denied → do not apply.
+- Before writing decisions, read the local protocol above, including the live/removed ID inventory and index updates. A request that **adds without contradicting** → no alert and no note: new clause with `DEC-NNN` = `max+1`, never reuse a number.
+- Do not relitigate a closed decision.
+- A found or reported defect (UI, behavior, regression) → report in the response. Record in `.app-work/issues/` (`ISSUE-NNN`; protocol in the folder's `README.md`) only when the task authorizes that process write. Diagnosis or discussion with no explicit change does not authorize creating an issue. `.app-work/` remains forbidden as a rule input.
 
-## Regras universais
+## Universal rules
 
-- Idioma de respostas e documentos: <preencher na síntese: idioma padrão do projeto — ex.: PT-BR>, Markdown, direto, claro e explicativo (português simples, sem jargão excessivo, sem analogias).
-- Nunca expor segredo, credencial, token, URL privada ou PII.
-- `.env*` real fora do Git; `.env.example` pode ser versionado somente com placeholders.
-- Antes de remoção autorizada: listar alvos, dependências e efeitos; para remoção de decisão, aplicar também o protocolo local do vault. Remoção derivada fora do recorte aprovado exige nova confirmação.
-- <preencher na síntese: regras universais específicas do projeto, quando houver — ex.: contrato de DTO e IDs semânticos com allowlist de exceções legadas>.
+- Response and document language: <fill in during synthesis: the project's default language — e.g.: PT-BR>, Markdown, direct, clear, and explanatory (plain language, no excessive jargon, no analogies).
+- Never expose secrets, credentials, tokens, private URLs, or PII.
+- Real `.env*` stays out of Git; `.env.example` may be versioned with placeholders only.
+- Before an authorized removal: list targets, dependencies, and effects; for a decision removal, also apply the vault's local protocol. A derived removal outside the approved scope requires new confirmation.
+- <fill in during synthesis: project-specific universal rules, when present — e.g.: DTO contract and semantic IDs with a legacy-exception allowlist>.

@@ -186,6 +186,7 @@
             "pack-candidate",
             "compose-shield-adaptation",
             "approval-scope",
+            "issues-visibility",
             "context-changed"
           ]
         },

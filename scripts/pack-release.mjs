@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Empacotador do release (D13, D14, VC4, S8).
+// Release packager (D13, D14, VC4, S8).
 //
-// Lê `manifests/kit-manifest.json`, confere que todo `requiredFiles` existe na
-// árvore de desenvolvimento, coleta a árvore aplicando `packExcludes` por
-// prefixo de path, prefixa cada entrada com `hephaestus/` (raiz fixa, sem
-// versão no nome da pasta) e escreve `hephaestus-<version>.zip` na raiz.
+// Reads `manifests/kit-manifest.json`, verifies that all `requiredFiles` exist in the
+// development tree, collects the tree applying `packExcludes` by path prefix,
+// prefixes each entry with `hephaestus/` (fixed root, no version in folder name)
+// and writes `hephaestus-<version>.zip` at the root.
 //
-// `--dry-run` imprime a lista de entradas (uma por linha) e não escreve nada.
+// `--dry-run` prints the list of entries (one per line) and writes nothing.
 //
-// Sem dependências externas: o container ZIP é montado com `node:zlib`
-// (deflate) e CRC32 próprio, para rodar em Node >= 18.
+// Zero external dependencies: ZIP container assembled with `node:zlib`
+// (deflate) and built-in CRC32, running on Node >= 18.
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -42,16 +42,16 @@ if (missingFiles.length > 0) {
   fail(`missing required files:\n${missingFiles.join("\n")}`);
 }
 
-// Exclusão por prefixo de path: `entry` casa o próprio arquivo/pasta e tudo
-// que vive sob ela. `packExcludes` é a lista final (VC4) — nenhuma exclusão
-// de conteúdo vive hard-coded aqui.
+// Exclusion by path prefix: `entry` matches the file/folder itself and everything
+// living under it. `packExcludes` is the final list (VC4) — no content exclusions
+// are hard-coded here.
 const isExcluded = (relativePath) => {
   return packExcludes.some((entry) => {
     return relativePath === entry || relativePath.startsWith(`${entry}/`);
   });
 };
 
-// Apenas o próprio artefato de release na raiz é saída, não conteúdo.
+// Only the release artifact itself at the root is output, not content.
 const isOwnZip = (relativePath) =>
   path.dirname(relativePath) === "." && /^hephaestus-[^/]+\.zip$/.test(path.basename(relativePath));
 
@@ -81,8 +81,8 @@ if (unexpectedZips.length > 0) {
   fail(`unexpected zip artifacts:\n${unexpectedZips.join("\n")}`);
 }
 
-// Entrada de diretório raiz primeiro: descompactar sempre cria/sobrescreve
-// `hephaestus/`, nunca uma segunda pasta com versão no nome.
+// Root directory entry first: unzipping always creates/overwrites
+// `hephaestus/`, never a second folder with version in the name.
 const entries = ["hephaestus/", ...files.map((relativePath) => `hephaestus/${relativePath}`)];
 
 if (dryRun) {

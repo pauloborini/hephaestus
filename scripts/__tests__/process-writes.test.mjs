@@ -70,7 +70,8 @@ test("AC-6.2.2: overwrite sobre .app-work/issues/INDEX.md reprova (registro de i
 
 test("AC-6.2.2: amend sobre .app-work/issues/INDEX.md passa (linha nova/atualização de estado é aditiva)", () => {
   const pkg = packageWithPlan([
-    planEntry({ artifactPath: ".app-work/issues/INDEX.md", operation: "amend" }),
+    // regime generate: par canônico da operação de issue (Fase 1/DATA-01)
+    planEntry({ artifactPath: ".app-work/issues/INDEX.md", regime: "generate", operation: "amend" }),
   ]);
   const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);
@@ -78,7 +79,7 @@ test("AC-6.2.2: amend sobre .app-work/issues/INDEX.md passa (linha nova/atualiza
 
 test("AC-6.2.2: create em .app-work/issues/INDEX.md passa (cunhagem é create aditivo)", () => {
   const pkg = packageWithPlan([
-    planEntry({ artifactPath: ".app-work/issues/INDEX.md", operation: "create" }),
+    planEntry({ artifactPath: ".app-work/issues/INDEX.md", regime: "generate", operation: "create" }),
   ]);
   const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);
@@ -86,7 +87,7 @@ test("AC-6.2.2: create em .app-work/issues/INDEX.md passa (cunhagem é create ad
 
 test("AC-6.2.2: operação fora de .app-work/ não é avaliada pelo gate", () => {
   const pkg = packageWithPlan([
-    planEntry({ artifactPath: "project-rules/rules/domain_rules.md", operation: "create" }),
+    planEntry({ artifactPath: "project-rules/rules/domain_rules.md", regime: "generate", operation: "create" }),
   ]);
   const result = runValidator(pkg);
   assert.equal(result.status, 0, result.stderr);

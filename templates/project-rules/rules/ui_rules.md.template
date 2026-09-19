@@ -1,18 +1,18 @@
 # RULES: UI
 
-## Papel
+## Role
 
-Definir normas de interface, componentes e interação.
+Define interface, component, and interaction norms.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- componentes padrão do design system do projeto;
-- tipografia, espaçamento e cores (proibições de valores crus, quando houver);
-- textos visíveis (i18n/hardcoded);
-- diálogos/overlays padrão;
-- estados de loading/vazio/erro/permissão;
-- acessibilidade e comportamento de entrada.
+- the project's design-system standard components;
+- typography, spacing, and colors (raw-value prohibitions, when present);
+- visible strings (i18n/hardcoded);
+- standard dialogs/overlays;
+- loading/empty/error/permission states;
+- accessibility and input behavior.
 
-## Gatilhos típicos
+## Typical triggers
 
-- qualquer alteração em tela, componente, layout ou interação.
+- any change to a screen, component, layout, or interaction.

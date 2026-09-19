@@ -1,20 +1,20 @@
 # INDEX: CONTRACT
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/domain_rules.md`
 2. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `architecture_rules.md`: a mudança de contrato altera camadas ou dependências.
-- `error_handling_rules.md`: novos códigos de erro ou fluxo de falha no contrato.
-- `security_rules.md`: payload com dado sensível ou PII.
+- `architecture_rules.md`: the contract change alters layers or dependencies.
+- `error_handling_rules.md`: new error codes or failure flow in the contract.
+- `security_rules.md`: payload with sensitive data or PII.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `api_contract_reference.md`: formato, exemplo ou contrato longo.
-- `project-rules/contracts/*.openapi.json`: contrato REST — somente consulta; não mutar.
-- Omitir esta seção quando não houver referência acionável.
+- `api_contract_reference.md`: format, example, or long contract.
+- `project-rules/contracts/*.openapi.json`: REST contract — consult-only; do not mutate.
+- Omit this section when there is no actionable reference.

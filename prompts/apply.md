@@ -24,25 +24,27 @@ Yes — the only phase that writes to the repository. Declared INV1 exception: `
 ## Transactional write order
 
 1. `relocate` — move artifacts that change territory or folder (destinations in `.app-work/` and `_app-vault/` outside `issues/` are always `relocate`);
-2. `condense` — merge the unique excerpt into the canonical + one trail-note line `_Absorvido <data> — de: <path>.` + remove the origin;
+2. `condense` — merge the unique excerpt into the canonical + one trail-note line `_Absorbed <date> — from: <path>._` + remove the origin;
 3. `delete` — unlink paths from `.hephaestus/staging-deletions.json` (already copied in the backup);
 4. `reconcile` — amend existing decisions in place (`DEC-NNN` identity preserved);
 5. `generate` — create new files, including the target `.gitignore` scaffold (`generate` regime): the `.hephaestus/` line is created when absent;
 6. `keep` — byte-for-byte copy when computed destination == current origin (non-touch rule).
 
+Steps execute by `regime`; each artifact materializes the `operation` planned for it under the normative `Operation × regime` table in `prompts/plan.md` — this phase defines no vocabulary of its own.
+
 ## Final list
 
-Written artifacts are **exactly** those in `staging-manifest.json` — the entire list, never a subset — **plus** deletions applied from `.hephaestus/staging-deletions.json`. Each written artifact, each backup, and each deleted path is recorded in `artifactsWritten` on the run-state (`outputPath`, `phase: apply`, `validationStatus: valid`; `delete` operation on removed paths). Before the first package change, `apply` merges into `meta`: `adoptionStatus: applied`, `adoptionRunId`, and `adoptionUpdatedAt`; that means a started, not yet validated transaction, including in maintain. Preserve other fields and blocks; compare and update `stateWrite` on each merge. A partial failure never keeps a `validated` marker from the previous package. State is not in the staging-manifest.
+Written artifacts are **exactly** those in `staging-manifest.json` — the entire list, never a subset — **plus** deletions applied from `.hephaestus/staging-deletions.json`. The `.app-work/issues/INDEX.md` upsert is one of these artifacts: minted in staging by `compose` and listed in the manifest — `apply` performs **no** repository write outside this list, including no ad-hoc issue minting. Each written artifact, each backup, and each deleted path is recorded in `artifactsWritten` on the run-state (`outputPath`, `phase: apply`, `validationStatus: valid`; `delete` operation on removed paths). Before the first package change, `apply` merges into `meta`: `adoptionStatus: applied`, `adoptionRunId`, and `adoptionUpdatedAt`; that means a started, not yet validated transaction, including in maintain. Preserve other fields and blocks; compare and update `stateWrite` on each merge. A partial failure never keeps a `validated` marker from the previous package. State is not in the staging-manifest.
 
 ## ISSUE-NNN minting
 
-A defect detected in prior phases arrives here **queued** with `findingSignature`; minting happens in `apply` because it is a write (INV1). Semantics are a **line upsert** in `.app-work/issues/INDEX.md` — create a new line (`create`) or update an existing line's state (`amend`), preserving every other line and section; never `overwrite` the file and never remove (protocol in `.app-work/issues/README.md`: a line is never deleted).
+A defect detected in prior phases arrives here **queued** with `findingSignature` — findings are produced by `discover` (maintain inventory items that detect integrity drift or defects) and by `validate` (failing gates on staging/applied) in `.hephaestus/manifests/findings.json`, and consumed by `plan` as the issue operation (see `prompts/plan.md`). Minting happens in `apply` because it is a repository write (INV1) — **inside the transaction, through the normal staging-manifest path**: `compose` materializes `.app-work/issues/INDEX.md` in staging (scaffold + line upsert), the write runs in `generate` order, and the transaction-baseline and backup rules cover the path like any other artifact (backup copy when the file exists in the repository).
 
-- inventory the largest `ISSUE-NNN` by walking the **three** sections of `.app-work/issues/INDEX.md` — Open (Abertos), In verification (Em verificação), and Closed (Fechados) — and the `Próximo ID livre` field; mint `max+1`; **an ID is never reused** — scanning only Open would reuse a closed issue's ID (the ID is immortal by protocol);
 - `findingSignature = sha256(finding type + normalized path + normalized statement)` — stable signature: rewording the finding prose does not change the signature, and the next round does not reopen the same issue;
-- before minting, look up the signature among already recorded issues (`<!-- findingSignature: <hex> -->` marker on the line) — present ⇒ **does not mint** and does not alter the existing line (dedupe);
-- a new line enters the Open section with the protocol fields (`.app-work/issues/README.md:14-24`: ID, Sev, Feature, Screen, Problem → Expected, Origin, State) + the signature marker; the `Próximo ID livre` counter is incremented;
-- missing `INDEX.md` or inconsistent counter: use `max` of the three tables and report the inconsistency as pending, without blocking.
+- before writing, validate that the staged index is the correct upsert over the repository's current state: **line upsert** semantics — create a new line (`create`) or update an existing line's state (`amend`), preserving every other line and section; never `overwrite` the file and never remove a line (protocol in `.app-work/issues/README.md`: a line is never deleted). Dedupe: look up the signature among already recorded issues (`<!-- findingSignature: <hex> -->` marker on the line) — present ⇒ **does not mint** and does not alter the existing line. Inventory: the largest `ISSUE-NNN` by walking the **three** sections — Open (Open), In verification (In verification), and Closed (Closed) — plus the `Next free ID` field; mint `max+1`; **an ID is never reused** — scanning only Open would reuse a closed issue's ID (the ID is immortal by protocol). Divergence between staging and the expected upsert blocks the write and returns to `compose` (stale staging); there is no ad-hoc repair here;
+- a new line enters the Open section with the protocol fields (`.app-work/issues/README.md:14-24`: ID, Sev, Feature, Screen, Problem → Expected, Origin, State) + the signature marker; the `Next free ID` counter is incremented;
+- missing `INDEX.md` in the repository means the scaffold decided in `compose` (from `templates/appwork/ISSUES_INDEX_TEMPLATE.md` and `templates/appwork/ISSUES_README_TEMPLATE.md`); an inconsistent counter: use `max` of the three tables and report the inconsistency as pending, without blocking;
+- a run with no recorded finding writes nothing in `issues/`.
 
 ## Blocks if
 

@@ -1,46 +1,46 @@
-# Protocolo local de decisões
+# Local decision protocol
 
-Este arquivo é o contrato operacional entregue com o pacote. Ele é suficiente para manter as decisões sem consultar o kit de origem.
+This file is the operational contract delivered with the package. It is sufficient to maintain decisions without consulting the source kit.
 
-## Fonte de verdade
+## Source of truth
 
-- A verdade vigente fica somente em `_app-vault/docs/decisions/`.
-- Há um arquivo por domínio de produto, em `kebab-case`.
-- `_app-vault/INDEX.md` é mapa: aponta para arquivos e deriva `## Por feature` de `Afeta:`; não copia valores.
-- `_app-vault/specs/` é contexto técnico, não fonte de regra.
-- `.app-work/` é processo e nunca é insumo de decisão.
+- Living truth lives only in `_app-vault/docs/decisions/`.
+- One file per product domain, in `kebab-case`.
+- `_app-vault/INDEX.md` is a map: it points to files and derives `## By feature` from `Affects:`; it never copies values.
+- `_app-vault/specs/` is technical context, not a rule source.
+- `.app-work/` is process and is never a decision input.
 
-## Forma canônica
+## Canonical form
 
-Cada regra tem um heading próprio:
+Each rule has its own heading:
 
 ```markdown
-### DEC-001 — Nome da regra
+### DEC-001 — Rule name
 
-Enunciado vigente da regra.
+Living statement of the rule.
 ```
 
-`Afeta: [feature-a, feature-b]` fica logo após o título do domínio. Features usam slugs `kebab-case` do vocabulário do `INDEX.md`.
+`Affects: [feature-a, feature-b]` goes right after the domain title. Features use `kebab-case` slugs from the `INDEX.md` vocabulary.
 
-## Identidade e numeração
+## Identity and numbering
 
-- `DEC-NNN` é a identidade estável da regra, não do texto ou do valor atual.
-- Antes de criar, inventarie todos os arquivos de `docs/decisions/`, contando headings vivos e IDs em `## Histórico`; o máximo é por projeto, não por domínio. Inventário vazio começa em `DEC-001`.
-- Use `max + 1`; nunca reutilize ID removido nem renumere uma decisão existente.
-- Para casar uma fonte sem ID, compare domínio, sujeito/objeto, condição/escopo e tipo de regra com os valores variáveis removidos. Se houver duas candidatas igualmente plausíveis, pare e peça confirmação.
+- `DEC-NNN` is the rule's stable identity, not of the current text or value.
+- Before creating, inventory every file in `docs/decisions/`, counting live headings and IDs in `## History`; the maximum is per project, not per domain. An empty inventory starts at `DEC-001`.
+- Use `max + 1`; never reuse a removed ID and never renumber an existing decision.
+- To match a source without an ID, compare domain, subject/object, condition/scope, and rule type with variable values removed. If two candidates are equally plausible, stop and ask for confirmation.
 
-## Alteração, adição e remoção
+## Change, addition, and removal
 
-- Antes de contrariar regra vigente, apresentar valor anterior, fonte, novo valor e demais dependências afetadas; obter confirmação humana aplicável. Só então, se o valor mudar, altere o enunciado sob o mesmo `DEC-NNN` e acrescente logo abaixo uma nota: `_Alterado AAAA-MM-DD — era: <valor antigo>. Motivo: <motivo>._`
-- Notas novas ficam acima das antigas; mantenha no máximo aproximadamente três.
-- Adição sem contradição cria um novo `DEC-NNN`, sem nota de alteração. Novo domínio ou feature exige atualizar `## Domínios`, o vocabulário de features e `## Por feature` no `INDEX.md`; derivar o índice dos campos `Afeta:` na mesma escrita.
-- Remoção é rara: antes, procure citações pendentes no repositório inteiro, inclusive `.app-work/`. Citações pendentes devem ser resolvidas antes da remoção; buscar com `rg --hidden` ou paths explícitos, pois `.app-work/` é oculto. Após autorização, remover a cláusula e acrescentar em `## Histórico`: `- AAAA-MM-DD — DEC-NNN removida. Era: <regra antiga>. Motivo: <motivo>.` Esse ID não pode continuar como cláusula viva e não pode ser reutilizado.
-- Uma regra que alcança mais de um domínio atualiza todos os arquivos afetados e cita as decisões irmãs nas notas.
+- Before contradicting a living rule, present the previous value, source, new value, and other affected dependencies; obtain applicable human confirmation. Only then, if the value changes, change the statement under the same `DEC-NNN` and append a note right below: `_Changed YYYY-MM-DD — was: <old value>. Reason: <reason>._`
+- New notes go above old ones; keep at most about three.
+- An addition without contradiction creates a new `DEC-NNN`, with no change note. A new domain or feature requires updating `## Domains`, the feature vocabulary, and `## By feature` in `INDEX.md`; derive the index from the `Affects:` fields in the same write.
+- Removal is rare: first, search for pending citations across the whole repository, including `.app-work/`. Pending citations must be resolved before removal; search with `rg --hidden` or explicit paths, since `.app-work/` is hidden. After authorization, remove the clause and append to `## History`: `- YYYY-MM-DD — DEC-NNN removed. Was: <old rule>. Reason: <reason>.` That ID must not remain as a live clause and must not be reused.
+- A rule reaching more than one domain updates every affected file and cites the sibling decisions in the notes.
 
-## Promoção humana
+## Human promotion
 
-Texto em guide, brainstorm, PRD ou ledger é candidato de processo, não regra. Só materialize uma decisão quando o usuário confirmar explicitamente o candidato, seu enunciado, domínio e evidência de origem. Sem confirmação, preserve-o como candidato e não o use para governar o produto.
+Text in a guide, brainstorm, PRD, or ledger is a process candidate, not a rule. Only materialize a decision when the user explicitly confirms the candidate, its statement, domain, and origin evidence. Without confirmation, keep it as a candidate and do not use it to govern the product.
 
-## Separação de territórios
+## Territory split
 
-O efeito observável pelo usuário vai para `docs/decisions/`. A norma de implementação vai para `project-rules/` e referencia o `DEC-NNN`; não copie o mesmo valor literal nos dois territórios.
+The user-observable effect goes to `docs/decisions/`. The implementation norm goes to `project-rules/` and references the `DEC-NNN`; do not copy the same literal value in both territories.

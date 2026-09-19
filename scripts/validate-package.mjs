@@ -94,7 +94,8 @@ const printUsage = () => {
       "  - .hephaestus/ gitignored (CN12) and absent from the git index",
       "  - .hephaestus/plan.json contract (origin tracing; INV7)",
       "  - process writes: no write outside .app-work/issues/, always additive (INV10)",
-      "  - DEC identity: no renumbered/reused ID, none live and in Histórico (INV3)",
+      "  - plan operation x regime pairs per the normative table in prompts/plan.md (DATA-01)",
+      "  - DEC identity: no renumbered/reused ID, none live and in History (INV3)",
       "  - single territory: no decision value duplicated in project-rules without citation (INV4)",
       "  - AGENTS territory: no vault fragment housed in AGENTS.md (CN8)",
       "  - snapshot coverage: every byte belongs to a fragment or declared ignored region (INV5)",
@@ -422,6 +423,7 @@ const checkRunState = (root) => {
         "pack-candidate",
         "compose-shield-adaptation",
         "approval-scope",
+        "issues-visibility",
         "context-changed",
       ]).has(revalidation.reason)
     ) {
@@ -884,13 +886,13 @@ const checkTerritoryRegime = (root) => {
 
 // INV3 / AC-4.1.x (D17): identidade de decisão. `checkDecIdentity` coleta os
 // IDs de `_app-vault/docs/decisions/**` de DUAS fontes — headings `### DEC-NNN`
-// (cláusulas vivas) e IDs citados nas linhas da seção `## Histórico` — e
+// (cláusulas vivas) and IDs cited on lines of the `## History` section — e
 // reprova quando: um ID aparece nas duas listas (decisão removida reusada como
 // viva); o `identity-map.json` registra `create` com ID menor ou igual ao
 // `inventoriedMax` (cunhagem reusaria ID existente) ou reusa ID presente em
-// `## Histórico`; ou registra `keep`/`amend`/`remove` com `decId` diferente do
+// `## History`; or records `keep`/`amend`/`remove` com `decId` diferente do
 // `matchedId` (renumeração detectável). Restringir o inventário às cláusulas
-// vivas é o P0-3 do pre-mortem: um vault com `DEC-002` só no `## Histórico`
+// vivas é o P0-3 do pre-mortem: a vault with `DEC-002` only in `## History`
 // passaria a cunhar `DEC-002` de novo, reapontando toda citação externa.
 const DEC_HEADING_RE = /^###\s+(DEC-\d+)\b/gm;
 
@@ -913,7 +915,9 @@ const collectDecisionIds = (root) => {
       }
       if (!entry.name.endsWith(".md")) continue;
       const content = fs.readFileSync(abs, "utf8");
-      const historicoIndex = content.indexOf("## Histórico");
+      const idxPt = content.indexOf("## Histórico");
+      const idxEn = content.indexOf("## History");
+      const historicoIndex = idxPt !== -1 ? idxPt : idxEn;
       const livePart = historicoIndex === -1 ? content : content.slice(0, historicoIndex);
       const historicoPart = historicoIndex === -1 ? "" : content.slice(historicoIndex);
       for (const match of livePart.matchAll(DEC_HEADING_RE)) {
@@ -1633,6 +1637,56 @@ const checkProcessWrites = (root) => {
   return `escrita em processo: ${evaluated} operação(ões) com destino em .app-work/ legal(is) (INV10).`;
 };
 
+// DATA-01: pares normativos operation×regime — a tabela normativa vive em
+// `prompts/plan.md` (## Operation × regime); o enum de regime é lido do
+// schema (fonte única) e o mapa de pares o espelha. `skip` é transversal:
+// qualquer regime pode ser dispensado com justificativa registrada. Caso
+// composto declarado: operação de issue aceita `amend` sob `generate`
+// (line upsert), exclusivo de `.app-work/issues/` com territory process.
+const PLAN_REGIME_OPERATIONS = {
+  keep: ["keep", "skip"],
+  generate: ["create", "overwrite", "skip"],
+  reconcile: ["create", "amend", "keep", "delete", "skip"],
+  relocate: ["move", "keep", "skip"],
+  delete: ["delete", "skip"],
+  condense: ["condense", "skip"],
+};
+
+const isLegalPlanPair = (entry) => {
+  if (PLAN_REGIME_OPERATIONS[entry.regime]?.includes(entry.operation)) {
+    return true;
+  }
+  return (
+    entry.operation === "amend" &&
+    entry.regime === "generate" &&
+    entry.territory === "process" &&
+    typeof entry.artifactPath === "string" &&
+    entry.artifactPath.startsWith(".app-work/issues/")
+  );
+};
+
+const checkPlanRegimePairs = (root) => {
+  const planPath = path.join(root, ".hephaestus", "plan.json");
+  const parsed = readJsonObject(planPath);
+  if (parsed === null) {
+    return "operation×regime: plan.json not present (skipped).";
+  }
+  const fileLabel = path.relative(root, planPath);
+  const regimeEnum = loadEnum("routing.schema.json", "properties.regime.enum");
+  const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
+  for (const [index, entry] of entries.entries()) {
+    if (typeof entry !== "object" || entry === null || typeof entry.regime !== "string") {
+      continue;
+    }
+    if (!regimeEnum.has(entry.regime) || !isLegalPlanPair(entry)) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) operation "${entry.operation}" × regime "${entry.regime}" fora da tabela normativa (Operation × regime, prompts/plan.md) — par sem linha é gate violation, nunca interpretação`,
+      );
+    }
+  }
+  return `operation×regime: ${entries.length} entrada(s) com pares da tabela normativa (DATA-01).`;
+};
+
 const main = (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     printUsage();
@@ -1666,6 +1720,7 @@ const main = (argv) => {
     checkEphemeralIgnored(root),
     checkPlanContract(root),
     checkProcessWrites(root),
+    checkPlanRegimePairs(root),
     checkCoverage(root),
     checkKeepBytes(root),
     checkResidueGate(root),

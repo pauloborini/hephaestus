@@ -1,10 +1,10 @@
 # REFERENCE: API CONTRACT
 
-Referência de contrato de API para consulta sob gatilho.
+API contract reference for on-trigger consultation.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- endpoints relevantes, payloads e paginação;
-- códigos de erro e respostas padrão;
-- apontamento para `project-rules/contracts/*.openapi.json` quando existir;
-- divergências conhecidas entre contrato e implementação, se houver.
+- relevant endpoints, payloads, and pagination;
+- error codes and standard responses;
+- pointer to `project-rules/contracts/*.openapi.json` when present;
+- known divergences between contract and implementation, if any.
