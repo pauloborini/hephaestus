@@ -157,3 +157,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v7`.
 - Artefato: `hephaestus-7.zip`.
 - Conteúdo: inglês como idioma canônico do kit (DEC-007): `SKILL.md` + prompts de fase são o entrypoint de execução; português só no par `*.pt-BR.md` (`SKILL.pt-BR.md` substitui `SKILL.en.md`); em divergência de procedimento, o inglês vence. Também inclui o ciclo de adoção já em `develop` (`meta.adoptionStatus`, `run-answers.json`, `DECISION_PROTOCOL` autocontido no pacote gerado).
+
+## Oitava release (v8)
+
+- Versão do manifesto: `"8"`.
+- Tag: `v8`.
+- Artefato: `hephaestus-8.zip`.
+- Conteúdo: 2ª rodada de melhorias sistemáticas (relatório `.app-work/melhorias-sistematicas-hephaestus-v7.md`) — ledger de findings atravessando fases (`schemas/findings.schema.json`; cunhado em `discover`/`validate`, consumido pelo `plan`, materializado pelo `compose` no state); tabela normativa `Operation × regime` no `plan.md` com o gate estrito `checkPlanRegimePairs` no `validate-package.mjs`; overwrite destrutivo de contrato versionado (ex.: ponte `CLAUDE.md`) passa a ser `destructive` em todo modo; pergunta de visibilidade do `issues/` com reason `issues-visibility` e default conservador (ignorar); handoff de state entre runs (bloco commit/descarte); closeout sem "re-run"; templates ISSUES movidos para `templates/appwork/`; limpeza English-first dos comentários restantes em scripts e templates de vault.
