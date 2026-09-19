@@ -33,6 +33,17 @@ validation scripts needed for `/hephaestus` to run standalone, and the command r
 - [ ] `kit-manifest.json` version is already this release's `N` (bump committed).
 - [ ] `main` will hold the final SHA before the tag (merge/PR).
 
+## Receive approved upstream changes
+
+The order for kit changes is Atlas → Shared → this repository. After the Atlas gates and Shared parity pass, run from this repository:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+Review the resulting diff and update the public Portuguese documentation when the English change affects its pair. This handoff script only changes the working tree. It does not build the zip, commit, push, or publish. The release remains a separate operation performed directly here.
+
 ## Gates (required)
 
 From the repository root:

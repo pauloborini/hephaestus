@@ -75,6 +75,17 @@ Expected closeout states:
 
 See [COMMANDS.md](COMMANDS.md) for kit validation, generated-package validation, the documentation-pair check, the test suite, and the release zip builder.
 
+## Upstream synchronization
+
+The public Hephaestus repository receives kit changes only after the Atlas source has passed its gates and the approved tree has been promoted to Shared. From the Hephaestus repository root, inspect and apply the managed English tree with:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+The synchronizer preserves public-only Portuguese documentation, release files, development scripts, and resources. It changes files only; it does not build a release zip, commit, push, or publish. Run the release procedure directly in this repository after reviewing the resulting diff.
+
 ## Guardrails
 
 - Do not invent rules or a final tree without source evidence.
