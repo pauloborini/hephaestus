@@ -1,44 +1,44 @@
 # RULES: OPERATIONAL
 
-## Gates por boundary
+## Gates per boundary
 
-Preencher na síntese com os comandos reais do framework e das ferramentas do projeto. Cada gate define: ID, comando, gatilho e resultado esperado.
+Fill in during synthesis with the real framework and tool commands of the project. Each gate defines: ID, command, trigger, and expected result.
 
-| ID | Comando | Gatilho | Resultado esperado |
+| ID | Command | Trigger | Expected result |
 |---|---|---|---|
-| `analyze` | <análise estática do framework, ex.: analyzer, linter, typecheck> | qualquer diff de código | zero issue nova/in-scope |
-| `validate` | <validador estrutural do projeto, quando existir> | diff em regras/estrutura | índice/grafo íntegros |
-| `diff-check` | `git diff HEAD --check` | diff tracked | zero erro de whitespace/patch |
+| `analyze` | <framework static analysis, e.g. analyzer, linter, typecheck> | any code diff | zero new/in-scope issues |
+| `validate` | <project structural validator, when present> | diff in rules/structure | index/graph intact |
+| `diff-check` | `git diff HEAD --check` | tracked diff | zero whitespace/patch errors |
 
-- Os placeholders acima devem ser substituídos na síntese pelos comandos reais do repositório (ex.: `flutter analyze`, `tsc`, `eslint`, `melos run ...`).
-- Gates estruturais não substituem a análise estática.
-- Diff somente documental/config sem código não aciona gates de análise.
+- The placeholders above must be replaced during synthesis with the real commands of the repository (e.g. `flutter analyze`, `tsc`, `eslint`, `melos run ...`).
+- Structural gates do not replace static analysis.
+- Docs/config-only diffs with no code do not trigger analysis gates.
 
-## Autocontenção
+## Self-containment
 
-- Norma de engenharia deve estar em `AGENTS.md` ou `project-rules/`.
-- Regra/referência/contrato estrutural não referencia arquivo externo para completar decisão; spec/PRD pode ser consultada como requisito de produto, nunca como dependência normativa.
-- Toda regra, referência e contrato precisa ser alcançável por ao menos um índice.
+- Engineering norms must live in `AGENTS.md` or `project-rules/`.
+- A structural rule/reference/contract never references an external file to complete a decision; a spec/PRD may be consulted as a product requirement, never as a normative dependency.
+- Every rule, reference, and contract must be reachable from at least one index.
 
-## Testes
+## Tests
 
-- Teste unit/integração/e2e só é criado/executado quando o usuário pedir explicitamente.
-- Analyzer e validadores estruturais são gates, não testes para essa restrição.
-- Teste que apenas cristaliza implementação ruim (design frágil, acoplamento indevido, workaround) é anti-padrão; preferir invariante estrutural na origem.
+- Unit/integration/e2e tests are only created/executed when the user explicitly asks.
+- Analyzers and structural validators are gates, not tests for this restriction.
+- A test that merely crystallizes a bad implementation (fragile design, undue coupling, workaround) is an anti-pattern; prefer a structural invariant at the source.
 
-## Falhas e baseline
+## Failures and baseline
 
-- Corrigir falha introduzida ou dentro do boundary.
-- Falha preexistente externa não autoriza refactor adjacente: registrar comando/evidência, separar baseline e classificar o resultado.
-- Não declarar gate verde quando o comando falhou, mesmo que a causa seja baseline.
+- Fix failures you introduced or inside the boundary.
+- A pre-existing external failure does not authorize adjacent refactoring: record command/evidence, separate the baseline, and classify the result.
+- Never declare a gate green when the command failed, even if the cause is the baseline.
 
-## Planos/handoffs
+## Plans/handoffs
 
-- Quando o usuário pedir plano/handoff, propagar os gates aplicáveis no artefato.
-- Não copiar gates sem gatilho; cada item informa comando, boundary e critério de aceite.
+- When the user asks for a plan/handoff, propagate the applicable gates into the artifact.
+- Do not copy gates without a trigger; each item states command, boundary, and acceptance criterion.
 
-## Fechamento
+## Closeout
 
-- Informar regras aplicadas, comandos executados, resultado e pendências.
-- Classificação: `pronto`, `degradado mas utilizável` ou `precisa de follow-up`.
-- Commit/push somente por pedido explícito.
+- Report applied rules, executed commands, results, and pendings.
+- Classification: `ready`, `degraded-but-usable`, or `needs-followup`.
+- Commit/push only on explicit request.

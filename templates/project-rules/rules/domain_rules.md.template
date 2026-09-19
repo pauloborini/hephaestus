@@ -1,19 +1,19 @@
 # RULES: DOMAIN
 
-## Papel
+## Role
 
-Definir normas de contrato de dados: DTO, Entity, Mapper, VO, enum e serialização.
+Define data-contract norms: DTO, Entity, Mapper, VO, enum, and serialization.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- fonte de verdade do contrato (ex.: OpenAPI) e regra de consulta;
-- regras de mapeamento DTO ↔ Entity;
-- nomenclatura e IDs (sem campos genéricos);
-- validações centralizadas;
-- serialização e campos sensíveis;
-- allowlists de exceção, quando existirem (ex.: allowlist de IDs legados).
+- contract source of truth (e.g. OpenAPI) and consultation rule;
+- DTO ↔ Entity mapping rules;
+- naming and IDs (no generic fields);
+- centralized validations;
+- serialization and sensitive fields;
+- exception allowlists, when present (e.g. legacy-ID allowlist).
 
-## Gatilhos típicos
+## Typical triggers
 
-- qualquer alteração em DTO, Entity, Mapper, VO, enum ou schema;
-- integração REST ou mudança de contrato externo.
+- any change to a DTO, Entity, Mapper, VO, enum, or schema;
+- REST integration or external-contract change.

@@ -1,32 +1,32 @@
 # Canonical Structure Notes
 
-## Objetivo
+## Goal
 
-Descrever como interpretar a estrutura canônica sem amarrar o kit a um domínio específico.
+Describe how to interpret the canonical structure without tying the kit to any specific domain.
 
-## Leitura sugerida
+## Suggested reading
 
 - `AGENTS.md`
-  - entrypoint humano e operacional do pacote gerado
+  - human and operational entrypoint of the generated package
 - `CLAUDE.md`
-  - ponte de uma linha (`@AGENTS.md`) para clientes que leem só `CLAUDE.md`; nunca conteúdo próprio
+  - one-line bridge (`@AGENTS.md`) for clients that only read `CLAUDE.md`; never its own content
 - `project-rules/index/*`
-  - roteadores por tipo de tarefa
+  - routers per task type
 - `project-rules/rules/*`
-  - regras normativas e obrigatórias
+  - normative, mandatory rules
 - `project-rules/reference/*`
-  - apoio, exemplos e contratos longos
+  - support, examples, and long contracts
 - `project-rules/contracts/*`
-  - contratos externos (ex.: OpenAPI), quando existirem — somente consulta
+  - external contracts (e.g. OpenAPI), when present — consult-only
 - `.hephaestus/manifests/*`
-  - rastreabilidade, cobertura e validação do processo de geração
+  - traceability, coverage, and validation of the generation process
 
-## Regra central
+## Central rule
 
-A estrutura existe para reduzir improviso e custo de contexto.
-Ela não existe para maximizar o número de arquivos.
+The structure exists to reduce improvisation and context cost.
+It does not exist to maximize the number of files.
 
-## Notas
+## Notes
 
-- O pacote gerado é agnóstico de framework: a estrutura é fixa, o conteúdo (gates, checklists, comandos) é preenchido conforme o stack real do projeto.
-- Não existe pasta de memória na estrutura canônica; preferências persistentes de agente pertencem ao sistema de memória do cliente.
+- The generated package is framework-agnostic: the structure is fixed, the content (gates, checklists, commands) is filled in according to the project's real stack.
+- There is no memory folder in the canonical structure; persistent agent preferences belong to the client's memory system.

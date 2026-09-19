@@ -12,7 +12,8 @@ Check whether the package meets the kit's minimum contract. A parameterized phas
 
 ## Outputs
 
-- verdict `staging` | `applied` (parameterized by `Target`)
+- verdict `staging` | `applied` (parameterized by `Target`);
+- defect findings appended to `.hephaestus/manifests/findings.json` when a failing gate evidences a defect.
 
 ## Target
 
@@ -23,16 +24,16 @@ Check whether the package meets the kit's minimum contract. A parameterized phas
 
 - `AGENTS.md` exists;
 - `CLAUDE.md` exists at the root containing exactly the line `@AGENTS.md`, with no own content (bridge, never a parallel contract);
-- `AGENTS.md` starts with the project name and an explicit agent contract (format `<Project name> — contrato do agente`), with no generic header;
+- `AGENTS.md` starts with the project name and an explicit agent contract (format `<Project name> — agent contract`), with no generic header;
 - `AGENTS.md` is centralizing and concise;
 - `AGENTS.md` contains posture, stop, workflow, precedence, and routing, not domain rules;
 - `AGENTS.md` has triage, type selection, mandatory stop, pre-confirmation, and final validation;
 - the mandatory stop, premises, criterion, simplicity, surgical change, and invariants are inside workflow steps 2 and 3, not promoted to their own section;
 - `AGENTS.md` does not repeat what `project-rules/rules/operational_rules.md` norms (gates, tests, baseline, closeout, commits);
 - workflow, internal precedence, and base universal rules follow the template's fixed protocol, without drift;
-- validation gates in `AGENTS.md` are filled with real stack tools (no `<preencher na síntese>` placeholder);
+- validation gates in `AGENTS.md` are filled with real stack tools (no `<fill in during synthesis>` placeholder);
 - the repository-structure and documentation section references real `project-rules/` components (indexes, rules, references, contracts) and project docs;
-- triage tries to read `project-rules/index/<tipo>.md` and blocks when the required index does not exist, without forcing context by inference;
+- triage tries to read `project-rules/index/<type>.md` and blocks when the required index does not exist, without forcing context by inference;
 - pre-confirmation is informative and uses the already-loaded index, without waiting for approval;
 - generated categories have a clear operational role;
 - needed rules are coherently distributed in `project-rules/`;
@@ -72,13 +73,14 @@ Yes — only on `Target: applied`, the only allowed write is merging the `meta.a
 - use `degraded` when relevant fragments lack a clear destination but the package is still operable;
 - use `degraded` when there are legitimate external dependencies not yet internalized, even with a complete report;
 - use `blocked` when there are broken or unreported external dependencies;
+- a failing gate that evidences a defect (package contract violation, blocked structure, hash divergence after recovery) is appended as a finding to `.hephaestus/manifests/findings.json` with `type`, normalized `path`, `statement`, `severity`, and `findingSignature = sha256(finding type + normalized path + normalized statement)` — the ledger is valid against `schemas/findings.schema.json`; the correction returns to the owning phase and the re-emitted `plan` carries the finding as the ISSUE-NNN operation (see `prompts/plan.md`); on `Target: applied`, recording the finding never replaces the rollback rule;
 - use `blocked` when `run-state.json` prevents determining which phases are actually validated;
 - never treat a `produced` phase as equivalent to `validated`;
 - distinguish `failed` from `blocked` on the run-state: `failed` is a phase state that finished execution but could not be validated and is fully re-run on resume; `blocked` is a run state (not a phase) that indicates an impediment requiring a human decision and is not resumed on its own, per the resume rule in `prompts/preflight.md`;
 - apply the single checkpoint rule from `SKILL.md` on both passes: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on starting `verify_staging` or `verify_applied`, mark the phase `in_progress`; when done, `produced` and then `validated` when every minimum check is consistent; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`);
 - in `applied`, check `staging-manifest.json` against disk hash by hash (`checkAppliedHashes` gate); any divergence triggers rollback limited by the baseline and post-write hashes, without overwriting a concurrent change, and `.app-work/hephaestus-state.json` is never reverted;
 - in `applied`, paths from `.hephaestus/staging-deletions.json` must not exist on disk after the transaction;
-- when the target project environment has `node` available, run `node scripts/validate-package.mjs <folder>` as a recommended gate before marking the phase `validated` — in `staging`, `<folder>` is `.hephaestus/staging`; in `applied`, it is the repository; in environments without node, record the skipped gate as an observation in the report — the gate does not block environments without node, and skipping it does not automatically change `validated` status;
+- run `node scripts/validate-package.mjs <folder>` as a recommended gate before marking the phase `validated` — in `staging`, `<folder>` is `.hephaestus/staging`; in `applied`, it is the repository — conditional on the script being present in the install, with three distinct situations and a record of its own for each: (a) script present and `node` available (development checkout of the kit): run the gate; (b) target project environment without `node`: record the skipped gate as an observation in the report; (c) script absent from the install (`distributionMode: zip-release` — `packExcludes` excludes `scripts/` from the release zip): record the skip with reason "script not shipped in this install". A skip in (b) or (c) never blocks the phase as a failure, is never masked as a validation that ran, and never triggers guessing an alternate script path; skipping does not automatically change `validated` status;
 - at the end, produce an objective closeout review with:
   - open pendings;
   - recommended decision for each relevant pending;

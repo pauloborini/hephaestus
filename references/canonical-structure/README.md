@@ -1,6 +1,6 @@
 # Canonical Structure
 
-Estrutura neutra de referência:
+Neutral reference structure:
 
 ```text
 AGENTS.md
@@ -8,12 +8,12 @@ project-rules/
   index/
   rules/
   reference/
-  contracts/   (opcional)
-.hephaestus/     (checkpoint do processo de geração)
+  contracts/   (optional)
+.hephaestus/     (generation-process checkpoint)
   manifests/
 ```
 
-Objetivo:
+Goal:
 
-- mostrar a forma geral esperada;
-- não ditar conteúdo específico de domínio.
+- show the expected general shape;
+- not dictate any domain-specific content.

@@ -1,22 +1,22 @@
 # INDEX: DIAGNOSTIC
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `architecture_rules.md`: o sintoma indica violação estrutural ou de camada.
-- `domain_rules.md`: o sintoma está em contrato, mapeamento ou serialização.
-- `error_handling_rules.md`: o sintoma está em fluxo de erro.
-- `auth_rules.md`: o sintoma está em acesso, sessão ou permissão.
-- `security_rules.md`: o sintoma envolve segredo, PII ou ambiente.
-- `ui_rules.md`: o sintoma está em apresentação ou interação.
+- `architecture_rules.md`: the symptom indicates a structural or layer violation.
+- `domain_rules.md`: the symptom is in contract, mapping, or serialization.
+- `error_handling_rules.md`: the symptom is in an error flow.
+- `auth_rules.md`: the symptom is in access, session, or permission.
+- `security_rules.md`: the symptom involves secrets, PII, or environment.
+- `ui_rules.md`: the symptom is in presentation or interaction.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `api_contract_reference.md`: suspeita de divergência com contrato externo.
-- `project-rules/contracts/*.openapi.json`: divergência com contrato REST — somente consulta.
-- Omitir esta seção quando não houver referência acionável.
+- `api_contract_reference.md`: suspected divergence from an external contract.
+- `project-rules/contracts/*.openapi.json`: divergence from the REST contract — consult-only.
+- Omit this section when there is no actionable reference.

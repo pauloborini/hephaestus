@@ -1,19 +1,19 @@
 # INDEX: SHARED
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/domain_rules.md`
 2. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `architecture_rules.md`: o item compartilhado cruza camadas ou packages.
-- `error_handling_rules.md`: helper de erro ou resultado de operação.
-- `security_rules.md`: dado sensível em VO/enum/helper.
+- `architecture_rules.md`: the shared item crosses layers or packages.
+- `error_handling_rules.md`: error helper or operation result.
+- `security_rules.md`: sensitive data in a VO/enum/helper.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-- `domain_examples.md`: padrão de VO/enum ou modelo compartilhado.
-- Omitir esta seção quando não houver referência acionável.
+- `domain_examples.md`: VO/enum or shared-model pattern.
+- Omit this section when there is no actionable reference.

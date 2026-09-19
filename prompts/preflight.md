@@ -23,6 +23,7 @@ Guard the ground before any work: require a git repository and a clean worktree,
 
 - valid git repository: `git rev-parse --is-inside-work-tree` exits `0`;
 - a new run requires a clean worktree in both modes, with no override. Resuming the same `runId` admits only deltas proven by `stateWrite` and existing transactional receipts; any unproven change blocks, also with no override. Use `git status --porcelain --untracked-files=all` so files under an untracked directory are not hidden. Ignore only this run's own ephemeral artifacts under `.hephaestus/`, never other files;
+- state handoff between runs: distinguish the delta on `.app-work/hephaestus-state.json` authored by a **prior kit run** (proven by that run's `stateWrite` receipt and an `adoptionStatus` coherent with the recorded cycle) from a non-kit delta — it is legitimate residue of the declared INV1 exception, never garbage to clean. A new run (new `runId`) with the state changed by a prior run blocks **oriented**: list the delta and the expected action — the user commits or discards the versioned state; the kit never cleans, reverts, or overwrites the state on its own initiative (INV1). Once the user acts, the new run resolves `mode` from `meta.adoptionStatus` normally;
 - on first entry, record `stateWrite: { exists, sha256 }` with the observed answers file (`sha256: null` when absent); on resume, compare with the previous receipt before any merge. Do not update the receipt with concurrent bytes to make them look authorized;
 - `mode` resolved;
 - catalog resolved: pack base + overlay from the state's `routing` block, when present;
@@ -33,6 +34,7 @@ Guard the ground before any work: require a git repository and a clean worktree,
 
 - outside a git repository — refuse, naming the condition;
 - worktree with an unproven delta from the same run — refuse, listing the pending files, mutating nothing; saved answers alone do not authorize ignoring other deltas;
+- new run with the unresolved state delta of a prior kit run — oriented refusal listing the delta and the expected action (commit or discard, by the user), mutating nothing;
 - state with a field the schema does not know: ignore the field and re-ask what is needed, without migration (D4);
 - inconsistent baseline or divergent hash on resume: block before writing the target. Absence is normal before `plan`, but blocks `apply`. On resume after a partial write, check receipts and recover this run's own delta before recomposing; never run a full `apply` over a partially applied transaction.
 

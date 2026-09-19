@@ -1,49 +1,49 @@
 ---
-updated: <AAAA-MM-DD>
-scope: <frase curta do que o processo do projeto cobre>
+updated: <YYYY-MM-DD>
+scope: <short phrase for what the project's process covers>
 ---
 
-# <Projeto> — índice do processo (.app-work)
+# <Project> — process index (.app-work)
 
 <!--
-  Mapa, não conteúdo — mesmo padrão do INDEX.md do vault (SCHEMA §3). Teto ~100 linhas:
-  ultrapassou, o índice virou conteúdo: refatorar.
+  Map, not content — same pattern as the vault INDEX.md (SCHEMA §3). Ceiling ~100 lines:
+  past it, the index became content: refactor.
 
-  O corpo tem exatamente duas seções: Pastas canônicas e Regras de ouro.
-  Não acrescentar seção nova.
+  The body has exactly two sections: Canonical folders and Golden rules.
+  Do not add a new section.
 
-  NUNCA entra aqui:
-    - valor vigente de decisão (o valor mora em _app-vault/docs/decisions/)
-    - conteúdo de guide, brainstorm, PRD ou issue
-    - listagem de planos, tasks ou sprints
+  NEVER enters here:
+    - a living decision value (the value lives in _app-vault/docs/decisions/)
+    - guide, brainstorm, PRD, or issue content
+    - plan, task, or sprint listings
 
-  Este arquivo é a âncora do AGENTS.md: é o mapa de organização do processo, não fonte de regra.
-  O próprio .app-work/ inteiro é proibido como insumo de regra (SCHEMA §2.1 e §8).
+  This file is the AGENTS.md anchor: it is the process organization map, not a rule source.
+  All of .app-work/ itself is forbidden as a rule input (SCHEMA §2.1 and §8).
 
-  Remover estes comentários ao instanciar.
+  Remove these comments when instantiating.
 -->
 
-## Pastas canônicas
+## Canonical folders
 
-| Pasta | Papel |
+| Folder | Role |
 |---|---|
-| `hephaestus-state.json` | estado versionado do kit (raiz) |
-| `guides/` | packs de execução em andamento (`<NOME>_GUIDE/` com INTENT, GUIDE, LEDGER e `plans/`) |
-| `guides/legados/` | monolíticos ainda citados sem pack próprio |
-| `roadmap/` | fila viva versionada (`ROADMAP.md` + slices/) — nunca em `private/` |
-| `brainstorming/` | caderno de processo — ao fechar, roteia e não permanece como referência viva |
-| `prd/` | propostas datadas — nem sempre cumpridas na totalidade; não são contrato |
-| `docs/` | docs de operação/produto vivos; omitir se vazio |
-| `references/` | refs open source de terceiros — SEMPRE gitignored; único lugar de clones |
-| `private/` | área privada (`auditorias/`, `ops/`, `research/`, `notes/`) — SEMPRE gitignored |
-| `issues/` | registro único de defeitos (`ISSUE-NNN`, ciclo OPEN → FIXED → VERIFIED → CLOSED) |
-| `archive/` | espelho datado (`guides/<YYYY-MM>/semana-<N>/`, `perguntas/`, `prds/`, `roadmap/<MARCO>_<YYYY-MM>/`) + depósito nominado — apagável |
+| `hephaestus-state.json` | versioned kit state (root) |
+| `guides/` | in-flight execution packs (`<NAME>_GUIDE/` with INTENT, GUIDE, LEDGER, and `plans/`) |
+| `guides/legados/` | monoliths still cited without their own pack |
+| `roadmap/` | live versioned queue (`ROADMAP.md` + slices/) — never in `private/` |
+| `brainstorming/` | process notebook — on close, it routes and does not remain as a living reference |
+| `prd/` | dated proposals — not always fully fulfilled; not a contract |
+| `docs/` | live ops/product docs; omit when empty |
+| `references/` | third-party open source refs — ALWAYS gitignored; single home for clones |
+| `private/` | private area (`auditorias/`, `ops/`, `research/`, `notes/`) — ALWAYS gitignored |
+| `issues/` | single defect record (`ISSUE-NNN`, OPEN → FIXED → VERIFIED → CLOSED cycle) |
+| `archive/` | dated mirror (`guides/<YYYY-MM>/semana-<N>/`, `perguntas/`, `prds/`, `roadmap/<MILESTONE>_<YYYY-MM>/`) + named drop-box — deletable |
 
-## Regras de ouro
+## Golden rules
 
-- `.app-work/` é processo: **nunca** insumo de regra — verdade vigente só em `_app-vault/docs/decisions/` (cláusulas `### DEC-NNN`).
-- Uma cópia canônica por arquivo: cópia idêntica em outro lugar é lixo; antes de remover, provar duplicata byte a byte (`cmp`).
-- **Espelho do archive (concluído, mover não duplicar):** `guides/<PACK>/` → `archive/guides/<YYYY-MM>/semana-<N>/<PACK>/`; `brainstorming/<tema>/` fechado → `archive/perguntas/<tema>/`; PRD aposentado → `archive/prds/`; roadmap de marco → `archive/roadmap/<MARCO>_<YYYY-MM>/`. Issues não espelham (registro único).
-- Guia convertido a pack descarta o monolítico.
-- Cada pasta com muito conteúdo tem seu próprio `README.md` (ex.: `issues/README.md`, `archive/README.md`) — o índice não duplica conteúdo de pasta.
-- `.app-work/` inteiro é oculto à busca (`rg --files` não o varre); o que não for promovido a decisão está efetivamente perdido — registrar `Candidatos a decisão` no `LEDGER.md` dos packs (SCHEMA §6).
+- `.app-work/` is process: **never** a rule input — living truth only in `_app-vault/docs/decisions/` (`### DEC-NNN` clauses).
+- One canonical copy per file: an identical copy elsewhere is junk; before removing, prove the duplicate byte for byte (`cmp`).
+- **Archive mirror (completed, move don't duplicate):** `guides/<PACK>/` → `archive/guides/<YYYY-MM>/semana-<N>/<PACK>/`; closed `brainstorming/<topic>/` → `archive/perguntas/<topic>/`; retired PRD → `archive/prds/`; milestone roadmap → `archive/roadmap/<MILESTONE>_<YYYY-MM>/`. Issues do not mirror (single record).
+- A guide converted to a pack discards the monolith.
+- Each content-heavy folder has its own `README.md` (e.g. `issues/README.md`, `archive/README.md`) — the index does not duplicate folder content.
+- All of `.app-work/` is hidden from search (`rg --files` does not sweep it); whatever is not promoted to a decision is effectively lost — record `Decision candidates` in the packs' `LEDGER.md` (SCHEMA §6).

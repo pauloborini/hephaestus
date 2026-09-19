@@ -1,18 +1,18 @@
 # RULES: AUTH
 
-## Papel
+## Role
 
-Definir normas de autenticação, autorização e proteção de acesso.
+Define authentication, authorization, and access-protection norms.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- fluxo de sessão e credenciais;
-- guards, rotas restritas e redirects;
-- roles/capabilities e verificação de permissão;
-- proibições (ex.: expor token/segredo, burlar guard);
-- comportamentos aprovados a preservar em qualquer mudança.
+- session and credential flow;
+- guards, restricted routes, and redirects;
+- roles/capabilities and permission checks;
+- prohibitions (e.g. exposing tokens/secrets, bypassing guards);
+- approved behaviors to preserve across any change.
 
-## Gatilhos típicos
+## Typical triggers
 
-- auth, sessão, role, permissão, guard ou redirect;
-- qualquer mudança que toque fluxos restritos.
+- auth, session, role, permission, guard, or redirect;
+- any change touching restricted flows.

@@ -157,3 +157,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v7`.
 - Artifact: `hephaestus-7.zip`.
 - Content: English as the canonical kit language (DEC-007): `SKILL.md` + phase prompts are the execution entry; Portuguese lives only in `*.pt-BR.md` pairs (`SKILL.pt-BR.md` replaces `SKILL.en.md`); on procedural divergence, English wins. Also ships the adoption lifecycle already on `develop` (`meta.adoptionStatus`, `run-answers.json`, self-contained `DECISION_PROTOCOL` in the generated package).
+
+## Eighth release (v8)
+
+- Manifest version: `"8"`.
+- Tag: `v8`.
+- Artifact: `hephaestus-8.zip`.
+- Content: systematic improvements round 2 (report `.app-work/melhorias-sistematicas-hephaestus-v7.md`) — findings ledger crossing phases (`schemas/findings.schema.json`; minted in `discover`/`validate`, consumed by `plan`, materialized by `compose` into the state); normative `Operation × regime` table in `plan.md` with the strict `checkPlanRegimePairs` gate in `validate-package.mjs`; destructive overwrite of a versioned contract (e.g. the `CLAUDE.md` bridge) is `destructive` in every mode; `issues/` visibility question with the `issues-visibility` reason and conservative default (ignore); run-to-run state handoff (commit/discard block); closeout without "re-run"; ISSUES templates moved to `templates/appwork/`; English-first cleanup of the remaining script comments and vault templates.

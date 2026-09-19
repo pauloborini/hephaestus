@@ -37,26 +37,29 @@ Real external references may still exist when the project depends on them, but t
 - `.app-work/hephaestus-state.json` is not in staging, staging-manifest, or deletions: its persistence uses its own merge and receipt;
 - materialize condensed canonicals in staging; emit `.hephaestus/staging-deletions.json` `{ version: 1, paths: string[] }` with relative paths to remove. A file marked `delete` does **not** enter `staging-manifest.json`;
 - unchanged `keep` entries (keep-bytes); `delete` does not enter the staging-manifest hash check;
+- the `operation` materialized per `regime` follows the normative `Operation × regime` table in `prompts/plan.md` — this phase materializes planned operations and never redefines the mapping;
 - no silent decisions here: impossible adaptation of shielded content enqueues `reason: compose-shield-adaptation`, with `invalidates: plan`, and returns to the interview revalidation batch; other doubts are bugs from a previous phase.
 
 ## Product territories (`_app-vault/`)
 
 Materialize reconciled decisions (`identity-map.json` from `reconcile`) from the absorbed templates:
 
-- `_app-vault/docs/decisions/<dominio>.md` — one file per product domain, instantiated from `templates/vault/DECISION_TEMPLATE.md` with comments removed: heading `### DEC-NNN — <rule>` with the ID minted/amended by `reconcile`, living statement, and preserved inline notes; `Afeta:` immediately after the title, above the first clause, with kebab-case features from the project vocabulary;
-- `_app-vault/INDEX.md` — instantiated from `templates/vault/INDEX_TEMPLATE.md`: `## Domínios` with one pointer per `docs/decisions/` file; valid feature list declared **above** `## Por feature`; `## Por feature` **derived** from `Afeta:` fields of every file — never written by hand; if they diverge, `Afeta:` is truth and the index is corrected (`SCHEMA.md` §7);
+- `_app-vault/docs/decisions/<domain>.md` — one file per product domain, instantiated from `templates/vault/DECISION_TEMPLATE.md` with comments removed: heading `### DEC-NNN — <rule>` with the ID minted/amended by `reconcile`, living statement, and preserved inline notes; `Affects:` immediately after the title, above the first clause, with kebab-case features from the project vocabulary;
+- `_app-vault/INDEX.md` — instantiated from `templates/vault/INDEX_TEMPLATE.md`: `## Domains` with one pointer per `docs/decisions/` file; valid feature list declared **above** `## By feature`; `## By feature` **derived** from `Affects:` fields of every file — never written by hand; if they diverge, `Affects:` is truth and the index is corrected (`SCHEMA.md` §7);
 - `_app-vault/docs/TEMPLATES/README.md` — materialized (folder role), because `docs/TEMPLATES/` is required by the closed list (§2) and anchored by `AGENTS.md`; existing project content in the folder is preserved as `keep` (`route` level 1);
-- removals decided by `reconcile` gain the line in `## Histórico` at the end of the domain file — the ID stays immortal to the numbering inventory;
+- removals decided by `reconcile` gain the line in `## History` at the end of the domain file — the ID stays immortal to the numbering inventory;
 - nothing from `.app-work/` is indexed in `INDEX.md` — indexing it would make it discoverable and undo the split (`SCHEMA.md` §3).
 
 ## `.app-work/` scaffold
 
 Materialize the process scaffold per the closed list in `references/vault-schema/SCHEMA.md` §2:
 
-- `.app-work/.gitignore` — **even on a greenfield project**, versioned, with lines `references/` and `private/` (and `issues/` when the repository is public);
+- `.app-work/.gitignore` — **even on a greenfield project**, versioned, with lines `references/` and `private/` always, plus the `issues/` line decided by the issues-visibility answer (question with `reason: issues-visibility`, D43): `answer.issuesVisibility: gitignored` ⇒ the `issues/` line is present; `answer.issuesVisibility: versioned` ⇒ absent. The answer is consumed from the state's `answers` block by `questionKey` + `contextFingerprint` — the same binding rule in `adopt` and `maintain` — and compose **never** infers public/private on its own; without a current answer, the declared conservative default applies: ignore `issues/` (line present) with a pending action recorded on the run-state for the closeout;
 - `.app-work/INDEX.md` — process map, instantiated from `templates/appwork/INDEX_TEMPLATE.md` (same pattern as the vault: pointer, not content): closed-list folders with each role + process golden rules; created **always**, even on greenfield — it is the anchor `AGENTS.md` points to and must never be missing;
+- `.app-work/issues/INDEX.md` — materialized in staging **only** when the plan carries an issue operation: compose applies the line upsert over the repository's current index (or over the scaffold below when the folder does not exist), and the artifact enters `staging-manifest.json` like any other, so `apply`'s final list covers it. Upsert semantics (decided here, executed by `apply`): one new line per planned finding in the Open section with the protocol fields (`.app-work/issues/README.md:14-24`: ID, Sev, Feature, Screen, Problem → Expected, Origin, State) + the `<!-- findingSignature: <hex> -->` marker; dedupe — a signature already recorded on a line does not mint and does not alter that line; inventory the largest `ISSUE-NNN` by walking the **three** sections — Open, In verification, Closed — plus the `Next free ID` field, minting `max+1` (an ID is never reused); the counter is incremented; never `overwrite` the file and never remove a line;
+- when the repository has no `.app-work/issues/`, the scaffold is instantiated in staging before the upsert: `INDEX.md` from `templates/appwork/ISSUES_INDEX_TEMPLATE.md` and `README.md` from `templates/appwork/ISSUES_README_TEMPLATE.md`; the folder is never created empty — no `issues/` artifact is materialized when the plan carries no issue operation;
 - only closed-list folders are created: `.app-work/guides/`, `guides/legados/`, `roadmap/`, `brainstorming/`, `prd/`, `docs/`, `references/`, `private/`, `issues/`, `archive/` (when there is content for them — a folder outside the list does not exist for the framework; an empty folder is not created);
-- under `archive/`, materialize the mirror of the `destinationPath` already expanded by the cascade: `archive/guides/<YYYY-MM>/semana-<N>/<NOME>_GUIDE/` (DEC-002) — do not flatten at the `archive/` root or as `archive/guides/<PACK>/`;
+- under `archive/`, materialize the mirror of the `destinationPath` already expanded by the cascade: `archive/guides/<YYYY-MM>/semana-<N>/<NAME>_GUIDE/` (DEC-002) — do not flatten at the `archive/` root or as `archive/guides/<PACK>/`;
 - `relocate` fragments destined for `.app-work/` enter the corresponding folder (basename preserved, bytes preserved);
 - `condense` fragments materialize the canonical in staging (unique excerpt + trail note); the origin goes to `staging-deletions.json`;
 - if the plan touched `guides|prd|docs|issues|archive|roadmap|references|private`, generate/update that folder's `README.md` (role/type, not eternal names). Do not restore a pruned file.
@@ -73,14 +76,14 @@ After any revalidation answer, discard staging, coverage-map, and plan derived f
 - use `templates/AGENTS.md.template` as the operational base of `AGENTS.md`;
 - materialize `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md` from the kit template; the consuming agent must be able to operate decisions without resolving `references/vault-schema/SCHEMA.md` inside the install;
 - fill the header with the real project name and the agent contract on the real stack (for example "Act as a senior Flutter engineer. Preserve feature-first architecture, explicit contracts..."); never leave the template's generic header in the final file;
-- keep `## Postura`, `## Workflow obrigatório` (including mandatory stop, premises, criterion, simplicity, surgical change, and invariants inside steps 2 and 3), `## Precedência interna`, `## Produto`, and the base universal rules identical to the template (fixed protocol, the same in every project); fill only points marked `<preencher na síntese>`: validation gates, language, repository structure, and project-specific universal rules;
+- keep `## Posture`, `## Mandatory workflow` (including mandatory stop, premises, criterion, simplicity, surgical change, and invariants inside steps 2 and 3), `## Internal precedence`, `## Product`, and the base universal rules identical to the template (fixed protocol, the same in every project); fill only points marked `<fill in during synthesis>`: validation gates, language, repository structure, and project-specific universal rules;
 - do not promote to its own H2 what the template keeps inside workflow steps: conversation posture stays at the top, the rest fires in the step where it is read or applied;
-- do not repeat in `AGENTS.md` what `project-rules/rules/operational_rules.md` already norms (gates, tests, baseline, closeout, commits): `### 4. Validação` points to the rule and adds only the stack's real gates;
+- do not repeat in `AGENTS.md` what `project-rules/rules/operational_rules.md` already norms (gates, tests, baseline, closeout, commits): `### 4. Validation` points to the rule and adds only the stack's real gates;
 - fill the repository-structure and documentation section with the project's reality: apps/packages/folders and their roles (or the app's single root) and the generated `project-rules/` components (indexes, rules, references, contracts) — every existing `project-rules/` component must be reachable from internal precedence or referenced in that section; product and process anchors are **fixed** in the template (`_app-vault/INDEX.md` and `.app-work/INDEX.md`, with responsibilities and the ban on `.app-work/` as an input): fill only what is the project's, never list internal vault/process folders in `AGENTS.md` — each folder has its own index/README;
 - do not add client frontmatter (for example `description`/`alwaysApply`) to the generated `AGENTS.md`; tools read `AGENTS.md` by default;
-- materialize a root `CLAUDE.md` bridge with exactly one line, `@AGENTS.md`, and nothing else — a client that only reads `CLAUDE.md` lands on the same contract without a duplicate file; a preexisting `CLAUDE.md` with its own content is a source like any other (reabsorb into `AGENTS.md`/`project-rules/` and reduce to the bridge, recording the replacement in `plan.md` before apply), unless it is in the `shield` block;
+- materialize a root `CLAUDE.md` bridge with exactly one line, `@AGENTS.md`, and nothing else — a client that only reads `CLAUDE.md` lands on the same contract without a duplicate file; a preexisting `CLAUDE.md` with its own content is a source like any other (reabsorb into `AGENTS.md`/`project-rules/` and reduce to the bridge — an `overwrite` of a versioned contract, `destructive: true` by `plan`'s mechanical definition, not executed without recorded approval, including in `maintain`; record the replacement in `plan.md` before apply), unless it is in the `shield` block;
 - keep `AGENTS.md` focused on posture, stop, workflow, precedence, triage, and validation;
-- ensure triage tries to read `project-rules/index/<tipo>.md` before pre-confirmation;
+- ensure triage tries to read `project-rules/index/<type>.md` before pre-confirmation;
 - ensure pre-confirmation uses the already-loaded index to list triggered rules/references and does not pause waiting for approval;
 - do not put domain, UI, architecture, security, or contract rules directly in `AGENTS.md`;
 - generate only categories supported by available material;
@@ -165,6 +168,6 @@ Generate only files supported by available material, using predictable names:
 3. `project-rules/rules/*`
 4. `project-rules/reference/*`
 5. `project-rules/contracts/*` (when present)
-6. `_app-vault/` (decisions from `identity-map.json` + `INDEX.md` derived from `Afeta:`)
+6. `_app-vault/` (decisions from `identity-map.json` + `INDEX.md` derived from `Affects:`)
 7. `.app-work/` (closed-list scaffold + relocation of `relocate` fragments)
 8. `.hephaestus/manifests/*`

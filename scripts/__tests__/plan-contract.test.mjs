@@ -109,3 +109,29 @@ test("higiene: operation delete com origin passa; llm destrutivo sem approved fa
   assert.equal(r.status, 1);
   assert.ok(r.stderr.includes("INV7") || r.stderr.includes("llm"));
 });
+
+test("DATA-01: par operation×regime fora da tabela normativa reprova; entrada de issue (process+generate) passa", () => {
+  // par sem linha na tabela (prompts/plan.md): keep não materializa move
+  const pkg = mkdtemp("hep-plan-regime-");
+  makeValidPackage(pkg);
+  withPlan(pkg, [entry({ regime: "keep", operation: "move" })]);
+  const result = runValidator(pkg);
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stderr, /operation "move" × regime "keep"/, result.stderr);
+  assert.match(result.stderr, /Operation × regime/, result.stderr);
+
+  // par composto das operações de issue (Fase 1): territory process + regime
+  // generate + operation create/amend — a única exceção declarada da INV9
+  const issue = mkdtemp("hep-plan-issue-");
+  makeValidPackage(issue);
+  withPlan(issue, [
+    entry({
+      artifactPath: ".app-work/issues/INDEX.md",
+      territory: "process",
+      regime: "generate",
+      operation: "amend",
+      decidedBy: "detector",
+    }),
+  ]);
+  assert.equal(runValidator(issue).status, 0);
+});

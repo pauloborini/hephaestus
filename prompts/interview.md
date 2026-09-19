@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Single drain of the question queue: interrupt the user in batch on genuine ambiguity, and turn each answer into **versioned data consulted before judgment** (D22). Questions are born queued in `route`, `reconcile`, or `compose`; this is the only phase that asks. A run admits at most two batches actually presented: the initial one and one revalidation batch. A pass with an empty or already-answered queue does not count as a batch. Record the count in `run-state.interviewBatches`; a third human request blocks the run as an unresolved cycle.
+Single drain of the question queue: interrupt the user in batch on genuine ambiguity, and turn each answer into **versioned data consulted before judgment** (D22). Questions are born queued in `discover`, `route`, `reconcile`, or `compose`; this is the only phase that asks. A run admits at most two batches actually presented: the initial one and one revalidation batch. A pass with an empty or already-answered queue does not count as a batch. Record the count in `run-state.interviewBatches`; a third human request blocks the run as an unresolved cycle.
 
 ## Inputs
 
-- `.hephaestus/manifests/questions.json` — question queue from originating phases (`route`/`reconcile`/`compose`), with `questionKey`, `contextFingerprint`, `fragmentId`, `reason`, `invalidates`, and `blocking` per question;
+- `.hephaestus/manifests/questions.json` — question queue from originating phases (`discover`/`route`/`reconcile`/`compose`), with `questionKey`, `contextFingerprint`, `fragmentId`, `reason`, `invalidates`, and `blocking` per question;
 - `.app-work/hephaestus-state.json`, when present — `answers` block with prior answers (reuse by `questionKey`, without re-asking);
 - `.hephaestus/manifests/run-answers.json` — `this-run` answers, ephemeral and resumable on the same `runId`, never reused on the next run;
 - `.hephaestus/manifests/run-state.json` (phase checkpoint).
@@ -40,7 +40,7 @@ Write the `this-run` answer immediately to the ephemeral manifest and persistent
 
 ## Revalidation cycle
 
-- each question declares `reason` in `{route-ambiguity, reconcile-conflict, decision-promotion, pack-candidate, compose-shield-adaptation, approval-scope, context-changed}` and `invalidates` with the oldest affected phase;
+- each question declares `reason` in `{route-ambiguity, reconcile-conflict, decision-promotion, pack-candidate, compose-shield-adaptation, approval-scope, issues-visibility, context-changed}` and `invalidates` with the oldest affected phase;
 - after answers, compare fingerprint and previous answer. A route or promotion change returns to `route`; an identity conflict returns to `reconcile`; shield adaptation returns to `plan` (or `route` if destination changes); an authorization change returns to `plan`. For a batch, choose the oldest affected phase;
 - record `revalidation` with `requiredFrom`, reason, `answerKeys`, `invalidates` list, and `attempt` equal to `interviewBatches`. Mark affected and later phases as `not_started`, except the answered interview, which stays `validated`; discard derived plan/approval and staging and re-run from `requiredFrom`. No artifact from before the answer may be consumed as approved;
 - clear `revalidation` only after re-validating the affected phases prior to writing, before `apply`. Preserve `interviewBatches` so the limit is not reset. On a natural pass through `interview`, reuse valid answers without a new batch;
@@ -57,6 +57,14 @@ A path or folder under `.app-work/` outside the closed list (SCHEMA §4 / `inven
 - Yes (`includeInPack: true`): apply the proposed destination in this run; write an entry to `.hephaestus/pack-candidates.json` (ephemeral, shape `schemas/pack-candidates.schema.json`). **Do not** write a new folder into `routing.overlay`. This phase **does not edit** the installed skill. The `scope` of a point destination answer may be `this-run` or `this-project` only for **this path**, never as a folder default.
 - No (`includeInPack: false`): map to a folder already listed in SCHEMA §2 / §4; last resort `.app-work/archive/docs/`.
 - No answer: run `blocked` / closeout `needs-followup`.
+
+## Axis: issues visibility
+
+The question is born queued in `discover` (once per project — `reason: issues-visibility`, `blocking: false`) and presents the trade-off without deciding: versioning `.app-work/issues/` gives traceability and collaboration on a private repository; ignoring it via `.app-work/.gitignore` keeps internal context and PII out of a public git history that is permanent (D43).
+
+- answer shape: `answer.issuesVisibility ∈ {versioned, gitignored}` with `scope: this-project` — a per-project decision never persists as `this-run`, and there is nothing to promote to catalog;
+- the answer is consumed by `compose` when materializing `.app-work/.gitignore`, binding by `questionKey` + `contextFingerprint` in `adopt` and `maintain` alike;
+- no answer: the question is non-blocking and the declared conservative default applies — `compose` ignores `issues/` and records the pending; a later run re-asks whenever no persisted answer with a current fingerprint exists.
 
 ## Human promotion of a decision candidate
 

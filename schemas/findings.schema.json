@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hephaestus Defect Findings",
+  "description": "Ephemeral defect findings ledger at .hephaestus/manifests/findings.json: defects detected by discover (maintain inventory integrity drift) and validate (failing gates), consumed by plan as the ISSUE-NNN operation. Producers append; a run that detects no defect records no finding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "runId", "findings"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "path", "statement", "severity", "findingSignature"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 },
+        "severity": { "type": "string", "enum": ["S0", "S1", "S2", "S3"] },
+        "findingSignature": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

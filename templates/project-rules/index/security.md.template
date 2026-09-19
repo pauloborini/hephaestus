@@ -1,18 +1,18 @@
 # INDEX: SECURITY
 
-## Obrigatórias
+## Required
 
 1. `project-rules/rules/security_rules.md`
 2. `project-rules/rules/operational_rules.md`
 
-## Sob gatilho
+## On trigger
 
-- `auth_rules.md`: auth, sessão, role, permissão ou redirect.
-- `domain_rules.md`: dado sensível que atravessa DTO/Entity.
-- `error_handling_rules.md`: vazamento de detalhe interno em erro.
+- `auth_rules.md`: auth, session, role, permission, or redirect.
+- `domain_rules.md`: sensitive data crossing DTO/Entity.
+- `error_handling_rules.md`: internal-detail leak in errors.
 
-Carregar todas as regras acionadas antes da primeira edição, em lotes de até duas.
+Load every triggered rule before the first edit, in batches of up to two.
 
-## Referências
+## References
 
-Omitir esta seção quando não houver referência acionável.
+Omit this section when there is no actionable reference.

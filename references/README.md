@@ -1,9 +1,9 @@
 # References
 
-Este diretório contém referências neutras para orientar o formato esperado do kit.
+This directory holds neutral references that guide the kit's expected format.
 
-Regras:
+Rules:
 
-- nunca citar projetos reais;
-- nunca usar contratos reais;
-- exemplos servem para formato, não para domínio.
+- never cite real projects;
+- never use real contracts;
+- examples serve format, not domain.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "resolutionRule": "paths/globs de artefatos de outras ferramentas vigiados em maintain; extensível pelo overlay do projeto (bloco routing do state), nunca por prompt (D28)",
+  "resolutionRule": "paths/globs of other tools' artifacts watched in maintain; extensible via the project overlay (routing block of the state), never via prompt (D28)",
   "artifacts": [
     {
       "glob": ".cursor/rules/",

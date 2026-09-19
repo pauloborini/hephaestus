@@ -1,17 +1,17 @@
 # RULES: ERROR HANDLING
 
-## Papel
+## Role
 
-Definir como erros fluem pelo sistema.
+Define how errors flow through the system.
 
-## O que preencher na síntese
+## What to fill in during synthesis
 
-- tipo/padrão de retorno de operações com erro;
-- onde o erro é capturado e como é apresentado ao usuário;
-- estados de erro por boundary (loading/vazio/erro/permissão);
-- proibições (ex.: vazar detalhe interno, stacktrace ou payload sensível em log).
+- return type/pattern for operations with errors;
+- where the error is caught and how it is presented to the user;
+- error states per boundary (loading/empty/error/permission);
+- prohibitions (e.g. leaking internal detail, stacktraces, or sensitive payloads into logs).
 
-## Gatilhos típicos
+## Typical triggers
 
-- operação que retorna resultado de erro;
-- fluxo de erro, retry ou feedback de falha.
+- operation returning an error result;
+- error flow, retry, or failure feedback.
