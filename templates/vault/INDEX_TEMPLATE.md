@@ -1,56 +1,56 @@
 ---
 vault_version: 1
-updated: <AAAA-MM-DD>
-scope: <frase curta do que o vault cobre>
+updated: <YYYY-MM-DD>
+scope: <short phrase for what the vault covers>
 ---
 
-# <Projeto> — índice do vault
+# <Project> — vault index
 
 <!--
-  Ponteiro, não conteúdo. Teto ~100 linhas — ultrapassou, o índice virou conteúdo: refatorar.
+  Pointer, not content. Ceiling ~100 lines — past it, the index became content: refactor.
 
-  O corpo tem exatamente três seções: Domínios, Features válidas, Por feature.
-  Não acrescentar seção nova — cada uma consome teto e nenhuma é lida como ponteiro.
+  The body has exactly three sections: Domains, Valid features, By feature.
+  Do not add a new section — each one consumes ceiling and none is read as a pointer.
 
-  NUNCA entra aqui:
-    - valor vigente de decisão (o valor mora em docs/decisions/)
-    - QUALQUER ponteiro para .app-work/ (indexá-lo o torna descobrível e desfaz a separação)
-    - listagem de planos, tasks ou sprints
-    - cópia de PRD ou de spec
+  NEVER enters here:
+    - a living decision value (the value lives in docs/decisions/)
+    - ANY pointer to .app-work/ (indexing it makes it discoverable and undoes the split)
+    - plan, task, or sprint listings
+    - a copy of a PRD or spec
 
-  Remover estes comentários ao instanciar.
+  Remove these comments when instantiating.
 -->
 
-## Domínios
+## Domains
 
-<!-- um ponteiro por arquivo de docs/decisions/, com uma linha do que ele cobre -->
+<!-- one pointer per docs/decisions/ file, with one line on what it covers -->
 
-- [planos-e-cotas](docs/decisions/planos-e-cotas.md) — cotas, preços e limites dos planos
-- [autenticacao](docs/decisions/autenticacao.md) — login, sessão, recuperação de acesso
-- [pagamentos](docs/decisions/pagamentos.md) — cobrança, faturas, reembolso
+- [plans-and-quotas](docs/decisions/plans-and-quotas.md) — plan quotas, prices, and limits
+- [authentication](docs/decisions/authentication.md) — login, session, access recovery
+- [payments](docs/decisions/payments.md) — billing, invoices, refunds
 
-## Features válidas
+## Valid features
 
 <!--
-  Vocabulário controlado. Slug kebab-case estável, sem versão no nome.
-  Tag fora desta lista: adicionar aqui ou recusar a tag.
+  Controlled vocabulary. Stable kebab-case slug, no version in the name.
+  Tag outside this list: add it here or reject the tag.
 -->
 
 `login`, `billing`, `dashboard`, `onboarding`
 
-## Por feature
+## By feature
 
 <!--
-  Índice reverso DERIVADO dos campos `Afeta:` de docs/decisions/*.md. Nunca escrito à mão.
-  Divergiu do `Afeta:`? O `Afeta:` é a verdade; corrigir aqui.
+  Reverse index DERIVED from the `Affects:` fields of docs/decisions/*.md. Never written by hand.
+  Diverged from `Affects:`? `Affects:` is the truth; fix it here.
 
-  Exemplo abaixo derivado de:
-    planos-e-cotas  Afeta: [login, billing, dashboard]
-    autenticacao    Afeta: [login, onboarding]
-    pagamentos      Afeta: [billing]
+  Example below derived from:
+    plans-and-quotas  Affects: [login, billing, dashboard]
+    autenticacao    Affects: [login, onboarding]
+    pagamentos      Affects: [billing]
 -->
 
-- login → planos-e-cotas, autenticacao
-- billing → planos-e-cotas, pagamentos
-- dashboard → planos-e-cotas
+- login → plans-and-quotas, authentication
+- billing → plans-and-quotas, payments
+- dashboard → plans-and-quotas
 - onboarding → autenticacao

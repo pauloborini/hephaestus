@@ -9,9 +9,9 @@ const pairs = [
   ["SKILL.md", "SKILL.pt-BR.md"],
 ];
 
-// `packExcludes` do kit-manifest é a fonte da verdade sobre o que viaja no kit
-// distribuído — mesmo critério de `scripts/validate-skill-kit.mjs`, para os dois
-// gates não julgarem o mesmo par de forma diferente.
+// `packExcludes` in kit-manifest is the single source of truth for what travels
+// in the distributed kit — same criterion as in `scripts/validate-skill-kit.mjs`,
+// preventing the two gates from judging the same pair inconsistently.
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifests", "kit-manifest.json"), "utf8"));
 const packExcludes = Array.isArray(manifest.packExcludes) ? manifest.packExcludes : [];
 const isPackExcluded = (relativePath) =>

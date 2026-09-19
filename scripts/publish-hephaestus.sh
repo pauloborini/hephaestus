@@ -28,11 +28,11 @@ else
   gh repo clone "${REPO_SLUG}" "${TMP_DIR}"
 fi
 
-# Lista final de exclusão do rsync: `packExcludes` do manifesto (dado único,
-# VC4) + `.git` e o artefato de saída do empacotador (`hephaestus-*.zip`),
-# exclusões próprias do publicador. Nenhuma exclusão de conteúdo vive
-# literalmente aqui — duas listas parciais reproduzem o vazamento que
-# originou ISSUE-002.
+# Final rsync exclusion list: manifest `packExcludes` (single source of truth,
+# VC4) + `.git` and the packager output artifact (`hephaestus-*.zip`),
+# publisher-specific exclusions. No content exclusion lives
+# literally here — two partial lists reproduce the leak that
+# originated ISSUE-002.
 PACK_EXCLUDES=("${(@f)$(node -e 'const fs=require("node:fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write((m.packExcludes||[]).join("\n"));' "${SOURCE_DIR}/manifests/kit-manifest.json")}")
 RSYNC_EXCLUDES=()
 for entry in "${PACK_EXCLUDES[@]}" ".git" "hephaestus-*.zip"; do
