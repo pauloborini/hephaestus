@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "8",
+  "version": "9",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
