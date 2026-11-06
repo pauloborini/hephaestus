@@ -43,7 +43,9 @@ Check whether the package meets the kit's minimum contract. A parameterized phas
 - contracts in `project-rules/contracts/`, when present, are referenced as consult-only;
 - reference fragments were preserved or omitted with justification;
 - naming is neutral;
-- there is no real-identity leak;
+- there is no real-identity leak: the identity hygiene scan (`references/vault-schema/SCHEMA.md` §2.5) over every composed artifact (`AGENTS.md`, `project-rules/`, `_app-vault/`, and the `.app-work/` files this run created or rewrote) returns zero hits; hits in sources kept byte for byte are findings and pendings, not a failure of this gate;
+- `.app-work/.gitignore` carries `references/`, `private/`, the text-only evidence block, and the public set when the repository-visibility answer (or the conservative default) requires it;
+- `AGENTS.md` carries the universal rules on personal data in versioned artifacts and on commit identity from the template;
 - files follow the minimum schemas;
 - the final tree does not depend on an empty file to look complete;
 - external dependencies cited by `project-rules/` were recorded in `.hephaestus/manifests/external-references-report.json`, when they exist;
@@ -65,6 +67,7 @@ Yes — only on `Target: applied`, the only allowed write is merging the `meta.a
 
 - use `degraded` when the package is useful but there are gaps or a controlled conflict;
 - use `blocked` when essential structure is missing or there is a relevant risk;
+- use `blocked` when the identity hygiene scan finds a hit in a composed artifact; the report names the path and the pattern class, never the matched value;
 - never mask a serious conflict as a cosmetic observation;
 - use `blocked` when `AGENTS.md` received rules that should live in `project-rules/rules/*`;
 - use `blocked` when the triage and pre-confirmation workflow is missing;

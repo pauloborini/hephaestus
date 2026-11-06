@@ -163,6 +163,7 @@ Modos `adopt` / `maintain` **não** são fases - ver Superfície.
 ## Guardrails
 
 - não citar projetos reais em nenhum artefato distribuível;
+- higiene do conteúdo versionado (`references/vault-schema/SCHEMA.md` §2.5): nenhum dado pessoal real, token, chave ou caminho de usuário em artefato composto pelo kit; provas só em texto; o kit reporta a exposição no histórico do Git e nunca reescreve histórico nem a config do Git;
 - não copiar textos longos de exemplo sem neutralização;
 - não criar categorias sem papel operacional claro;
 - não inflar a árvore final com arquivos vazios;
@@ -185,7 +186,7 @@ Bloqueie a conclusão quando:
 - faltar `AGENTS.md`;
 - a classificação estiver majoritariamente ambígua;
 - o pacote final depender demais de inferência fraca;
-- houver vazamento de identidade real;
+- houver vazamento de identidade real (achado da varredura de identidade em artefato composto, `references/vault-schema/SCHEMA.md` §2.5);
 - o estado de execução estiver corrompido ou inconsistente a ponto de impedir retomada segura;
 - os contratos mínimos dos `schemas/` não forem atendidos;
 - a worktree contiver delta não comprovado do próprio run ou o backup estiver incompleto na fase `apply`;

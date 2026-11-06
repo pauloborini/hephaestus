@@ -3,7 +3,7 @@
 # Hephaestus — procedimento de release
 
 Runbook do mantenedor. Não viaja no zip do usuário (`packExcludes`). Contrato de produto:
-`DEC-003` em `_app-vault/docs/decisions/estrutura-do-kit.md`.
+`DEC-003` no `_app-vault/` local do mantenedor (gitignored, nunca publicado).
 
 ## O que o usuário recebe
 
@@ -30,14 +30,27 @@ testes nem o publicador.
 - [ ] Worktree limpa.
 - [ ] Branch `develop` (ou a de corte) contém o conteúdo a publicar.
 - [ ] `gh auth status` OK.
+- [ ] Guardas ativas: `git config core.hooksPath` é `.githooks` e `git config user.email` é o endereço noreply do GitHub (ver Guardas do repositório).
 - [ ] Versão em `kit-manifest.json` já é o `N` desta release (bump commitado).
 - [ ] `main` receberá o SHA final antes da tag (merge/PR).
+
+## Receber mudanças upstream aprovadas
+
+A ordem das mudanças do kit é Atlas → Shared → este repositório. Depois dos gates do Atlas e do passe de paridade no Shared, execute na raiz deste repositório:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+Revise o diff resultante e atualize a documentação pública em português quando a mudança em inglês afetar o par correspondente. Esse script de handoff altera somente a working tree. Ele não gera zip, não commita, não faz push e não publica. A release continua sendo uma operação separada, executada diretamente aqui.
 
 ## Gates (obrigatórios)
 
 Na raiz do repositório:
 
 ```bash
+node scripts/check-identity.mjs
 node scripts/validate-skill-kit.mjs
 node scripts/check-public-docs.mjs
 node --test "scripts/__tests__/**/*.test.mjs"
@@ -46,6 +59,19 @@ node scripts/pack-release.mjs --dry-run
 
 Todos exit 0. Dry-run: toda entrada sob `hephaestus/`, com `hephaestus/LICENSE`, sem paths de
 `packExcludes`.
+
+## Guardas do repositório
+
+Este repositório é público e o histórico é permanente. Quatro camadas mantêm fora dele dado pessoal, nome de projeto real e material só do mantenedor:
+
+| Camada | O que barra |
+|---|---|
+| `scripts/check-identity.mjs` | e-mail fora de domínios reservados e noreply, tokens e chaves privadas, caminhos absolutos de usuário, nomes da política de nomes, `_app-vault/`, `.app-work/`, `.hephaestus/`, `*.zip` e `.env*` real versionados, e identidade de commit fora do noreply. Reporta caminho e classe, nunca o valor. |
+| `.githooks/pre-commit` | roda a checagem nas mudanças staged. Ative uma vez por clone: `git config core.hooksPath .githooks`. |
+| `.github/workflows/guard.yml` | roda a checagem, a validação do kit, os pares de documentação, os testes e o dry-run da release em todo push e pull request, então um hook pulado ainda é pego. |
+| Configurações do GitHub | secret scanning e push protection ligados; `main` e `develop` recusam force push e remoção. |
+
+Nomes reais a barrar ficam em `manifests/naming-policy.local.json` (gitignored, fora do zip); o `naming-policy.json` distribuído nunca os lista. `_app-vault/` e `.app-work/` são locais do mantenedor: ficam na sua máquina e nunca voltam com `git add -f`.
 
 ## Empacotar
 
@@ -164,3 +190,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v8`.
 - Artefato: `hephaestus-8.zip`.
 - Conteúdo: 2ª rodada de melhorias sistemáticas (relatório `.app-work/melhorias-sistematicas-hephaestus-v7.md`) — ledger de findings atravessando fases (`schemas/findings.schema.json`; cunhado em `discover`/`validate`, consumido pelo `plan`, materializado pelo `compose` no state); tabela normativa `Operation × regime` no `plan.md` com o gate estrito `checkPlanRegimePairs` no `validate-package.mjs`; overwrite destrutivo de contrato versionado (ex.: ponte `CLAUDE.md`) passa a ser `destructive` em todo modo; pergunta de visibilidade do `issues/` com reason `issues-visibility` e default conservador (ignorar); handoff de state entre runs (bloco commit/descarte); closeout sem "re-run"; templates ISSUES movidos para `templates/appwork/`; limpeza English-first dos comentários restantes em scripts e templates de vault.
+
+## Nona release (v9)
+
+- Versão no manifesto: `"9"`.
+- Tag: `v9`.
+- Artefato: `hephaestus-9.zip`.
+- Conteúdo: higiene do conteúdo versionado (SCHEMA 2.5): o que nunca entra no Git, provas só em texto e uma varredura de identidade usada por `discover`, `validate`, `preflight` e `closeout` (achado em artefato composto bloqueia, em fonte mantida vira pendência, histórico do Git só é reportado); a visibilidade do repositório cobre todas as pastas de processo; regras universais novas no `AGENTS.md` (sem dado pessoal em artefato versionado, identidade de commit noreply) e nos templates de segurança e operação (gate de varredura de identidade, build e deploy por entrada única); a política de nomes distribuída não lista nomes reais. Repositório: `_app-vault/` e `.app-work/` do mantenedor removidos do histórico público, e as guardas acima.

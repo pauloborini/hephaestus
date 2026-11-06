@@ -115,6 +115,17 @@ Na validação intermediária, a LLM também pode classificar o pacote como:
 - `degraded`
 - `blocked`
 
+## Sincronização upstream
+
+O repositório público do Hephaestus recebe mudanças do kit somente depois que a origem no Atlas passou pelos gates e a árvore aprovada foi promovida para o Shared. Na raiz deste repositório, confira e aplique a árvore inglesa gerenciada com:
+
+```bash
+node scripts/sync-from-shared.mjs --check
+node scripts/sync-from-shared.mjs --apply
+```
+
+O sincronizador preserva a documentação pública em português, os arquivos de release, os scripts de desenvolvimento e os recursos próprios deste repositório. Ele altera somente arquivos: não gera zip, não commita, não faz push e não publica. Depois de revisar o diff, siga diretamente o procedimento de release deste repositório.
+
 ## Instalação
 
 O produto é distribuído como zip de release com raiz fixa `hephaestus/`.

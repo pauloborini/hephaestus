@@ -38,7 +38,7 @@ _app-vault/                 # CURRENT TRUTH — visible, searchable
 
 .app-work/                  # PROCESS — disposable, hidden from search
   INDEX.md                  # process map (§8) — pointer, not content; AGENTS.md anchor
-  .gitignore                # versioned; contains `references/` and `private/`; `issues/` if the repo is public (D43)
+  .gitignore                # versioned; `references/`, `private/` and the text-only evidence block always; `issues/`, `guides/`, `brainstorming/`, `prd/`, `archive/` if the repo is public (D43, §2.5)
   hephaestus-state.json     # versioned kit state (lowercase)
   guides/<NAME>_GUIDE/
   guides/legados/
@@ -114,17 +114,21 @@ versioned `.app-work/.gitignore`, not a loose line in the root `.gitignore`. The
   folder's `INDEX.md` (live table by state — Open / In verification / Closed) with a sequential
   `ISSUE-NNN` ID (unique prefix across all projects), severity S0–S3 and cycle
   `OPEN → FIXED → VERIFIED → CLOSED` (+ WONTFIX/DUPLICATE); rich context (evidence, technical
-  notes) lives in an **optional** sibling `ISSUE-NNN.md`. **Visibility:** a **private** repo
-  versions `issues/` (traceability + collaboration); a **public** repo ignores it via
-  `.app-work/.gitignore` (the `issues/` line) — an issue carries internal context (evidence, PII,
-  premature decisions) and public git is immutable. Decided by an adoption question with `reason:
-  issues-visibility` (queued by `discover`, one per project, non-blocking), with the answer
-  persisted in the `answers` block of `.app-work/hephaestus-state.json` (`scope: this-project`,
-  `answer.issuesVisibility: versioned | gitignored`) and consumed by `compose` when materializing
-  `.app-work/.gitignore`, binding by `questionKey` + `contextFingerprint` in `adopt` and
-  `maintain`; without an answer, the declared conservative default applies: ignore `issues/` + a pending
-  item in closeout — the kit never infers public/private. One-path rule;
-  in a public repo the record is local-only (external collaboration, if ever, via GitHub Issues).
+  notes) lives in an **optional** sibling `ISSUE-NNN.md`. **Visibility (repository-wide):** a
+  **private** repo versions `issues/` and the other process folders (traceability + collaboration);
+  a **public** repo ignores `issues/`, `guides/`, `brainstorming/`, `prd/`, and `archive/` via
+  `.app-work/.gitignore`, keeping only the maps, the state, `roadmap/`, and `docs/` versioned.
+  Process folders carry internal context (evidence, accounts, premature decisions) and public git
+  is immutable. Decided by one adoption question with `reason: issues-visibility` (queued by
+  `discover`, one per project, non-blocking; the key name is kept for compatibility, the scope is
+  the repository), with the answer persisted in the `answers` block of
+  `.app-work/hephaestus-state.json` (`scope: this-project`,
+  `answer.issuesVisibility: versioned | gitignored`, where `gitignored` means public repository)
+  and consumed by `compose` when materializing `.app-work/.gitignore`, binding by `questionKey` +
+  `contextFingerprint` in `adopt` and `maintain`; without an answer, the declared conservative
+  default applies: the public set of lines + a pending item in closeout. The kit never infers
+  public/private. One-path rule; in a public repo the record is local-only (external
+  collaboration, if ever, via GitHub Issues).
 
 ### 2.3 Prefixes and naming
 
@@ -155,6 +159,42 @@ routing modality of `maintain` mode (`/hephaestus`). LLM record, classification,
 replaces human confirmation when the change is destructive. An illegal destination (outside §2) is
 refused.
 See the procedure in the Hephaestus pipeline phases.
+
+### 2.5 Versioned content hygiene
+
+Git history is permanent, and on a public remote it is permanent for everyone. Every versioned file
+the kit reads or writes (the four territories) and every commit made in a governed repository
+follow these rules:
+
+- **Never versioned:** `.hephaestus/`, `.app-work/private/`, `.app-work/references/`, real `.env*`,
+  signing keys, backups, and binary evidence (screenshots, videos, raw device or browser logs,
+  archives).
+- **Evidence is text-only:** receipts and evidence under `.app-work/` are versioned only as `.md`,
+  `.txt`, or `.json`. Binary files under any `evidence/` or `receipts/` folder stay local through
+  `.app-work/.gitignore`.
+- **No real personal data in versioned text:** e-mail addresses, phone numbers, personal document
+  numbers, account or device identifiers, allowlist values, tokens, keys, and absolute home paths
+  (`/Users/<name>/`, `/home/<name>/`, `C:\Users\<name>\`). Write a role placeholder
+  (`<admin-account>`, `<qa-account>`) or a reserved domain (`example.com`, `.invalid`, `.test`).
+- **Public contacts are declared, not guessed:** an organization address the product shows on
+  purpose (support, privacy contact) is allowed only after a `reason: identity-hygiene` answer
+  classifies it as `public-contact` for this project.
+- **Commit identity:** commits use the Git host's private noreply address; `git config user.email`
+  is checked before the first commit of a session.
+
+**Identity hygiene scan.** One definition, used by `discover` (sources), `validate` (staging and
+applied package), and `closeout` (history exposure):
+
+| Pattern | Counts as a hit when |
+|---|---|
+| E-mail address | the domain is not `example.com`, `example.org`, `example.net`, `.invalid`, `.test`, or `.local`, it is not a Git host noreply address, and it is not an answered `public-contact` |
+| Token or key | a three-part JWT starting with `eyJ`, a known secret prefix (`sk_`, `sb_secret_`, `ghp_`, `github_pat_`, `AKIA`, `xox`), or a `PRIVATE KEY` block |
+| Home path | `/Users/<name>/`, `/home/<name>/`, or `C:\Users\<name>\` with a real name instead of a `<placeholder>` |
+
+A hit in content the kit composes blocks validation. A hit in an existing source the kit keeps byte
+for byte (process files, shielded content) becomes a finding and a closeout pending with the
+recommended manual redaction. A hit in Git history (commit author, committer, or past file
+content) is reported and never rewritten: rewriting history is a user decision outside the kit.
 
 ---
 

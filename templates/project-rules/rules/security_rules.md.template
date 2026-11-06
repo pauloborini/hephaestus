@@ -9,9 +9,15 @@ Define secrets, PII, and environment norms.
 - exposure prohibitions (secrets, tokens, private URLs, PII);
 - `.env` and per-environment configuration rules;
 - logs and telemetry without sensitive payloads;
-- sensitive storage and data in transit.
+- sensitive storage and data in transit;
+- what is never versioned in this repository (real `.env*`, signing keys, backups, binary evidence) and where it lives instead;
+- personal data in versioned artifacts: role placeholders for real accounts (`<admin-account>`, `<qa-account>`), reserved domains for examples, text-only evidence, and the organization addresses the product shows on purpose (public contacts);
+- commit identity: the Git host's noreply address and how to check it;
+- the automated scan that enforces the items above (command and trigger live in `operational_rules.md`).
 
 ## Typical triggers
 
 - secrets, PII, permissions, environment, or sensitive data;
-- logs, telemetry, or payload serialization.
+- logs, telemetry, or payload serialization;
+- receipts, evidence, issues, or process documents that mention real accounts, devices, or people;
+- commits, history, or repository visibility.

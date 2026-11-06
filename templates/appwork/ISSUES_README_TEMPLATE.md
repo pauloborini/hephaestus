@@ -54,10 +54,11 @@ Severity is **user impact**, not fix effort.
 
 - An ID is **never** reused or renumbered. A line is **never** deleted.
 - Screenshots stay out of Git (local attachments / prints in the conversation).
+- No real personal data in a line or detail file: name accounts by role (`<admin-account>`, `<qa-account>`), never by real e-mail, phone, or ID; quote logs without tokens or home paths.
 - Large issues may be broken into sub-items with a body checklist, but keep a single ID until an explicit split.
 - Priority is **not** a required field; use a free-form label in the body if needed.
 - Defect/issue → this record; new feature/track → master backlog — never duplicate elsewhere.
-- A private repo versions this record (traceability); in a public repo the whole folder is gitignored (D43).
+- A private repo versions this record (traceability); in a public repo the whole folder is gitignored, together with the other process folders (D43).
 
 ## Detail template (optional)
 
@@ -82,7 +83,7 @@ Desired behavior/visual.
 
 ## Evidence
 
-Screenshots (out of Git), prints, or code paths.
+Screenshots (out of Git), prints, or code paths. Accounts by role, never by real e-mail.
 
 ## Technical notes
 

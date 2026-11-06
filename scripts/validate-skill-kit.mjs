@@ -106,6 +106,8 @@ const allowedExtensionlessFiles = new Set(["LICENSE"]);
 // Development repo files that are not part of the distributed package.
 const skippedRelativePaths = new Set([
   ".gitignore",
+  ".github",
+  ".githooks",
   path.join("scripts", "publish-hephaestus.sh"),
   path.join("scripts", "__tests__"),
 ]);

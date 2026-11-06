@@ -1,10 +1,7 @@
 {
   "policyVersion": "2",
   "publicNamingMode": "neutral-only",
-  "forbiddenPatterns": [
-    "example-project",
-    "example-brand"
-  ],
+  "forbiddenPatterns": [],
   "allowedTopLevelCategories": [
     "index",
     "rules",
@@ -14,6 +11,7 @@
   ],
   "rules": [
     "Do not cite real project names in distributed artifacts.",
+    "Real names to block live in manifests/naming-policy.local.json (same shape, maintainer-only, excluded from every distribution) or in the project state routing.forbiddenPatterns; this shipped file never lists them.",
     "Prefer operational-role names over domain-specific names.",
     "Do not create empty files only to simulate completeness."
   ]

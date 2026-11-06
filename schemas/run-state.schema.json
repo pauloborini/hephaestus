@@ -187,6 +187,7 @@
             "compose-shield-adaptation",
             "approval-scope",
             "issues-visibility",
+            "identity-hygiene",
             "context-changed"
           ]
         },

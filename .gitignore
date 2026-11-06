@@ -1,2 +1,14 @@
 .DS_Store
 *.zip
+
+# Maintainer-only territories: product decisions and process of the kit stay local.
+_app-vault/
+.app-work/
+.hephaestus/
+.superpowers/
+
+# Maintainer-only list of real names blocked by the naming policy.
+manifests/naming-policy.local.json
+
+.env*
+!.env.example

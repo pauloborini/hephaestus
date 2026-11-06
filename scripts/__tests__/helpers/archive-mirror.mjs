@@ -18,7 +18,7 @@ export const guidePackName = (sourcePath) => {
   return parts.find((p) => /_GUIDE$/i.test(p)) ?? null;
 };
 
-/** Semana civil do mês (organizar-app-work / example-app 2026-08-14). */
+/** Calendar week of the month used by the archive mirror (DEC-002). */
 export const civilWeekOfMonth = (dayOfMonth) => {
   if (dayOfMonth <= 7) return 1;
   if (dayOfMonth <= 14) return 2;

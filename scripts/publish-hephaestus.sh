@@ -49,6 +49,8 @@ if [[ -z "$(git -C "${TMP_DIR}" status --short)" ]]; then
 fi
 
 git -C "${TMP_DIR}" add .
+# Identity hygiene over the outgoing tree and the commit identity; blocks before any push.
+(cd "${TMP_DIR}" && node "${SOURCE_DIR}/scripts/check-identity.mjs")
 git -C "${TMP_DIR}" commit -m "${COMMIT_MESSAGE}"
 git -C "${TMP_DIR}" push origin "${BRANCH}"
 

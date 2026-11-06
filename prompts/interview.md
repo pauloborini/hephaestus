@@ -58,13 +58,22 @@ A path or folder under `.app-work/` outside the closed list (SCHEMA §4 / `inven
 - No (`includeInPack: false`): map to a folder already listed in SCHEMA §2 / §4; last resort `.app-work/archive/docs/`.
 - No answer: run `blocked` / closeout `needs-followup`.
 
-## Axis: issues visibility
+## Axis: repository visibility (`issues-visibility`)
 
-The question is born queued in `discover` (once per project — `reason: issues-visibility`, `blocking: false`) and presents the trade-off without deciding: versioning `.app-work/issues/` gives traceability and collaboration on a private repository; ignoring it via `.app-work/.gitignore` keeps internal context and PII out of a public git history that is permanent (D43).
+The question is born queued in `discover` (once per project, `reason: issues-visibility`, `blocking: false`; the key name is kept for compatibility, the scope is the whole repository) and presents the trade-off without deciding: on a private repository, versioning `.app-work/issues/` and the other process folders gives traceability and collaboration; on a public repository, ignoring `issues/`, `guides/`, `brainstorming/`, `prd/`, and `archive/` via `.app-work/.gitignore` keeps internal context, accounts, and PII out of a git history that is permanent (D43, `references/vault-schema/SCHEMA.md` §2.5).
 
-- answer shape: `answer.issuesVisibility ∈ {versioned, gitignored}` with `scope: this-project` — a per-project decision never persists as `this-run`, and there is nothing to promote to catalog;
+- answer shape: `answer.issuesVisibility ∈ {versioned, gitignored}` (`versioned` = private repository, `gitignored` = public repository) with `scope: this-project`; a per-project decision never persists as `this-run`, and there is nothing to promote to catalog;
 - the answer is consumed by `compose` when materializing `.app-work/.gitignore`, binding by `questionKey` + `contextFingerprint` in `adopt` and `maintain` alike;
-- no answer: the question is non-blocking and the declared conservative default applies — `compose` ignores `issues/` and records the pending; a later run re-asks whenever no persisted answer with a current fingerprint exists.
+- no answer: the question is non-blocking and the declared conservative default applies: `compose` writes the public set and records the pending; a later run re-asks whenever no persisted answer with a current fingerprint exists.
+
+## Axis: identity hygiene
+
+`discover` queues one question per distinct organization e-mail address found by the identity hygiene scan (`references/vault-schema/SCHEMA.md` §2.5) when the address may be a contact the product shows on purpose (support, privacy, sales). `reason: identity-hygiene`, `blocking: false`, `questionKey` derived from the normalized address, `contextFingerprint` over the paths where it appears. The question shows the paths, never decides, and never echoes a personal address outside the files that already contain it.
+
+- answer shape: `answer.identityClass ∈ {public-contact, personal}` with `scope: this-project`;
+- `public-contact`: the address stops counting as a hit in this project;
+- `personal`: every occurrence stays a hit; the recommended action is redaction to a role placeholder, applied by `compose` only in content the kit composes and reported as a pending for content the kit keeps byte for byte;
+- no answer: the address stays a hit (conservative default).
 
 ## Human promotion of a decision candidate
 

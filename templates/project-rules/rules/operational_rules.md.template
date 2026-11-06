@@ -9,10 +9,19 @@ Fill in during synthesis with the real framework and tool commands of the projec
 | `analyze` | <framework static analysis, e.g. analyzer, linter, typecheck> | any code diff | zero new/in-scope issues |
 | `validate` | <project structural validator, when present> | diff in rules/structure | index/graph intact |
 | `diff-check` | `git diff HEAD --check` | tracked diff | zero whitespace/patch errors |
+| `identity-scan` | <project secret/PII scan, ideally in the pre-commit hook> | any diff | zero real e-mail outside declared public contacts, zero token or key, zero absolute home path, zero binary evidence staged |
 
 - The placeholders above must be replaced during synthesis with the real commands of the repository (e.g. `flutter analyze`, `tsc`, `eslint`, `melos run ...`).
 - Structural gates do not replace static analysis.
-- Docs/config-only diffs with no code do not trigger analysis gates.
+- Docs/config-only diffs with no code do not trigger analysis gates; `identity-scan` still applies to them.
+
+## Build, run, and deploy
+
+Fill in during synthesis when the repository builds or deploys anything:
+
+- single entry point: every build, run, and deploy goes through a registered command of the project task runner (e.g. `melos run <script>`, `npm run <script>`, `make <target>`); no manual build or deploy step in docs;
+- a changed procedure updates the script behind the command and the command catalog in the same change;
+- per-environment configuration lives in separate files even when two environments point to the same backend; release and deploy always read the production configuration, and the development configuration is restricted to local runs.
 
 ## Self-containment
 

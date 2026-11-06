@@ -1,6 +1,6 @@
 {
   "name": "hephaestus",
-  "version": "8",
+  "version": "9",
   "distributionMode": "zip-release",
   "packExcludes": [
     "_app-vault",
@@ -12,7 +12,10 @@
     ".gitignore",
     ".gitkeep",
     ".DS_Store",
-    ".superpowers"
+    ".superpowers",
+    "manifests/naming-policy.local.json",
+    ".github",
+    ".githooks"
   ],
   "requiredFiles": [
     "README.md",
