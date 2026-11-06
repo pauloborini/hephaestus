@@ -3,7 +3,7 @@
 # Hephaestus — release procedure
 
 Maintainer runbook. Does not ship in the user zip (`packExcludes`). Product contract: `DEC-003`
-in `_app-vault/docs/decisions/estrutura-do-kit.md`.
+in the maintainer-local `_app-vault/` (gitignored, never published).
 
 ## What the user gets
 
@@ -30,6 +30,7 @@ validation scripts needed for `/hephaestus` to run standalone, and the command r
 - [ ] Clean worktree.
 - [ ] `develop` (or cut branch) holds the content to publish.
 - [ ] `gh auth status` OK.
+- [ ] Guards active: `git config core.hooksPath` is `.githooks` and `git config user.email` is the GitHub noreply address (see Repository guards).
 - [ ] `kit-manifest.json` version is already this release's `N` (bump committed).
 - [ ] `main` will hold the final SHA before the tag (merge/PR).
 
@@ -49,6 +50,7 @@ Review the resulting diff and update the public Portuguese documentation when th
 From the repository root:
 
 ```bash
+node scripts/check-identity.mjs
 node scripts/validate-skill-kit.mjs
 node scripts/check-public-docs.mjs
 node --test "scripts/__tests__/**/*.test.mjs"
@@ -57,6 +59,19 @@ node scripts/pack-release.mjs --dry-run
 
 All must exit 0. Dry-run: every entry under `hephaestus/`, with `hephaestus/LICENSE`, and none of
 the `packExcludes` paths.
+
+## Repository guards
+
+This repository is public and its history is permanent. Four layers keep personal data, real project names, and maintainer-only material out of it:
+
+| Layer | What it blocks |
+|---|---|
+| `scripts/check-identity.mjs` | e-mail outside reserved domains and noreply, tokens and private keys, absolute home paths, names from the naming policy, tracked `_app-vault/`, `.app-work/`, `.hephaestus/`, `*.zip`, real `.env*`, and commit identities outside noreply. Reports path and class, never the value. |
+| `.githooks/pre-commit` | runs the check on staged changes. Activate once per clone: `git config core.hooksPath .githooks`. |
+| `.github/workflows/guard.yml` | runs the check, the kit validation, the docs pairs, the tests, and the release dry-run on every push and pull request, so a skipped hook is still caught. |
+| GitHub settings | secret scanning and push protection on; `main` and `develop` reject force pushes and deletion. |
+
+Real names to block live in `manifests/naming-policy.local.json` (gitignored, excluded from the zip); the shipped `naming-policy.json` never lists them. `_app-vault/` and `.app-work/` are maintainer-local: keep them on your machine and never re-add them with `git add -f`.
 
 ## Pack
 
@@ -175,3 +190,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v8`.
 - Artifact: `hephaestus-8.zip`.
 - Content: systematic improvements round 2 (report `.app-work/melhorias-sistematicas-hephaestus-v7.md`) — findings ledger crossing phases (`schemas/findings.schema.json`; minted in `discover`/`validate`, consumed by `plan`, materialized by `compose` into the state); normative `Operation × regime` table in `plan.md` with the strict `checkPlanRegimePairs` gate in `validate-package.mjs`; destructive overwrite of a versioned contract (e.g. the `CLAUDE.md` bridge) is `destructive` in every mode; `issues/` visibility question with the `issues-visibility` reason and conservative default (ignore); run-to-run state handoff (commit/discard block); closeout without "re-run"; ISSUES templates moved to `templates/appwork/`; English-first cleanup of the remaining script comments and vault templates.
+
+## Ninth release (v9)
+
+- Manifest version: `"9"`.
+- Tag: `v9`.
+- Artifact: `hephaestus-9.zip`.
+- Content: versioned content hygiene (SCHEMA 2.5): what never enters Git, text-only evidence, and one identity hygiene scan used by `discover`, `validate`, `preflight`, and `closeout` (hit in a composed artifact blocks, hit in a kept source becomes a pending, Git history is only reported); repository visibility covers every process folder; new universal rules in `AGENTS.md` (no personal data in versioned artifacts, noreply commit identity) and in the security/operational templates (identity scan gate, single-entry build and deploy); the shipped naming policy lists no real names. Repository: maintainer-only `_app-vault/` and `.app-work/` removed from the public history, and the guards above.
