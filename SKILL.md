@@ -155,6 +155,7 @@ Modes `adopt` / `maintain` are **not** phases — see Surface.
 ## Guardrails
 
 - Do not cite real projects in distributable artifacts.
+- Versioned content hygiene (`references/vault-schema/SCHEMA.md` §2.5): no real personal data, token, key, or home path in any artifact the kit composes; evidence is text-only; the kit reports Git history exposure and never rewrites history or Git config.
 - Do not copy long examples without neutralization.
 - Do not create categories with no operational role or empty files merely to look complete.
 - Do not mark output `valid` when minimum contracts fail.
@@ -169,7 +170,7 @@ Modes `adopt` / `maintain` are **not** phases — see Surface.
 
 ## When to block
 
-Block completion when `AGENTS.md` is missing; role assignment is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks; execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree has an unproven delta from this run or the backup is incomplete in the `apply` phase; or, in `adopt`, decision sources existed and `docs/decisions/` remains scaffold-only / without matching `### DEC-NNN` in the identity map.
+Block completion when `AGENTS.md` is missing; role assignment is mostly ambiguous; the final package depends excessively on weak inference; real identity leaks (identity hygiene scan hit in a composed artifact, `references/vault-schema/SCHEMA.md` §2.5); execution state is corrupted enough to prevent safe resumption; minimum schema contracts fail; the worktree has an unproven delta from this run or the backup is incomplete in the `apply` phase; or, in `adopt`, decision sources existed and `docs/decisions/` remains scaffold-only / without matching `### DEC-NNN` in the identity map.
 
 ## Mandatory closeout
 

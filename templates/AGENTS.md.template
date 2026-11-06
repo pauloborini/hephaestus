@@ -124,6 +124,8 @@ Engineering rules are self-contained in `AGENTS.md` and `project-rules/`: an ind
 
 - Response and document language: <fill in during synthesis: the project's default language — e.g.: PT-BR>, Markdown, direct, clear, and explanatory (plain language, no excessive jargon, no analogies).
 - Never expose secrets, credentials, tokens, private URLs, or PII.
+- Versioned files, commit messages, and process artifacts (`.app-work/`, receipts, evidence, issues) carry no real personal data: no e-mail, phone, document number, account or device ID, allowlist value, token, or absolute home path. Use a role placeholder (`<admin-account>`) or `example.com`; evidence is versioned as text only.
+- Commits use the Git host's noreply address; check `git config user.email` before the first commit.
 - Real `.env*` stays out of Git; `.env.example` may be versioned with placeholders only.
 - Before an authorized removal: list targets, dependencies, and effects; for a decision removal, also apply the vault's local protocol. A derived removal outside the approved scope requires new confirmation.
 - <fill in during synthesis: project-specific universal rules, when present — e.g.: DTO contract and semantic IDs with a legacy-exception allowlist>.

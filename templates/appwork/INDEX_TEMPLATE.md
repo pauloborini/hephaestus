@@ -45,5 +45,6 @@ scope: <short phrase for what the project's process covers>
 - One canonical copy per file: an identical copy elsewhere is junk; before removing, prove the duplicate byte for byte (`cmp`).
 - **Archive mirror (completed, move don't duplicate):** `guides/<PACK>/` → `archive/guides/<YYYY-MM>/semana-<N>/<PACK>/`; closed `brainstorming/<topic>/` → `archive/perguntas/<topic>/`; retired PRD → `archive/prds/`; milestone roadmap → `archive/roadmap/<MILESTONE>_<YYYY-MM>/`. Issues do not mirror (single record).
 - A guide converted to a pack discards the monolith.
+- Versioned process files carry no real personal data (e-mail, phone, account or device ID, token, home path): use role placeholders (`<admin-account>`). Evidence and receipts are versioned as text only; screenshots, videos, and raw logs stay local (`.gitignore`). On a public repository, `issues/`, `guides/`, `brainstorming/`, `prd/`, and `archive/` stay local too.
 - Each content-heavy folder has its own `README.md` (e.g. `issues/README.md`, `archive/README.md`) — the index does not duplicate folder content.
 - All of `.app-work/` is hidden from search (`rg --files` does not sweep it); whatever is not promoted to a decision is effectively lost — record `Decision candidates` in the packs' `LEDGER.md` (SCHEMA §6).

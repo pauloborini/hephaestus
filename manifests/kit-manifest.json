@@ -12,7 +12,10 @@
     ".gitignore",
     ".gitkeep",
     ".DS_Store",
-    ".superpowers"
+    ".superpowers",
+    "manifests/naming-policy.local.json",
+    ".github",
+    ".githooks"
   ],
   "requiredFiles": [
     "README.md",
