@@ -13,6 +13,10 @@ Define data-contract norms: DTO, Entity, Mapper, VO, enum, and serialization.
 - serialization and sensitive fields;
 - exception allowlists, when present (e.g. legacy-ID allowlist).
 
+## Base norm (keep during synthesis)
+
+- **Wire names: look up, never invent.** Creating or editing a serialized key (DTO, schema, or backend spec) requires checking first: (1) the project's contract source, when one exists (OpenAPI, schema, generated types) — the endpoint and the sibling schemas of the same resource; (2) the existing models that already carry the same concept. A concept already present reuses the exact spelling, even when the name is poor; the domain model may rename it through the mapper. A new name enters only when no source has the concept, following the project's naming rules. The same applies to enum values and error codes: reuse the published literal, never a synonym. An invented name makes the app read `null` silently or the server drop the field.
+
 ## Typical triggers
 
 - any change to a DTO, Entity, Mapper, VO, enum, or schema;
