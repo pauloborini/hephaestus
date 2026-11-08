@@ -50,4 +50,5 @@ Fill in during synthesis when the repository builds or deploys anything:
 
 - Report applied rules, executed commands, results, and pendings.
 - Classification: `ready`, `degraded-but-usable`, or `needs-followup`.
+- `ready` requires the full flow the task and its spec ask for (UI, state, data contract, request). Any part held back, mocked, or waiting on a third party downgrades to `needs-followup`, naming that part in the closeout. Anything not observed running is declared as not verified.
 - Commit/push only on explicit request.
