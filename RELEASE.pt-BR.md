@@ -197,3 +197,10 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v9`.
 - Artefato: `hephaestus-9.zip`.
 - Conteúdo: higiene do conteúdo versionado (SCHEMA 2.5): o que nunca entra no Git, provas só em texto e uma varredura de identidade usada por `discover`, `validate`, `preflight` e `closeout` (achado em artefato composto bloqueia, em fonte mantida vira pendência, histórico do Git só é reportado); a visibilidade do repositório cobre todas as pastas de processo; regras universais novas no `AGENTS.md` (sem dado pessoal em artefato versionado, identidade de commit noreply) e nos templates de segurança e operação (gate de varredura de identidade, build e deploy por entrada única); a política de nomes distribuída não lista nomes reais. Repositório: `_app-vault/` e `.app-work/` do mantenedor removidos do histórico público, e as guardas acima.
+
+## Décima release (v10)
+
+- Versão no manifesto: `"10"`.
+- Tag: `v10`.
+- Artefato: `hephaestus-10.zip`.
+- Conteúdo: normas de template do Atlas no pacote gerado — `domain_rules` exige consultar o nome de fio (DTO/schema/códigos de erro) antes de inventar sinônimo; `operational_rules` só classifica o closeout como `ready` quando o fluxo pedido foi observado rodando (parte mockada ou retida vira `needs-followup`). O procedimento de 13 fases já estava em paridade com o Atlas.

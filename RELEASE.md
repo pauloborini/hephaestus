@@ -197,3 +197,10 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Tag: `v9`.
 - Artifact: `hephaestus-9.zip`.
 - Content: versioned content hygiene (SCHEMA 2.5): what never enters Git, text-only evidence, and one identity hygiene scan used by `discover`, `validate`, `preflight`, and `closeout` (hit in a composed artifact blocks, hit in a kept source becomes a pending, Git history is only reported); repository visibility covers every process folder; new universal rules in `AGENTS.md` (no personal data in versioned artifacts, noreply commit identity) and in the security/operational templates (identity scan gate, single-entry build and deploy); the shipped naming policy lists no real names. Repository: maintainer-only `_app-vault/` and `.app-work/` removed from the public history, and the guards above.
+
+## Tenth release (v10)
+
+- Manifest version: `"10"`.
+- Tag: `v10`.
+- Artifact: `hephaestus-10.zip`.
+- Content: Atlas template norms now in the generated package — `domain_rules` requires looking up wire names (DTO/schema/error codes) before inventing a synonym; `operational_rules` only classifies closeout as `ready` when the full requested flow was observed running (mocked or held-back parts become `needs-followup`). The 13-phase procedure was already at parity with Atlas.
