@@ -33,7 +33,9 @@ Insistence on a warning (debt, inferior solution, preference, user-only risk): p
 
 1. Read `project-rules/index/<type>.md`. Missing → stop and report type, missing path, and required action.
 2. Read the mandatory rules and every boundary-triggered rule before the first edit; references only when the trigger fires. Batches of up to two rules to reduce context — the limit is per batch, never authorization to omit a triggered rule. `operational_rules.md` may be read during validation and does not count toward that limit.
-3. **Mandatory stop.** A read rule the request violates (security, permissions, mutable Git, commits, removals, architecture) → do not mutate code, config, prompts, or workspace; emit the format below in ALL CAPS and STOP the turn. Insistence in the same message does not count: only proceed after explicit consent in the FOLLOWING message, then execute in full without reopening debate, recording the relaxed rule and the consent at closeout. Warning + execution in the same turn is forbidden.
+3. **Mandatory stop.** If the request violates a read project rule (for example security, permissions, Git, removals, or architecture), do not mutate the workspace. Emit the format below and stop the turn. Proceed only after the next message unambiguously consents to the specific exception and higher-priority limits permit it. Record the relaxed rule and consent at closeout; do not reopen the debate.
+
+Before declaring a violation, identify the norm, action, and conflict. Guidance, missing information, and absence of a product decision are not by themselves violations; follow any procedure that applies. No special consent wording is required. For a separate dependency needing direction, continue independent authorized work unless a rule requires a full stop.
 
 ```text
 ⛔ STOP: VIOLATING PROJECT RULE
@@ -46,7 +48,7 @@ Insistence on a warning (debt, inferior solution, preference, user-only risk): p
 
 A product decision does not trigger a STOP — it is a confirmation in the same flow (`## Product`).
 
-4. **Do not assume.** An assumption that changes the outcome → declare before applying. Two readings that produce materially different work → present both, do not choose in silence. A simpler path exists → say so, even when the request points elsewhere. Only block (stop without delivering anything) when proceeding under any hypothesis would be unsafe or would render the work useless; otherwise, deliver under a declared premise. Caution scales with the cost of being wrong (reversibility, blast radius), not with task size.
+4. **Do not assume.** An assumption that changes the outcome → declare before applying. Two readings that produce materially different work → present both, do not choose in silence. A simpler path exists → say so, even when the request points elsewhere. Apart from mandatory stops and other binding gates, block only when every hypothesis is unsafe or would make the work useless; otherwise deliver under a declared premise. Caution scales with the cost of being wrong (reversibility, blast radius), not with task size.
 5. Emit before editing:
 
 ```text
@@ -59,7 +61,7 @@ Scope: <one line>
 
 ### 3. Execution
 
-**Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. A weak criterion ("make it work") forces round-trips. Not every verification is an automated test: `operational_rules.md` §Tests forbids creating or running tests without an explicit request — without one, the criterion closes on a static gate + evidence in the code.
+**Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. Not every verification is a test: follow `operational_rules.md` §Tests. When no test is requested or required by an applicable rule, use a static gate and code evidence.
 
 **Simplicity.** Minimum code that solves, nothing speculative:
 
@@ -68,8 +70,6 @@ Scope: <one line>
 - No unrequested "flexibility" or "configurability".
 - No error handling for impossible scenarios.
 - 200 lines that fit in 50 → rewrite.
-
-Test: would a senior call this overengineering? If so, simplify.
 
 **Surgical change.** Touch only what is needed; clean only your own mess:
 
@@ -80,7 +80,7 @@ Test: would a senior call this overengineering? If so, simplify.
 - Orphans created by your change (import, var, fn): remove them.
 - A pre-existing blocker **inside the boundary** may be fixed. An adjacent finding is reported, not fixed.
 
-Test: every changed line traces directly to the user's request.
+Every changed line must trace to the request.
 
 **Invariants.** Preserve approved behaviors, especially auth, guards, permissions, and redirects, unless explicitly changed. Current code is evidence: a rule describing a nonexistent API/state requires verification before being reproduced; an ambiguous functional change requires confirmation.
 

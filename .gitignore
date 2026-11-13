@@ -12,3 +12,6 @@ manifests/naming-policy.local.json
 
 .env*
 !.env.example
+key.properties
+*.jks
+*.keystore
