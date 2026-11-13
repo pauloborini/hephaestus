@@ -204,3 +204,11 @@ Não substitui a GitHub Release; não anexa o zip. Exclusões vêm de `packExclu
 - Tag: `v10`.
 - Artefato: `hephaestus-10.zip`.
 - Conteúdo: normas de template do Atlas no pacote gerado — `domain_rules` exige consultar o nome de fio (DTO/schema/códigos de erro) antes de inventar sinônimo; `operational_rules` só classifica o closeout como `ready` quando o fluxo pedido foi observado rodando (parte mockada ou retida vira `needs-followup`). O procedimento de 13 fases já estava em paridade com o Atlas.
+
+## Candidata à décima primeira release (v11)
+
+- Versão no manifesto: `"11"`.
+- Tag prevista: `v11`.
+- Artefato: `hephaestus-11.zip`.
+- Conteúdo: instruções geradas mais claras para identificar violações reais de regras, reconhecer consentimento inequívoco, continuar trabalho independente e executar testes exigidos por regra aplicável do projeto.
+- Estado: preparada localmente; publicação pendente.
