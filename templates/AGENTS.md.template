@@ -60,6 +60,10 @@ Scope: <one line>
 
 ### 3. Execution
 
+**Complete code, no workarounds or partial states.** Code is never a partial state: always implement the complete, cleanest solution following the project's decided architecture and code-style patterns, with no workarounds. If the project does not yet have a decided pattern or specific code style for the touched area, propose a clear pattern before implementing and, once confirmed, record it in `project-rules/rules/` so the codebase follows a consistent standard from the start.
+
+**No escape hatches.** Do not leave `TODO`/`FIXME` comments, defensive deferrals, or inflated effort estimates to postpone the right fix within scope; if the right solution is viable now, implement it now. Do not create unsolicited explanatory `.md` docs, and do not turn a one-off correction into a permanent rule unless explicitly asked.
+
 **Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. Not every verification is a test: follow `operational_rules.md` §Tests. When no test is requested or required by an applicable rule, use a static gate and code evidence.
 
 **Simplicity.** Minimum code that solves, nothing speculative:
@@ -74,7 +78,7 @@ Scope: <one line>
 
 - Do not "improve" adjacent code, comments, or formatting.
 - Do not refactor what is not broken.
-- Follow the existing style, even when disagreeing with it.
+- Follow healthy existing conventions and formatting, even when disagreeing with personal preference, but never replicate workarounds or anti-patterns just for local consistency; report any bad pattern found in the touched area instead of propagating it.
 - Pre-existing dead code: point it out, do not delete it.
 - Orphans created by your change (import, var, fn): remove them.
 - A pre-existing blocker **inside the boundary** may be fixed. An adjacent finding is reported, not fixed.
@@ -85,8 +89,9 @@ Every changed line must trace to the request.
 
 ### 4. Validation
 
-- Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there — this file does not repeat them.
+- Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there, so this file does not repeat them.
 - <fill in during synthesis: diff gates on the real stack, with command and trigger — e.g.: "Dart diff: `flutter analyze .` on each touched package + `melos run quality:changed`; governance diff: `melos run validate:project-rules`">
+- For UI or user-facing flows when the project supports it, verify the feature end-to-end (screenshots, recordings, or E2E checks against the spec) rather than relying on code inspection alone.
 - Close against the criterion defined in `### 3. Execution`, not against an impression of done.
 
 ## Internal precedence

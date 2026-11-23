@@ -94,6 +94,9 @@ After any revalidation answer, discard staging, coverage-map, and plan derived f
 - do not turn specific rules into a generic summary;
 - do not lose checklists, prohibitions, precedences, or exceptions present in the sources;
 - when there is enough material, create a specific rule in `project-rules/rules/*` instead of hiding it in the index;
+- push recurring rules upward into deterministic gates (linters, typechecks, structural scripts) in `operational_rules.md` whenever possible, rather than relying solely on Markdown prose;
+- prefer binary, unambiguous rules ("Use X; never Y") over open-ended preferences to minimize agent interpretation drift;
+- when the source repository lacks a defined pattern or code style for a layer, record the rule that the agent must propose a pattern before implementing and persist the confirmed choice in `project-rules/rules/`;
 - do not promise that `project-rules/` is fully self-contained while real external dependencies remain;
 - on starting the phase, apply the single checkpoint rule from `SKILL.md`: every write to `.hephaestus/manifests/run-state.json` updates `lastUpdatedAt`; on start, mark `compose` as `in_progress`; when finished, record artifacts in staging and mark the phase `produced`; mark `compose` as `validated` when the staging tree has sufficient coverage and the minimum artifacts exist; a phase that ran and cannot be validated marks `failed` (full re-run on resume, per `prompts/preflight.md`).
 
