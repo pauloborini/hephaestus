@@ -14,6 +14,7 @@ Fill in during synthesis with the real framework and tool commands of the projec
 - The placeholders above must be replaced during synthesis with the real commands of the repository (e.g. `flutter analyze`, `tsc`, `eslint`, `melos run ...`).
 - Structural gates do not replace static analysis.
 - Docs/config-only diffs with no code do not trigger analysis gates; `identity-scan` still applies to them.
+- Prefer deterministic enforcement over prose: whenever a recurring rule can be verified by a linter, typecheck, or structural script, promote it to a gate here instead of relying solely on Markdown instructions.
 
 ## Build, run, and deploy
 
@@ -31,7 +32,7 @@ Fill in during synthesis when the repository builds or deploys anything:
 
 ## Tests
 
-- Unit/integration/e2e tests are only created/executed when the user explicitly asks.
+- Create or run unit/integration/e2e tests when explicitly requested by the user or required by an applicable project rule.
 - Analyzers and structural validators are gates, not tests for this restriction.
 - A test that merely crystallizes a bad implementation (fragile design, undue coupling, workaround) is an anti-pattern; prefer a structural invariant at the source.
 

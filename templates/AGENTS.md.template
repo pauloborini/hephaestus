@@ -33,20 +33,21 @@ Insistence on a warning (debt, inferior solution, preference, user-only risk): p
 
 1. Read `project-rules/index/<type>.md`. Missing → stop and report type, missing path, and required action.
 2. Read the mandatory rules and every boundary-triggered rule before the first edit; references only when the trigger fires. Batches of up to two rules to reduce context — the limit is per batch, never authorization to omit a triggered rule. `operational_rules.md` may be read during validation and does not count toward that limit.
-3. **Mandatory stop.** A read rule the request violates (security, permissions, mutable Git, commits, removals, architecture) → do not mutate code, config, prompts, or workspace; emit the format below in ALL CAPS and STOP the turn. Insistence in the same message does not count: only proceed after explicit consent in the FOLLOWING message, then execute in full without reopening debate, recording the relaxed rule and the consent at closeout. Warning + execution in the same turn is forbidden.
+3. **Resolve conflicts with scoped authorization.** A mismatch with a project rule or approval gate is not automatically a stop. First find a safe route that fulfills the request. The user's explicit request authorizes the named actions and necessary steps within the same objective and scope. If a current project decision must change, state the old and requested values once and ask for confirmation once. After confirmation, record it once and apply it to every dependent file and equivalent step in the same objective, including repeated commands, branches, and PRs. Do not request the same approval again at each phase. Ask again only for materially new scope or risk not covered by the authorization. Stop only when a higher-priority rule forbids the action or no safe route exists; continue independent authorized work.
+
+Before declaring a violation, identify the norm, action, and conflict. Guidance, missing information, and absence of a product decision are not by themselves violations; follow any procedure that applies. No special consent wording is required. For a separate dependency needing direction, continue independent authorized work unless a rule requires a full stop.
 
 ```text
-⛔ STOP: VIOLATING PROJECT RULE
- Rule: <file/norm + excerpt>
- Request: <1 line>
- Impact: <1 line>
- Recommended alternative: <1 line or "none without exception">
- To continue, explicitly reply authorizing the exception (e.g. "yes, continue with the exception").
+⛔ STOP: HARD BOUNDARY
+ Rule/condition: <higher-priority rule + excerpt>
+ Affected action: <1 line>
+ Why no safe route exists: <1 line>
+ Independent work continuing: <1 line>
 ```
 
 A product decision does not trigger a STOP — it is a confirmation in the same flow (`## Product`).
 
-4. **Do not assume.** An assumption that changes the outcome → declare before applying. Two readings that produce materially different work → present both, do not choose in silence. A simpler path exists → say so, even when the request points elsewhere. Only block (stop without delivering anything) when proceeding under any hypothesis would be unsafe or would render the work useless; otherwise, deliver under a declared premise. Caution scales with the cost of being wrong (reversibility, blast radius), not with task size.
+4. **Do not assume.** An assumption that changes the outcome → declare before applying. Two readings that produce materially different work → present both, do not choose in silence. A simpler path exists → say so, even when the request points elsewhere. Apart from higher-priority prohibitions, block only when every hypothesis is unsafe or would make the work useless; otherwise deliver under a declared premise. Caution scales with the cost of being wrong (reversibility, blast radius), not with task size.
 5. Emit before editing:
 
 ```text
@@ -55,11 +56,15 @@ MDs: <files>
 Scope: <one line>
 ```
 
-6. Separate in the pre-confirmation record: context consultation, defect/candidate record, authorized change, and approval. Recording a defect or a routing decision never grants permission to write.
+6. Separate in the pre-confirmation record: context consultation, defect/candidate record, authorized change, and approval. Recording a defect or routing decision alone never grants permission to write; explicit user authorization already given remains valid within its recorded objective and scope.
 
 ### 3. Execution
 
-**Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. A weak criterion ("make it work") forces round-trips. Not every verification is an automated test: `operational_rules.md` §Tests forbids creating or running tests without an explicit request — without one, the criterion closes on a static gate + evidence in the code.
+**Complete code, no workarounds or partial states.** Code is never a partial state: always implement the complete, cleanest solution following the project's decided architecture and code-style patterns, with no workarounds. If the project does not yet have a decided pattern or specific code style for the touched area, propose a clear pattern before implementing and, once confirmed, record it in `project-rules/rules/` so the codebase follows a consistent standard from the start.
+
+**No escape hatches.** Do not leave `TODO`/`FIXME` comments, defensive deferrals, or inflated effort estimates to postpone the right fix within scope; if the right solution is viable now, implement it now. Do not create unsolicited explanatory `.md` docs, and do not turn a one-off correction into a permanent rule unless explicitly asked.
+
+**Criterion before code.** Translate the task into verification: "add validation" → what proves invalid input is rejected; "fix bug" → what reproduces the defect and what proves the fix; "refactor X" → what was green stays green. Not every verification is a test: follow `operational_rules.md` §Tests. When no test is requested or required by an applicable rule, use a static gate and code evidence.
 
 **Simplicity.** Minimum code that solves, nothing speculative:
 
@@ -69,25 +74,24 @@ Scope: <one line>
 - No error handling for impossible scenarios.
 - 200 lines that fit in 50 → rewrite.
 
-Test: would a senior call this overengineering? If so, simplify.
-
 **Surgical change.** Touch only what is needed; clean only your own mess:
 
 - Do not "improve" adjacent code, comments, or formatting.
 - Do not refactor what is not broken.
-- Follow the existing style, even when disagreeing with it.
+- Follow healthy existing conventions and formatting, even when disagreeing with personal preference, but never replicate workarounds or anti-patterns just for local consistency; report any bad pattern found in the touched area instead of propagating it.
 - Pre-existing dead code: point it out, do not delete it.
 - Orphans created by your change (import, var, fn): remove them.
 - A pre-existing blocker **inside the boundary** may be fixed. An adjacent finding is reported, not fixed.
 
-Test: every changed line traces directly to the user's request.
+Every changed line must trace to the request.
 
 **Invariants.** Preserve approved behaviors, especially auth, guards, permissions, and redirects, unless explicitly changed. Current code is evidence: a rule describing a nonexistent API/state requires verification before being reproduced; an ambiguous functional change requires confirmation.
 
 ### 4. Validation
 
-- Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there — this file does not repeat them.
+- Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there, so this file does not repeat them.
 - <fill in during synthesis: diff gates on the real stack, with command and trigger — e.g.: "Dart diff: `flutter analyze .` on each touched package + `melos run quality:changed`; governance diff: `melos run validate:project-rules`">
+- For UI or user-facing flows when the project supports it, verify the feature end-to-end (screenshots, recordings, or E2E checks against the spec) rather than relying on code inspection alone.
 - Close against the criterion defined in `### 3. Execution`, not against an impression of done.
 
 ## Internal precedence
@@ -115,7 +119,7 @@ Engineering rules are self-contained in `AGENTS.md` and `project-rules/`: an ind
 
 - Living truth only in `_app-vault/docs/decisions/` (`### DEC-NNN` clauses). `INDEX.md` is a map — a pointer, not content.
 - `.app-work/` is process: never a rule input. Responsibilities: `_app-vault/` holds product/decisions (via `INDEX.md`); `.app-work/` holds execution/process (via `INDEX.md`).
-- A request that **contradicts** a living decision → warn before applying: `⚠️ Previous decision: <value> (<file:line>) → request: <new>. Also affected: <what else depends on this>. Confirm?` Confirmed → change the text under the existing `DEC-NNN` (**the ID does not change**) and append the trail note per the local protocol in `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`. Denied → do not apply.
+- A request that **contradicts** a living decision → warn once before applying: `⚠️ Previous decision: <value> (<file:line>) → request: <new>. Also affected: <what else depends on this>. Confirm?` Confirmed → change the text under the existing `DEC-NNN` (**the ID does not change**), append the trail note per `_app-vault/docs/TEMPLATES/DECISION_PROTOCOL.md`, and apply that confirmation to every dependent artifact and step in the current objective without asking again. Denied → do not apply.
 - Before writing decisions, read the local protocol above, including the live/removed ID inventory and index updates. A request that **adds without contradicting** → no alert and no note: new clause with `DEC-NNN` = `max+1`, never reuse a number.
 - Do not relitigate a closed decision.
 - A found or reported defect (UI, behavior, regression) → report in the response. Record in `.app-work/issues/` (`ISSUE-NNN`; protocol in the folder's `README.md`) only when the task authorizes that process write. Diagnosis or discussion with no explicit change does not authorize creating an issue. `.app-work/` remains forbidden as a rule input.

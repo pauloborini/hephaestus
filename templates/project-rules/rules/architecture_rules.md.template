@@ -11,6 +11,8 @@ Define the layer structure, boundaries, and dependencies of the project.
 - dependency-injection and object-creation pattern;
 - state and data-access rules;
 - structural prohibitions (e.g. presentation layer accessing infrastructure directly);
+- canonical binary choices that eliminate ambiguity (e.g. "Use X; never Y") rather than open-ended preferences;
+- if a pattern or code style is not yet defined for a layer, instruct the agent to propose one before implementing and record the confirmed choice here;
 - validator-checkable invariants, when present.
 
 ## Typical triggers
