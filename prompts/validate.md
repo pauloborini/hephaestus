@@ -27,8 +27,8 @@ Check whether the package meets the kit's minimum contract. A parameterized phas
 - `AGENTS.md` starts with the project name and an explicit agent contract (format `<Project name> — agent contract`), with no generic header;
 - `AGENTS.md` is centralizing and concise;
 - `AGENTS.md` contains posture, stop, workflow, precedence, and routing, not domain rules;
-- `AGENTS.md` has triage, type selection, mandatory stop, pre-confirmation, and final validation;
-- the mandatory stop, premises, criterion, simplicity, surgical change, and invariants are inside workflow steps 2 and 3, not promoted to their own section;
+- `AGENTS.md` has triage, type selection, scoped authorization and hard-boundary handling, pre-confirmation, and final validation;
+- scoped authorization, premises, criterion, simplicity, surgical change, and invariants are inside workflow steps 2 and 3, not promoted to their own section;
 - `AGENTS.md` does not repeat what `project-rules/rules/operational_rules.md` norms (gates, tests, baseline, closeout, commits);
 - workflow, internal precedence, and base universal rules follow the template's fixed protocol, without drift;
 - validation gates in `AGENTS.md` are filled with real stack tools (no `<fill in during synthesis>` placeholder);
