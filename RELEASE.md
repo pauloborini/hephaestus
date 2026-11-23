@@ -205,10 +205,9 @@ This does not replace the GitHub Release and does not attach the zip. Excludes c
 - Artifact: `hephaestus-10.zip`.
 - Content: Atlas template norms now in the generated package — `domain_rules` requires looking up wire names (DTO/schema/error codes) before inventing a synonym; `operational_rules` only classifies closeout as `ready` when the full requested flow was observed running (mocked or held-back parts become `needs-followup`). The 13-phase procedure was already at parity with Atlas.
 
-## Eleventh release candidate (v11)
+## Eleventh release (v11)
 
 - Manifest version: `"11"`.
-- Planned tag: `v11`.
+- Tag: `v11`.
 - Artifact: `hephaestus-11.zip`.
-- Content: clearer generated instructions for identifying an actual rule violation, recognizing unambiguous consent, continuing independent work, and running tests required by an applicable project rule.
-- Status: prepared locally; publication is pending.
+- Content: clearer generated instructions for identifying an actual rule violation, recognizing unambiguous consent, continuing independent work, and running tests required by an applicable project rule; prompt and template guidelines enforcing complete code, prohibiting workarounds or escape hatches, preferring deterministic gates, and requiring proposing a clean pattern before implementing when one is absent.
