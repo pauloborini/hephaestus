@@ -107,11 +107,15 @@ project-rules/
   rules/
   reference/
   contracts/       (opcional)
+  scripts/
+    validate_project_rules.py   (validador de governança mantido pelo kit)
 .hephaestus/         (checkpoint do processo; opcional no pacote final)
   manifests/
 ```
 
 Categorias opcionais podem ser omitidas quando não houver material suficiente, mas `AGENTS.md` deve existir.
+
+`project-rules/scripts/validate_project_rules.py` é o validador de governança: cópia byte a byte de `templates/project-rules/scripts/validate_project_rules.py`, instalada e atualizada em toda execução (`prompts/compose.md` §Governance validator) e rodada como gate `validate`. Ele confere o contrato raiz, os índices contra a tabela de triagem do `AGENTS.md`, referências quebradas, dependências fora de `project-rules/` e arquivos que nenhum índice alcança. Necessidades do projeto entram pelas flags do script, nunca por edição da cópia.
 
 `CLAUDE.md` é ponte, nunca conteúdo: uma linha `@AGENTS.md` e nada mais. Existe para que cliente que lê só `CLAUDE.md` caia no mesmo contrato, sem manter dois arquivos. Projeto que já tem `CLAUDE.md` com conteúdo próprio: reabsorver o conteúdo no `AGENTS.md`/`project-rules/` e reduzir o arquivo à ponte - nunca deixar dois contratos vivos.
 

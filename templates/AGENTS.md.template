@@ -90,7 +90,7 @@ Every changed line must trace to the request.
 ### 4. Validation
 
 - Apply `project-rules/rules/operational_rules.md`: gates, tests, baseline, and closeout are normed there, so this file does not repeat them.
-- <fill in during synthesis: diff gates on the real stack, with command and trigger — e.g.: "Dart diff: `flutter analyze .` on each touched package + `melos run quality:changed`; governance diff: `melos run validate:project-rules`">
+- <fill in during synthesis: diff gates on the real stack, with command and trigger — e.g.: "Dart diff: `flutter analyze .` on each touched package + `melos run quality:changed`; governance diff: `python3 project-rules/scripts/validate_project_rules.py`">
 - For UI or user-facing flows when the project supports it, verify the feature end-to-end (screenshots, recordings, or E2E checks against the spec) rather than relying on code inspection alone.
 - Close against the criterion defined in `### 3. Execution`, not against an impression of done.
 

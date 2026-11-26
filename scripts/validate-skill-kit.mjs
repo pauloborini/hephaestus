@@ -100,7 +100,7 @@ const forbiddenPatterns = Array.isArray(namingPolicy.forbiddenPatterns)
 
 const legacyPatterns = ["project-context", "extended-memory"];
 
-const allowedExtensions = new Set([".md", ".template", ".json", ".mjs", ".png"]);
+const allowedExtensions = new Set([".md", ".template", ".json", ".mjs", ".png", ".py"]);
 const allowedExtensionlessFiles = new Set(["LICENSE"]);
 
 // Development repo files that are not part of the distributed package.

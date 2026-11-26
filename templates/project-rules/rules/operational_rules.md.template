@@ -7,7 +7,7 @@ Fill in during synthesis with the real framework and tool commands of the projec
 | ID | Command | Trigger | Expected result |
 |---|---|---|---|
 | `analyze` | <framework static analysis, e.g. analyzer, linter, typecheck> | any code diff | zero new/in-scope issues |
-| `validate` | <project structural validator, when present> | diff in rules/structure | index/graph intact |
+| `validate` | `python3 project-rules/scripts/validate_project_rules.py` <+ project flags, or the task-runner alias that runs it> | diff in `AGENTS.md`, `CLAUDE.md`, or `project-rules/` | zero violations: root contract, indexes, references, reachability |
 | `diff-check` | `git diff HEAD --check` | tracked diff | zero whitespace/patch errors |
 | `identity-scan` | <project secret/PII scan, ideally in the pre-commit hook> | any diff | zero real e-mail outside declared public contacts, zero token or key, zero absolute home path, zero binary evidence staged |
 

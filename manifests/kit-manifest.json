@@ -60,6 +60,7 @@
     "templates/project-rules/rules/ui_rules.md.template",
     "templates/project-rules/reference/domain_examples.md.template",
     "templates/project-rules/reference/api_contract_reference.md.template",
+    "templates/project-rules/scripts/validate_project_rules.py",
     "references/README.md",
     "references/anti-invention-gates.md",
     "references/canonical-structure/AGENTS.example.md",

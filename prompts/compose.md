@@ -139,6 +139,13 @@ The report must match `schemas/external-references-report.schema.json`.
 - `fragile`: the rule depends on content that the citation does not carry inside `project-rules/`;
 - `should-internalize`: a decision value or a norm lives outside `project-rules/`: internalize it or convert it into a `DEC-NNN` citation (`references/vault-schema/SCHEMA.md` §8).
 
+## Governance validator
+
+- stage `project-rules/scripts/validate_project_rules.py` as a byte-for-byte copy of `templates/project-rules/scripts/validate_project_rules.py`, in every mode: `create` when absent, `overwrite` when the repository bytes differ from the kit copy (a kit-maintained file, `prompts/plan.md`), `keep` when identical; never adapt its content to the project;
+- project-specific needs go through its flags only (`--root`, `--extra-source <path>` for an extra governance file outside `project-rules/`, repeatable); the flags live in the gate command, never in the copy;
+- fill the `validate` row of `project-rules/rules/operational_rules.md` and the governance gate in `AGENTS.md` `### 4. Validation` with the command that runs the installed copy with `python3` from the repository root, plus the project flags (the form is in the `validate` row of `templates/project-rules/rules/operational_rules.md.template`); when the project already exposes the same command through its task runner (a Makefile target, a package script), cite that alias instead. The kit never edits a task runner or any file outside the four territories: a missing alias is a closeout recommendation, never a write;
+- mention `project-rules/scripts/` in the repository-structure section of `AGENTS.md`, like the other `project-rules/` components.
+
 ## Writes to the repository
 
 No. Every artifact is materialized under `.hephaestus/staging/` and package manifests under `.hephaestus/staging/.hephaestus/manifests/` (ephemeral, gitignored).
