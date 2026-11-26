@@ -46,6 +46,13 @@ _app-vault/                 # CURRENT TRUTH — visible, searchable
   brainstorming/<topic>/
   prd/
   docs/                    # live; omit if empty
+  releases/                # per-version release records + build/release runbook
+  tests/                   # test map and cases; evidence is text-only (§2.5)
+  exec-roadmap/            # execution roadmaps by topic (<topic>/)
+  design-system/           # dated design-system explorations
+  autopilot/               # autopilot runs: state and reports
+  media/                   # store and social assets
+  prototypes/              # exploratory HTML prototypes
   issues/
   references/              # gitignored — sole place for OSS clones
   private/                 # auditorias/, ops/, research/, notes/ — gitignored
@@ -71,6 +78,13 @@ above in the right format — see `prompts/route.md` level 1 and DEC-004.
 
 The vault is not mirrored outside the project.
 
+**Folder names are English.** A folder enters this list under its English name only. A localized
+name already present in a repository (`testes/`, `midia/`) is a legacy name and relocates to the
+canonical one on the next run (`catalog/routing-defaults.json`). The folders `releases/`, `tests/`,
+`exec-roadmap/`, `design-system/`, `autopilot/`, `media/`, and `prototypes/` are recognized when
+present and never created by the kit: the tool or the project that writes them owns their layout,
+and the kit neither reorganizes nor prunes their interior.
+
 ### 2.1 Boundary
 
 | Folder | Role | Source of truth? |
@@ -87,7 +101,11 @@ reference.
 **`references/` is the worst possible input.** It carries quotas and contracts from *another* project; an
 accidental match there is indistinguishable from your own rule. The ignore travels with the schema:
 versioned `.app-work/.gitignore`, not a loose line in the root `.gitignore`. The same file ignores
-`private/`.
+`private/`. The kit maintains that file by reconciliation in every mode: it adds the lines this
+schema requires and preserves every other line the project wrote; it never removes a line and never
+regenerates the file. When the repository-visibility answer is `versioned`, the kit does not add the
+public set (§2.2, Issues); a public-set line already present stays and becomes a closeout pending that
+recommends its manual removal.
 
 ### 2.2 Cycles
 
@@ -96,6 +114,21 @@ versioned `.app-work/.gitignore`, not a loose line in the root `.gitignore`. The
   canonical (no-touch); legacy under `.app-work/done/` and flat `archive/guides/<PACK>/` migrate on the
   next run. Monolithic still cited without a pack: `guides/legados/`. Never consulted in
   feature, infrastructure, or architecture analysis.
+- **Engine-managed pack**: a `guides/<NAME>_GUIDE/` folder that contains `pack.json` belongs to the
+  pack engine and **never moves**: archiving is the `archived` field of `pack.json`, written by the
+  engine, never by a relocation. The final states `DONE`, `DONE_WITH_PENDING`, and `CLOSED_BY_USER`
+  do not trigger a move. The dated mirror receives only a legacy pack without `pack.json`. The
+  engine-owned files (`pack.json`, `journal.jsonl`, and, when `pack.json` has `sealed: true`, the
+  sealed set: `contract.json`, `GUIDE.md`, `plans/*.md`) are never amended by the kit. A pack
+  already sitting in the mirror with its `pack.json` stays where it is and is listed in the closeout
+  as an observation: the engine does not read the mirror, and moving it back is the user's decision.
+- **Engine-managed folder**: a folder under `.app-work/` that contains `pack.json` (a pack) or
+  `roadmap.json` (a roadmap under `.app-work/roadmap/`), with everything below it. The kit writes no
+  file inside an engine-managed folder, not even a derived reference repair: besides the engine-owned
+  and sealed files, the engine binds the approved scope of a pack to the text of `INTENT.md` and of
+  the roadmap prose (`ROADMAP.md` and the slice files), and an edit there makes the engine reopen an
+  approved pack. A reference inside such a folder to a path the run moves or removes is listed as an
+  external citation and makes that operation destructive (`prompts/plan.md`).
 - **Brainstorm** — on close, it routes and does not remain as a live reference: product →
   `_app-vault/docs/decisions/`; architecture/implementation → `project-rules/`; the closed notebook goes
   to the mirror `archive/perguntas/<topic>/` (DEC-002).
@@ -104,17 +137,28 @@ versioned `.app-work/.gitignore`, not a loose line in the root `.gitignore`. The
 - **Roadmap** — live in `.app-work/roadmap/` (`ROADMAP.md` + slices), versioned, sole promotion
   queue; never in `private/`. Closed milestone → `archive/roadmap/<MILESTONE>_<YYYY-MM>/`.
 - **Docs** — live in `.app-work/docs/` (omit if empty); retired → `archive/docs/`.
+- **Releases**: live in `.app-work/releases/` (per-version records and the build/release runbook);
+  a retired record goes to the mirror `archive/releases/`.
 - **Archive** — mirror of completed items + named deposit (not "any folder"). Mirror: `guides/<YYYY-MM>/semana-<N>/`,
   `perguntas/`, `prds/`, `roadmap/<MILESTONE>_<YYYY-MM>/`. Fixed-name deposit: `docs/`, `backlogs/`,
   `plans/`, `sprints/`, `features/`, `design-prototipos/`, `produto/`, `qa/`, `releases/`,
   `evidence/`, `issues/<YYYY>/`. No schema rule depends on what is there.
 - **Private** — private gitignored area: `auditorias/`, `ops/`, `research/`, `notes/`. Not a home
   for roadmaps. Never pushed to the remote. Like all of `.app-work/`, forbidden as rule input.
-- **Issues (D43)** — sole record of defects and UI/UX/behavior adjustments: a line in the
-  folder's `INDEX.md` (live table by state — Open / In verification / Closed) with a sequential
-  `ISSUE-NNN` ID (unique prefix across all projects), severity S0–S3 and cycle
+- **Issues (D43)** — the kit's record of the defects and UI/UX/behavior adjustments it inventories: a
+  line in the folder's `INDEX.md` (live table by state — Open / In verification / Closed) with a
+  sequential `ISSUE-NNN` ID (unique prefix across all projects), severity S0–S3 and cycle
   `OPEN → FIXED → VERIFIED → CLOSED` (+ WONTFIX/DUPLICATE); rich context (evidence, technical
-  notes) lives in an **optional** sibling `ISSUE-NNN.md`. **Visibility (repository-wide):** a
+  notes) lives in an **optional** sibling `ISSUE-NNN.md`. **A project registry coexists:** the kit's
+  index is the ledger of the kit's findings, and a project may keep its own defect registry in the
+  same folder under its own ID prefix and fix protocol. The kit never renames, merges, renumbers,
+  or rewrites that registry: every file in `issues/` other than `INDEX.md` is non-touch. The kit
+  writes `INDEX.md` by line upsert, following the column layout of the repository's current file;
+  the kit templates apply only when the folder does not exist yet. Two states are minted directly:
+  a finding that the operations of the same run resolve enters as `FIXED` (the run is the fix
+  origin), and a finding inside an engine-sealed artifact (§2.5) enters as `WONTFIX` with reason
+  `sealed`. The kit never writes `VERIFIED` or `CLOSED`, and never closes a line because its defect
+  was not re-detected. **Visibility (repository-wide):** a
   **private** repo versions `issues/` and the other process folders (traceability + collaboration);
   a **public** repo ignores `issues/`, `guides/`, `brainstorming/`, `prd/`, and `archive/` via
   `.app-work/.gitignore`, keeping only the maps, the state, `roadmap/`, and `docs/` versioned.
@@ -189,12 +233,22 @@ applied package), and `closeout` (history exposure):
 |---|---|
 | E-mail address | the domain is not `example.com`, `example.org`, `example.net`, `.invalid`, `.test`, or `.local`, it is not a Git host noreply address, and it is not an answered `public-contact` |
 | Token or key | a three-part JWT starting with `eyJ`, a known secret prefix (`sk_`, `sb_secret_`, `ghp_`, `github_pat_`, `AKIA`, `xox`), or a `PRIVATE KEY` block |
-| Home path | `/Users/<name>/`, `/home/<name>/`, or `C:\Users\<name>\` with a real name instead of a `<placeholder>` |
+| Home path | `/Users/<name>/`, `/home/<name>/`, or `C:\Users\<name>\` with a real name instead of a `<placeholder>`; an ellipsis, a glob, or a placeholder token in the name position (`...`, `*`, `<user>`, `{user}`) is not a hit |
 
 A hit in content the kit composes blocks validation. A hit in an existing source the kit keeps byte
 for byte (process files, shielded content) becomes a finding and a closeout pending with the
 recommended manual redaction. A hit in Git history (commit author, committer, or past file
 content) is reported and never rewritten: rewriting history is a user decision outside the kit.
+
+**Scope of the scan.** The scan covers every inventoried source, every file the kit composes, and
+every versioned text file under `.app-work/` (`.md`, `.txt`, `.json`), `archive/` included. It is a
+deterministic sweep that does not depend on the reduced `maintain` inventory.
+
+**Sealed artifacts.** A hit inside an engine-owned file of a pack (`pack.json`, `journal.jsonl`) or
+inside the sealed set of a pack with `sealed: true` (§2.2) is never redacted by the kit: an edit
+would break the engine digest. It is recorded once as a finding of `type: identity-hygiene-sealed`,
+minted as `WONTFIX` with reason `sealed`, and reported as an accepted exception, never as a
+recurring pending.
 
 ---
 

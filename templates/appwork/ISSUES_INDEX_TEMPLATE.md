@@ -1,6 +1,6 @@
 # INDEX — Issues
 
-Single issues/defects record. Protocol: [`README.md`](README.md).
+Hephaestus findings record (a project defect registry may coexist in this folder). Protocol: [`README.md`](README.md).
 
 **Next free ID: `ISSUE-001`**
 

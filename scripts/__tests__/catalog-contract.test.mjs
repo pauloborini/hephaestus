@@ -25,9 +25,9 @@ const isLegalDestination = (destination) => {
   return LEGAL_PREFIXES.some((prefix) => destination.startsWith(prefix));
 };
 
-test("AC-1.5.1: toda linha da Tabela vigente virou entrada (41), com as 4 baixas em destination null", () => {
+test("AC-1.5.1: toda linha da Tabela vigente virou entrada (43), com as 4 baixas em destination null", () => {
   assert.equal(Array.isArray(catalog.entries), true);
-  assert.equal(catalog.entries.length, 41);
+  assert.equal(catalog.entries.length, 43);
   const low = catalog.entries.filter((entry) => entry.confidence === "baixa");
   assert.equal(low.length, 4);
   for (const entry of low) {

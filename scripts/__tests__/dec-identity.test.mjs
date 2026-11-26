@@ -457,12 +457,15 @@ test("AC-4.1.x: reconcile.md declara inventário, identidade e gate; kit-manifes
   ]) {
     assert.ok(reconcile.includes(section), `reconcile.md deve conter "${section}"`);
   }
-  // inventário: cláusulas vivas E IDs de ## Histórico; proibido restringir às vivas
-  assert.match(reconcile, /## Histórico/);
+  // inventário: cláusulas vivas E IDs de ## History; proibido restringir às vivas
+  assert.match(reconcile, /## History/);
   assert.match(reconcile, /max/);
   assert.match(reconcile, /never/i);
-  // nota inline no formato fixo
-  assert.match(reconcile, /_Alterado <data> — era: <valor antigo>\. Motivo: <motivo>\._/);
+  // nota inline no formato fixo (token canônico em inglês, SCHEMA §4.4)
+  assert.match(reconcile, /_Changed <date> — was: <old>\. Reason: <reason>\._/);
+  // token legado é lido, nunca escrito
+  assert.match(reconcile, /## Histórico/);
+  assert.match(reconcile, /Afeta:/);
   // remoção exige citação pendente inclusive em .app-work/ (--hidden)
   assert.match(reconcile, /\.app-work/);
   assert.match(reconcile, /--hidden/);

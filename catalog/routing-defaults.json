@@ -288,6 +288,20 @@
       "confidence": "baixa",
       "since": "—",
       "reason": "ambíguo: private × archive × não tocar"
+    },
+    {
+      "pattern": "legacy localized folder name `testes/` under `.app-work/` (canonical name: `tests/`)",
+      "destination": ".app-work/tests/",
+      "confidence": "alta",
+      "since": "2026-11-24",
+      "reason": "closed-list folder names are English; a localized name is a legacy name"
+    },
+    {
+      "pattern": "legacy localized folder name `midia/` under `.app-work/` (canonical name: `media/`)",
+      "destination": ".app-work/media/",
+      "confidence": "alta",
+      "since": "2026-11-24",
+      "reason": "closed-list folder names are English; a localized name is a legacy name"
     }
   ]
 }

@@ -24,7 +24,7 @@ Single drain of the question queue: interrupt the user in batch on genuine ambig
 
 For each answered question, record:
 
-- `questionKey = sha256(normalized identity)` — question type + origin identity + decision axis, never the literal question text: rewording the prose does not change the key;
+- `questionKey = sha256(normalized identity)` — question type + origin identity + decision axis, never the literal question text: rewording the prose does not change the key. The exception is a kit-owned question with a single instance per project, which uses its `reason` as the key (today `issues-visibility`): stable, hand-editable, and independent of normalization;
 - `contextFingerprint = sha256(current material context)` — evidence/hash of origin bytes, candidates, scope, and premises that ground the choice, preserving case and accents of values; a material change invalidates only that answer;
 - `answer` — structured answer (for a destination question, carries `destinationPath`; for a new process pattern, carries `includeInPack` boolean);
 - `scope ∈ {this-run, this-project, promote-to-catalog}`:
@@ -40,7 +40,7 @@ Write the `this-run` answer immediately to the ephemeral manifest and persistent
 
 ## Revalidation cycle
 
-- each question declares `reason` in `{route-ambiguity, reconcile-conflict, decision-promotion, pack-candidate, compose-shield-adaptation, approval-scope, issues-visibility, context-changed}` and `invalidates` with the oldest affected phase;
+- each question declares `reason` in `{route-ambiguity, reconcile-conflict, decision-promotion, pack-candidate, compose-shield-adaptation, approval-scope, issues-visibility, identity-hygiene, context-changed}` and `invalidates` with the oldest affected phase;
 - after answers, compare fingerprint and previous answer. A route or promotion change returns to `route`; an identity conflict returns to `reconcile`; shield adaptation returns to `plan` (or `route` if destination changes); an authorization change returns to `plan`. For a batch, choose the oldest affected phase;
 - record `revalidation` with `requiredFrom`, reason, `answerKeys`, `invalidates` list, and `attempt` equal to `interviewBatches`. Mark affected and later phases as `not_started`, except the answered interview, which stays `validated`; discard derived plan/approval and staging and re-run from `requiredFrom`. No artifact from before the answer may be consumed as approved;
 - clear `revalidation` only after re-validating the affected phases prior to writing, before `apply`. Preserve `interviewBatches` so the limit is not reset. On a natural pass through `interview`, reuse valid answers without a new batch;
@@ -63,12 +63,13 @@ A path or folder under `.app-work/` outside the closed list (SCHEMA §4 / `inven
 The question is born queued in `discover` (once per project, `reason: issues-visibility`, `blocking: false`; the key name is kept for compatibility, the scope is the whole repository) and presents the trade-off without deciding: on a private repository, versioning `.app-work/issues/` and the other process folders gives traceability and collaboration; on a public repository, ignoring `issues/`, `guides/`, `brainstorming/`, `prd/`, and `archive/` via `.app-work/.gitignore` keeps internal context, accounts, and PII out of a git history that is permanent (D43, `references/vault-schema/SCHEMA.md` §2.5).
 
 - answer shape: `answer.issuesVisibility ∈ {versioned, gitignored}` (`versioned` = private repository, `gitignored` = public repository) with `scope: this-project`; a per-project decision never persists as `this-run`, and there is nothing to promote to catalog;
+- question key: the literal `issues-visibility` (kit-owned named key);
 - the answer is consumed by `compose` when materializing `.app-work/.gitignore`, binding by `questionKey` + `contextFingerprint` in `adopt` and `maintain` alike;
 - no answer: the question is non-blocking and the declared conservative default applies: `compose` writes the public set and records the pending; a later run re-asks whenever no persisted answer with a current fingerprint exists.
 
 ## Axis: identity hygiene
 
-`discover` queues one question per distinct organization e-mail address found by the identity hygiene scan (`references/vault-schema/SCHEMA.md` §2.5) when the address may be a contact the product shows on purpose (support, privacy, sales). `reason: identity-hygiene`, `blocking: false`, `questionKey` derived from the normalized address, `contextFingerprint` over the paths where it appears. The question shows the paths, never decides, and never echoes a personal address outside the files that already contain it.
+`discover` queues one question per distinct organization e-mail address found by the identity hygiene scan (`references/vault-schema/SCHEMA.md` §2.5) when the address may be a contact the product shows on purpose (support, privacy, sales). `reason: identity-hygiene`, `blocking: false`, `questionKey` derived from the normalized address, `contextFingerprint` over the normalized address and the repository identity: the paths where it appears are evidence (`sourceEvidence`), never fingerprint material, so a relocation by the kit does not invalidate the answer. The question shows the paths, never decides, and never echoes a personal address outside the files that already contain it.
 
 - answer shape: `answer.identityClass ∈ {public-contact, personal}` with `scope: this-project`;
 - `public-contact`: the address stops counting as a hit in this project;
@@ -85,6 +86,7 @@ A candidate found in `LEDGER.md` or another `.app-work/` artifact is not a rule 
 - a blocking question without an answer ⇒ run `blocked`, not resumed on its own;
 - persistent answers valid against `schemas/hephaestus-state.schema.json`; `this-run` answers valid against `schemas/run-answers.schema.json`;
 - each reused answer has a matching `contextFingerprint`; an answer without a fingerprint is non-reusable legacy, not proof of validity;
+- an `answers` key that is neither sha256 hexadecimal nor a kit-owned kebab-case `reason` is a non-reusable legacy answer: ignored and asked again, never migrated (D4);
 - state with a field the schema does not know: ignore and re-ask what is needed, without migration (D4).
 
 ## Blocks if

@@ -1,6 +1,6 @@
 # Issues — document protocol
 
-Record of UI/UX and behavior issues/defects found in the app. **Documentation only** — fixing happens in separate PRs/commits referencing the ID.
+Record of the findings of the Hephaestus kit and of the UI/UX and behavior issues found in the app. **Documentation only** — fixing happens in separate PRs/commits referencing the ID. A project's own defect registry (its own ID prefix and fix protocol) may live in this folder and is not managed by this protocol.
 
 ## Structure
 
@@ -35,6 +35,8 @@ OPEN -> FIXED -> VERIFIED -> CLOSED
 - `FIXED`: code changed + regression test.
 - `VERIFIED`: manually re-tested via the original repro steps, on the running app.
 - `CLOSED`: `VERIFIED` + shipped in a release/note.
+- `FIXED` by the kit: a finding that the operations of the same kit run resolved is recorded directly as `FIXED`, with the run as its fix origin.
+- `WONTFIX` (sealed): a finding inside an engine-sealed pack artifact; the recorded reason is `sealed`.
 - **FIXED is not completion — only `VERIFIED`/`CLOSED` closes the cycle.**
 
 ## Severity
@@ -57,7 +59,7 @@ Severity is **user impact**, not fix effort.
 - No real personal data in a line or detail file: name accounts by role (`<admin-account>`, `<qa-account>`), never by real e-mail, phone, or ID; quote logs without tokens or home paths.
 - Large issues may be broken into sub-items with a body checklist, but keep a single ID until an explicit split.
 - Priority is **not** a required field; use a free-form label in the body if needed.
-- Defect/issue → this record; new feature/track → master backlog — never duplicate elsewhere.
+- Kit finding or UI/UX issue → this record; new feature/track → master backlog — never duplicate elsewhere. A defect tracked in the project's own registry stays there.
 - A private repo versions this record (traceability); in a public repo the whole folder is gitignored, together with the other process folders (D43).
 
 ## Detail template (optional)

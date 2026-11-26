@@ -44,7 +44,10 @@ Check whether the package meets the kit's minimum contract. A parameterized phas
 - reference fragments were preserved or omitted with justification;
 - naming is neutral;
 - there is no real-identity leak: the identity hygiene scan (`references/vault-schema/SCHEMA.md` §2.5) over every composed artifact (`AGENTS.md`, `project-rules/`, `_app-vault/`, and the `.app-work/` files this run created or rewrote) returns zero hits; hits in sources kept byte for byte are findings and pendings, not a failure of this gate;
-- `.app-work/.gitignore` carries `references/`, `private/`, the text-only evidence block, and the public set when the repository-visibility answer (or the conservative default) requires it;
+- `.app-work/.gitignore` carries `references/`, `private/`, the text-only evidence block, and the public set when the repository-visibility answer (or the conservative default) requires it, and keeps every project line that existed before the run (reconciliation never removes a line); under a `versioned` answer, every public-set line already present is recorded as a closeout pending, never removed;
+- no engine-managed pack (folder with `pack.json`) was relocated by the run, and no file inside an engine-managed folder (a folder with `pack.json` or `roadmap.json`, `references/vault-schema/SCHEMA.md` §2.2) was written;
+- each derived entry has a `derivedFrom` matching a planned `move`/`delete`/`condense`, used `operation: amend`, changed only the reference it names, and landed inside `.app-work/`, outside every engine-managed folder and outside the project files of `issues/`;
+- link delta: in every file the run wrote or moved, no relative link that resolved before the run is broken after it, and no link targets a path the run removed; a link already broken before the run is a finding, never a failure of this gate; links with a URL scheme (`scheme://`) and pure anchors are not checked;
 - `AGENTS.md` carries the universal rules on personal data in versioned artifacts and on commit identity from the template;
 - files follow the minimum schemas;
 - the final tree does not depend on an empty file to look complete;
@@ -75,6 +78,7 @@ Yes — only on `Target: applied`, the only allowed write is merging the `meta.a
 - use `blocked` when any index lists a required rule or reference that does not exist;
 - use `degraded` when relevant fragments lack a clear destination but the package is still operable;
 - use `degraded` when there are legitimate external dependencies not yet internalized, even with a complete report;
+- a location pointer (a path cited only as the place where an artifact lives) recorded as `valid` is not a dependency to internalize;
 - use `blocked` when there are broken or unreported external dependencies;
 - a failing gate that evidences a defect (package contract violation, blocked structure, hash divergence after recovery) is appended as a finding to `.hephaestus/manifests/findings.json` with `type`, normalized `path`, `statement`, `severity`, and `findingSignature = sha256(finding type + normalized path + normalized statement)` — the ledger is valid against `schemas/findings.schema.json`; the correction returns to the owning phase and the re-emitted `plan` carries the finding as the ISSUE-NNN operation (see `prompts/plan.md`); on `Target: applied`, recording the finding never replaces the rollback rule;
 - use `blocked` when `run-state.json` prevents determining which phases are actually validated;

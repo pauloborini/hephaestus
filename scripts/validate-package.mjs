@@ -60,6 +60,13 @@ const loadPropertyNames = (schemaRelPath, pointer = "properties") => {
 
 const PLACEHOLDER_PATTERN = /<preencher[^>]*>|<[^>]*preencher[^>]*>/i;
 
+// Chave de resposta: sha256 do contexto normalizado (regra geral) ou o
+// `reason` kebab-case de uma pergunta do próprio kit com uma instância por
+// projeto (ex.: `issues-visibility`). Chave nomeada é estável entre execuções
+// e não depende do contexto, então sobrevive a uma realocação.
+const isValidQuestionKey = (questionKey) =>
+  /^[a-f0-9]{64}$/.test(questionKey) || /^[a-z0-9]+(-[a-z0-9]+)+$/.test(questionKey);
+
 const AGENTS_HEADER_PATTERN = /^# .+— contrato do agente/m;
 
 // Âncora dupla (SCHEMA.md §8): o AGENTS.md gerado aponta os dois mapas —
@@ -585,8 +592,8 @@ const checkStateContract = (root) => {
       fail(`${fileLabel}: bloco "answers" deve ser um objeto (questionKey -> resposta)`);
     }
     for (const [questionKey, answer] of Object.entries(answers)) {
-      if (!/^[a-f0-9]{64}$/.test(questionKey)) {
-        fail(`${fileLabel}: answers: questionKey "${questionKey}" não é sha256 hexadecimal`);
+      if (!isValidQuestionKey(questionKey)) {
+        fail(`${fileLabel}: answers: questionKey "${questionKey}" não é sha256 hexadecimal nem chave nomeada kebab-case`);
       }
       if (typeof answer !== "object" || answer === null || Array.isArray(answer)) {
         fail(`${fileLabel}: answers: resposta de "${questionKey}" deve ser um objeto`);
@@ -676,8 +683,8 @@ const checkRunAnswers = (root) => {
     fail(`${fileLabel}: answers must be an object`);
   }
   for (const [questionKey, answer] of Object.entries(parsed.answers)) {
-    if (!/^[a-f0-9]{64}$/.test(questionKey)) {
-      fail(`${fileLabel}: questionKey "${questionKey}" não é sha256 hexadecimal`);
+    if (!isValidQuestionKey(questionKey)) {
+      fail(`${fileLabel}: questionKey "${questionKey}" não é sha256 hexadecimal nem chave nomeada kebab-case`);
     }
     if (typeof answer !== "object" || answer === null || Array.isArray(answer)) {
       fail(`${fileLabel}: answer de "${questionKey}" deve ser um objeto`);
@@ -1292,6 +1299,62 @@ const checkPlanContract = (root) => {
       fail(`${fileLabel}: entries[${index}] (${entry.artifactPath}) approval requires a material contextFingerprint`);
     }
   }
+
+  // Escrita derivada: `derivedFrom` nomeia a entrada que a causou, e a
+  // entrada repete a origem, o contexto e a destructividade dela — a aprovação
+  // da causa cobre a escrita derivada no mesmo escopo.
+  const byPath = new Map();
+  for (const entry of parsed.entries) {
+    if (entry && typeof entry.artifactPath === "string") byPath.set(entry.artifactPath, entry);
+  }
+  for (const [index, entry] of parsed.entries.entries()) {
+    if (!isDerivedWrite(entry)) continue;
+    const label = `${fileLabel}: entries[${index}] (${entry.artifactPath})`;
+    if (entry.operation !== "amend") {
+      fail(`${label} escrita derivada com operação "${entry.operation}" — a escrita derivada só corrige referência por amend, nunca cria nem sobrescreve`);
+    }
+    if (typeof entry.artifactPath !== "string" || !entry.artifactPath.startsWith(".app-work/")) {
+      fail(`${label} escrita derivada fora de .app-work/ — referência fora do processo é citação externa, nunca editada`);
+    }
+    if (entry.artifactPath.startsWith(".app-work/issues/") && entry.artifactPath !== ".app-work/issues/INDEX.md") {
+      fail(`${label} escrita derivada no registro de defeitos do projeto — todo arquivo de issues/ fora o INDEX.md é não-toque`);
+    }
+    const engineFolder = engineManagedFolder(root, entry.artifactPath);
+    if (engineFolder) {
+      fail(`${label} escrita derivada dentro da pasta gerida pelo motor ${engineFolder} — o motor amarra o escopo aprovado a esse texto (SCHEMA.md §2.2)`);
+    }
+    const cause = byPath.get(entry.derivedFrom);
+    if (!cause) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) derivedFrom "${entry.derivedFrom}" não aponta para nenhuma entrada do plano`,
+      );
+    }
+    if (!["move", "delete", "condense"].includes(cause.operation)) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) derivedFrom "${entry.derivedFrom}" aponta para operação "${cause.operation}" — a causa é move, delete ou condense`,
+      );
+    }
+    if (entry.origin !== cause.origin) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) origin difere do da causa — a escrita derivada repete a origem dela`,
+      );
+    }
+    if (entry.contextFingerprint !== cause.contextFingerprint) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) contextFingerprint difere do da causa — a escrita derivada repete o contexto dela`,
+      );
+    }
+    if (entry.destructive !== cause.destructive) {
+      fail(
+        `${fileLabel}: entries[${index}] (${entry.artifactPath}) destructive difere do da causa — a escrita derivada carrega a destructividade dela`,
+      );
+    }
+    if (cause.destructive === true && entry.approvalEvidence !== cause.approvalEvidence) {
+      fail(
+        `${label} approvalEvidence difere da causa destrutiva — a escrita derivada repete a aprovação dela`,
+      );
+    }
+  }
   const fields = ["artifactPath", "territory", "regime", "operation", "rationale", "origin", "decidedBy", "destructive", "contextFingerprint"];
   const fingerprint = createHash("sha256")
     .update(JSON.stringify(parsed.entries.map((entry) => fields.map((key) => entry[key] ?? null))))
@@ -1604,6 +1667,45 @@ const checkResidueGate = (root) => {
 // protocolo de `.app-work/issues/README.md`).
 const PROCESS_NONWRITABLE_OPERATIONS = new Set(["create", "amend", "overwrite"]);
 
+// Arquivos que o próprio kit mantém dentro de `.app-work/` (prompts/plan.md,
+// casos compostos): o kit os reconcilia, nunca os sobrescreve.
+const KIT_MAINTAINED_PROCESS_FILES = new Set([
+  ".app-work/INDEX.md",
+  ".app-work/.gitignore",
+  ".app-work/issues/INDEX.md",
+]);
+
+// Pasta gerida pelo motor de packs (SCHEMA.md §2.2): pasta de `.app-work/` com
+// `pack.json` ou `roadmap.json`, e tudo abaixo dela. O motor tira digest do
+// escopo aprovado sobre o texto dessas pastas (INTENT.md, prosa do roadmap),
+// então o kit não escreve nada ali. O nome do arquivo do motor reprova mesmo
+// quando o arquivo ainda não existe no disco.
+const ENGINE_MARKERS = ["pack.json", "roadmap.json"];
+const ENGINE_OWNED_FILES = new Set([...ENGINE_MARKERS, "journal.jsonl"]);
+
+const engineManagedFolder = (root, artifactPath) => {
+  const parts = artifactPath.split("/");
+  if (ENGINE_OWNED_FILES.has(parts[parts.length - 1])) {
+    return parts.slice(0, -1).join("/");
+  }
+  for (let depth = parts.length - 1; depth >= 2; depth -= 1) {
+    const folder = parts.slice(0, depth).join("/");
+    if (ENGINE_MARKERS.some((marker) => fs.existsSync(path.join(root, folder, marker)))) {
+      return folder;
+    }
+  }
+  return null;
+};
+
+// Uma escrita derivada carrega `derivedFrom` (a entrada que a causou).
+const isDerivedWrite = (entry) =>
+  typeof entry.derivedFrom === "string" && entry.derivedFrom.length > 0;
+
+// Escrita legal dentro de `.app-work/` fora de `issues/`: só as duas formas
+// do caso composto do prompt — arquivo mantido pelo kit, ou escrita derivada.
+const isLegalProcessWrite = (entry) =>
+  KIT_MAINTAINED_PROCESS_FILES.has(entry.artifactPath) || isDerivedWrite(entry);
+
 const checkProcessWrites = (root) => {
   const planPath = path.join(root, ".hephaestus", "plan.json");
   const parsed = readJsonObject(planPath);
@@ -1624,9 +1726,16 @@ const checkProcessWrites = (root) => {
     evaluated += 1;
     if (!dest.startsWith(".app-work/issues/")) {
       if (PROCESS_NONWRITABLE_OPERATIONS.has(entry.operation)) {
-        fail(
-          `escrita em processo: ${dest} — operação "${entry.operation}" em .app-work/ fora de issues/ (INV10/D19) — conteúdo de processo só move/keep/skip, nunca é gerado nem sobrescrito`,
-        );
+        if (!isLegalProcessWrite(entry)) {
+          fail(
+            `escrita em processo: ${dest} — operação "${entry.operation}" em .app-work/ fora de issues/ (INV10/D19) — conteúdo de processo só move/keep/skip, nunca gerado nem sobrescrito; só são legais os arquivos mantidos pelo kit e a escrita derivada (derivedFrom)`
+          );
+        }
+        if (entry.operation === "overwrite") {
+          fail(
+            `escrita em processo: ${dest} — overwrite em .app-work/ (INV10) — arquivo do processo é reconciliado por amend, nunca sobrescrito`
+          );
+        }
       }
     } else if (entry.operation === "overwrite") {
       fail(
@@ -1661,7 +1770,7 @@ const isLegalPlanPair = (entry) => {
     entry.regime === "generate" &&
     entry.territory === "process" &&
     typeof entry.artifactPath === "string" &&
-    entry.artifactPath.startsWith(".app-work/issues/")
+    (entry.artifactPath.startsWith(".app-work/issues/") || isLegalProcessWrite(entry))
   );
 };
 

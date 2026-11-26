@@ -11,7 +11,7 @@ In `mode: adopt`, a decision candidate already routed to `_app-vault/docs/decisi
 - `.hephaestus/manifests/routing.json` — routed fragments (`vault` territory with `reconcile` or `keep` is this phase's focus);
 - `.hephaestus/manifests/fragments.json` — text and provenance per fragment;
 - valid answers in the state's `answers` block and in `run-answers.json` for the same `runId`, with `questionKey` and `contextFingerprint` matching the current context; promotion also requires `answer.confirmed: true`, `answer.statement`, `answer.domain`, and `sourceEvidence`;
-- current state of `_app-vault/docs/decisions/**` — live clauses and `## Histórico` (source of truth, `references/vault-schema/SCHEMA.md` §4);
+- current state of `_app-vault/docs/decisions/**` — live clauses and `## History` (source of truth, `references/vault-schema/SCHEMA.md` §4);
 - `.hephaestus/manifests/run-state.json` (phase checkpoint).
 
 ## Identity inventory
@@ -19,9 +19,9 @@ In `mode: adopt`, a decision candidate already routed to `_app-vault/docs/decisi
 Before minting any new ID, inventory the largest `DEC-NNN` in the repository:
 
 - scan **all** files under `_app-vault/docs/decisions/` (one file per domain, `kebab-case`); the scan is by directory, never by a fixed list;
-- collect IDs from **two sources**: `### DEC-NNN` headings (live clauses) **and** IDs cited on lines in the `## Histórico` section (removed decisions remain immortal);
+- collect IDs from **two sources**: `### DEC-NNN` headings (live clauses) **and** IDs cited on lines in the `## History` section (removed decisions remain immortal);
 - take `max` over the **union** of both lists and record it as `inventoriedMax` in `identity-map.json`;
-- **forbidden** to restrict the scan to live clauses (`rg "^### DEC-"` alone): removal is allowed and the ID stays immortal (`SCHEMA.md` §4.7) — a vault with `DEC-002` only in `## Histórico` and no live clause has `max = 2`, and the next mint is `DEC-003`, never `DEC-001` or `DEC-002`;
+- **forbidden** to restrict the scan to live clauses (`rg "^### DEC-"` alone): removal is allowed and the ID stays immortal (`SCHEMA.md` §4.7) — a vault with `DEC-002` only in `## History` and no live clause has `max = 2`, and the next mint is `DEC-003`, never `DEC-001` or `DEC-002`;
 - greenfield (no `_app-vault/docs/decisions/`): `max = 0`, first mint `DEC-001`.
 
 ## Identity
@@ -40,13 +40,13 @@ Per-case decision:
 
 - `keep` — statement identical to the live clause; nothing is written; **`decId` stays filled**;
 - `amend` — the **value** changed: the ID remains (`SCHEMA.md` §4.1: "the value changes, the DEC-NNN remains"), the statement under the heading is replaced and the inline note is added immediately below, in the fixed format:
-  `_Alterado <data> — era: <valor antigo>. Motivo: <motivo>._`
+  `_Changed <date> — was: <old>. Reason: <reason>._`
   - new notes stack **above** the previous one (newest first);
   - after about 3 notes on the clause, old ones are **deleted** (not archived);
-- `create` — new clause with a new `DEC-NNN`; a new domain or new `Afeta:` tag requires updating `INDEX.md` in the same flow (`## Domínios`, valid feature list, `## Por feature`);
+- `create` — new clause with a new `DEC-NNN`; a new domain or new `Affects:` tag requires updating `INDEX.md` in the same flow (`## Domains`, valid feature list, `## By feature`);
 - ambiguous semantic identity — two or more live clauses with the same semantic key are not chosen by similarity; record a conflict and enqueue `reason: reconcile-conflict` for human confirmation;
-- `remove` — rare; **before** removing, check pending citations of the ID in the entire repository, **including inside `.app-work/`** — a search without `--hidden` (or without the cited path) returns zero and removal looks safe (`SCHEMA.md` §4.7); with no pending citation, removal is decided with the line in `## Histórico` at the end of the domain file (the only history section that exists) — materializing the line happens in `compose`/`apply`, never in this phase;
-- cross-domain reach: update every affected domain and cite the sibling `DEC-NNN` in the note of each touched file (`_Alterado <data> — era: <antigo>. Motivo: <motivo>; ver DEC-024 em pagamentos.md._`).
+- `remove` — rare; **before** removing, check pending citations of the ID in the entire repository, **including inside `.app-work/`** — a search without `--hidden` (or without the cited path) returns zero and removal looks safe (`SCHEMA.md` §4.7); with no pending citation, removal is decided with the line in `## History` at the end of the domain file (the only history section that exists) — materializing the line happens in `compose`/`apply`, never in this phase;
+- cross-domain reach: update every affected domain and cite the sibling `DEC-NNN` in the note of each touched file (`_Changed <date> — was: <old>. Reason: <reason>; see DEC-024 in payments.md._`).
 
 ## Checks
 
@@ -54,6 +54,7 @@ Per-case decision:
 - **Value duplication across territories** (D18/INV4): a decision value that reappears as a literal in `project-rules/` is a violation — `project-rules/` **references** the `DEC-NNN`, never copies the value; the validator `checkDuplicatedValue` gate fails duplication without a citation;
 - **Mandatory split of the hybrid case** (`SCHEMA.md` §8): a single sentence with both a product norm and an implementation norm must split — the **effect observable by the end user** (number, limit, enumeration item, plan option) goes to `docs/decisions/` as `DEC-NNN`; the **how-to-implement norm** goes to `project-rules/` referencing the ID, never copying the number;
 - **Coverage and pending citations** before any ID removal: no `remove` without a complete repository check, including hidden paths.
+- **Legacy tokens are read, never written:** a vault file written by an earlier kit with `## Histórico` or `Afeta:` is read as if it carried `## History` and `Affects:`; every write uses the canonical tokens of `references/vault-schema/SCHEMA.md` §3 and §4.
 
 ## Question queue
 
@@ -80,7 +81,7 @@ Questions are born **queued** — this phase never asks (D22). Everything that n
 - on the final pass, every fragment destined for `docs/decisions/` leaves with a decided `action` and a **non-null** `decId`; on the pre-interview pass, each pending item has a blocking question and does not enter the map as a resolved decision;
 - a vault fragment outside `docs/decisions/` (INDEX / TEMPLATES / specs) leaves with `action: keep` and `decId: null`;
 - `identity-map.json` records `inventoriedMax` and one entry per processed fragment (`fragmentId`, `decId`, `action`, `domain`, `matchedId` — the pre-existing matched ID, `null` for `create` — and `evidence`);
-- no ID is renumbered, reused, or present at the same time as a live clause and in `## Histórico` (INV3);
+- no ID is renumbered, reused, or present at the same time as a live clause and in `## History` (INV3);
 - `checkDecIdentity` (in `scripts/validate-package.mjs`) runs on the package (`identity-map.json` + `_app-vault/docs/decisions/**`) only when the script is present in the install: a development checkout runs the gate; a zip-release install does not ship `scripts/`, so the skip is recorded with reason "script not shipped in this install" (no `node`: skip recorded as an observation) — never a failure, a guessed alternate path, or a validation that ran (shared gate rule in `prompts/validate.md`);
 - a fragment originating in `.app-work/` never becomes a `DEC-NNN` (D19/INV9): a rule that exists only there is a gap to promote, never an input — if an `.app-work/` fragment arrived here as a decision candidate, it is a routing bug, not a decision;
 - in `adopt`, after the interview, if the cascade routed ≥1 candidate to `docs/decisions/` and the final map closes with zero `create`/`amend`/`keep` with `decId`, the phase marks `failed`.

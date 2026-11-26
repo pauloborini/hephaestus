@@ -60,10 +60,13 @@
     },
     "answers": {
       "type": "object",
-      "description": "questionKey map (sha256 of the normalized context) -> human project-scope answer (D22). Stable keys: they derive from context, never from the question text.",
+      "description": "questionKey map -> human project-scope answer (D22). A key is either sha256 of the normalized context or the kebab-case reason of a kit-owned question with a single instance per project (for example issues-visibility). Stable keys: they derive from context or from the kit, never from the question text.",
       "additionalProperties": false,
       "patternProperties": {
         "^[a-f0-9]{64}$": {
+          "$ref": "#/$defs/answer"
+        },
+        "^[a-z0-9]+(-[a-z0-9]+)+$": {
           "$ref": "#/$defs/answer"
         }
       }

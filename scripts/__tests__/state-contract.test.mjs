@@ -62,6 +62,38 @@ test("AC-5.1.1: quatro blocos válidos + bloco de topo desconhecido saem 0 com o
   assert.ok(result.stdout.includes("Package validation passed"), result.stdout);
 });
 
+test("AC-5.1.x: chave nomeada kebab-case de pergunta do kit é aceita em answers", () => {
+  const state = {
+    ...VALID_STATE,
+    answers: {
+      "issues-visibility": {
+        answer: { issuesVisibility: "versioned" },
+        scope: "this-project",
+        sourceEvidence: "remotes do repositório",
+        answeredAt: "2026-08-12T00:00:00.000Z",
+      },
+    },
+  };
+  const result = runValidator(packageWithState(state));
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("AC-5.1.x: chave de answers fora do padrão reprova nomeando a chave", () => {
+  const state = {
+    ...VALID_STATE,
+    answers: {
+      "Chave Inválida": {
+        answer: { destinationPath: ".app-work/docs/" },
+        scope: "this-project",
+        sourceEvidence: "docs/brainstorming/tema-x.md",
+      },
+    },
+  };
+  const result = runValidator(packageWithState(state));
+  assert.equal(result.status, 1, result.stdout);
+  assert.ok(result.stderr.includes("Chave Inválida"), result.stderr);
+});
+
 test("AC-5.1.1: bloco answers malformado reprova com erro 1 nomeando answers", () => {
   const pkg = packageWithState({
     ...VALID_STATE,
